@@ -7,9 +7,20 @@
     "dev": "tsx watch src/index.ts",
     "test": "jest",
     "build": "npx prisma generate",
+    "src": "src/index.ts",
     "serve": "node ./dist/index.js",
     "seed:role-permission": "tsx prisma/seeds/role-permission.seed.ts"
   },
+  "build": {
+    "src": "src/index.ts",
+    "use": "@vercel/node"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
