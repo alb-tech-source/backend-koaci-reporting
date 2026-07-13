@@ -83,8 +83,9 @@ export const authService = {
 
     // Extract permissions from role
     const permissions =
-      user.role?.rolePermissions?.map((rp) => rp.permission.permission_key) ??
-      [];
+      user.role?.rolePermissions?.map(
+        (rp: any) => rp.permission.permission_key,
+      ) ?? [];
 
     const tokens = generateTokens({
       userId: user.user_id,

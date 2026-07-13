@@ -198,8 +198,9 @@ export const authController = {
 
       // Extract permissions
       const permissions =
-        user.role?.rolePermissions?.map((rp) => rp.permission.permission_key) ??
-        [];
+        user.role?.rolePermissions?.map(
+          (rp: any) => rp.permission.permission_key,
+        ) ?? [];
 
       const toSafeUser = (await import("../user/user.service")).toSafeUser;
 
