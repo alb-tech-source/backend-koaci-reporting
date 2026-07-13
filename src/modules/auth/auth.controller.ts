@@ -176,7 +176,7 @@ export const authController = {
       }
 
       // Fetch user from database
-      const prisma = await import("../../lib/prisma").then((m) => m.default);
+      const prisma = await import("../../lib/prisma.js").then((m) => m.default);
       const user = await prisma.user.findUnique({
         where: { user_id: userId },
         include: {
@@ -202,7 +202,7 @@ export const authController = {
           (rp: any) => rp.permission.permission_key,
         ) ?? [];
 
-      const toSafeUser = (await import("../user/user.service")).toSafeUser;
+      const toSafeUser = (await import("../user/user.service.js")).toSafeUser;
 
       res.status(200).json({
         success: true,

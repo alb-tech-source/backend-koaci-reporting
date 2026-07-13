@@ -4,7 +4,8 @@
       "Bash(npm start *)",
       "Bash(npm run *)",
       "Bash(timeout 10 npm run dev)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(node dist/index.js)"
     ]
   }
 }
