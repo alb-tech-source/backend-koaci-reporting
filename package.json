@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "test": "jest",
-    "build": "npx prisma generate",
+    "build": "prisma generate && tsc",
     "postinstall": "prisma generate",
     "serve": "node ./dist/index.js",
     "seed:role-permission": "tsx prisma/seeds/role-permission.seed.ts"
