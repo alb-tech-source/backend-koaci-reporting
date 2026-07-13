@@ -17,6 +17,7 @@ const envSchema = zod.object({
   SMTP_PORT: zod.string(),
   SMTP_PASS: zod.string(),
   FRONTEND_URL: zod.string(),
+  NODE_ENV: zod.string(),
 });
 
 export const env = envSchema.parse(process.env);

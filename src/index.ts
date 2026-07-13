@@ -9,12 +9,10 @@ import { smtpConnection } from "./config/mailer.js";
 
 const app: Express = express();
 
-// Setup
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Health check
 app.get("/", (req, res) => {
   res.json({
     message: "Koaci Reporting App API",
@@ -24,14 +22,10 @@ app.get("/", (req, res) => {
   });
 });
 
-// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-
-// Swagger Documentation
 app.use("/", swaggerRoutes);
 
-// Error handling middleware (should be last)
 app.use(
   (
     err: any,
@@ -39,6 +33,7 @@ app.use(
     res: express.Response,
     next: express.NextFunction,
   ) => {
+    console.error(err); // penting: log error asli biar keliatan di Vercel logs
     const status = err.status || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({
@@ -48,23 +43,16 @@ app.use(
   },
 );
 
-// Running
-function main(): void {
-  try {
-    const port = env.PORT;
+if (env.NODE_ENV !== "development") {
+  const port = env.PORT;
+  app.listen(port, (): void => {
+    console.log(`[SERVER]: Server running at localhost: ${port}`);
+    console.log(
+      `[DOCS]: API Documentation available at http://localhost:${port}/api-docs`,
+    );
 
-    // Listening Server
-    app.listen(port, (): void => {
-      console.log(`[SERVER]: Server running at localhost: ${port}`);
-      console.log(
-        `[DOCS]: API Documentation available at http://localhost:${port}/api-docs`,
-      );
-      smtpConnection();
-    });
-  } catch (err: any) {
-    console.error(err.message);
-    process.exit(1);
-  }
+    smtpConnection();
+  });
 }
 
-main();
+export default app;
