@@ -43,7 +43,7 @@ app.use(
   },
 );
 
-if (env.NODE_ENV !== "development") {
+if (env.NODE_ENV !== "production") {
   const port = env.PORT;
   app.listen(port, (): void => {
     console.log(`[SERVER]: Server running at localhost: ${port}`);
