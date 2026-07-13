@@ -1,5 +1,18 @@
 import swaggerJsdoc from "swagger-jsdoc";
 
+const getServerUrl = () => {
+  const nodeEnv = process.env.NODE_ENV || "development";
+  const vercelUrl = process.env.VERCEL_URL;
+
+  if (nodeEnv === "production" && vercelUrl) {
+    return `https://${vercelUrl}`;
+  } else if (nodeEnv === "production") {
+    return "https://backend-koaci-reporting.vercel.app";
+  } else {
+    return `http://localhost:${process.env.PORT || "8000"}`;
+  }
+};
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
@@ -19,12 +32,8 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
-        description: "Development server",
-      },
-      {
-        url: "https://api.koaci.com",
-        description: "Production server",
+        url: getServerUrl(),
+        description: process.env.NODE_ENV === "production" ? "Production server" : "Development server",
       },
     ],
     components: {

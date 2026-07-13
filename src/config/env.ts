@@ -18,6 +18,7 @@ const envSchema = zod.object({
   SMTP_PASS: zod.string(),
   FRONTEND_URL: zod.string(),
   NODE_ENV: zod.string(),
+  VERCEL_URL: zod.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

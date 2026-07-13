@@ -24,21 +24,13 @@ router.get("/", (req, res) => {
   });
 });
 
-/**
- * @swagger
- * /api-docs:
- *   get:
- *     summary: API Documentation
- *     description: Swagger UI for API documentation
- *     tags: [Documentation]
- */
+// Serve Swagger UI with production-compatible setup
 router.use(
   "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     customSiteTitle: "Koaci Reporting App API Docs",
     customCss: ".swagger-ui .topbar { display: none }",
-    customfavIcon: "/favicon.ico",
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,
