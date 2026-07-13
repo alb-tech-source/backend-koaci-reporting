@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "test": "jest",
     "build": "prisma generate && tsc",
     "postinstall": "prisma generate",
     "start": "node ./dist/index.js",
-    "serve": "node ./dist/index.js",
-    "seed:role-permission": "tsx prisma/seeds/role-permission.seed.ts"
+    "vercel-build": "prisma generate && tsc"
   },
   "keywords": [],
   "author": "",
