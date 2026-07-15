@@ -25,47 +25,29 @@ router.get("/", (req, res) => {
 });
 
 // Serve Swagger UI with production-compatible setup
-router.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, {
-    customSiteTitle: "Koaci Reporting App API Docs",
-    customCss: ".swagger-ui .topbar { display: none }",
-    swaggerOptions: {
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      displayOperationId: false,
-      filter: true,
-      showExtensions: true,
-      showCommonExtensions: true,
-      tryItOutEnabled: true,
-      docExpansion: "list",
-      defaultModelsExpandDepth: 1,
-      defaultModelExpandDepth: 1,
-      syntaxHighlight: {
-        activate: true,
-        theme: "tomorrow-night",
+router.get("/api-docs", (req, res) => {
+  res.send(
+    swaggerUi.generateHTML(swaggerSpec, {
+      customSiteTitle: "Koaci Reporting App API Docs",
+      customCssUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css",
+      customJs: [
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js",
+      ],
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        filter: true,
+        tryItOutEnabled: true,
+        docExpansion: "list",
       },
-    },
-  })
-);
+    }),
+  );
+});
 
-/**
- * @swagger
- * /api-docs.json:
- *   get:
- *     summary: Get Swagger Spec JSON
- *     description: Get OpenAPI specification in JSON format
- *     tags: [Documentation]
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: OpenAPI specification JSON
- */
 router.get("/api-docs.json", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
+  res.json(swaggerSpec);
 });
 
 export default router;

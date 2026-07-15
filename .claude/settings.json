@@ -5,7 +5,13 @@
       "Bash(npm run *)",
       "Bash(timeout 10 npm run dev)",
       "Bash(npx prisma *)",
-      "Bash(node dist/index.js)"
+      "Bash(node dist/index.js)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m 'fix: resolve Vercel deployment Prisma import errors *)",
+      "Bash(git push *)",
+      "Bash(curl -s http://localhost:8000/api-docs.json)",
+      "Bash(git commit -m 'fix: resolve API docs issues in production environment *)"
     ]
   }
 }
