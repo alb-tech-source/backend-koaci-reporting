@@ -12,7 +12,10 @@
       "Bash(git push *)",
       "Bash(curl -s http://localhost:8000/api-docs.json)",
       "Bash(git commit -m 'fix: resolve API docs issues in production environment *)",
-      "Bash(pkill -f \"tsx watch\")"
+      "Bash(pkill -f \"tsx watch\")",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(curl -s http://localhost:8000/api-docs)",
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"wrongpassword\"}')"
     ]
   }
 }

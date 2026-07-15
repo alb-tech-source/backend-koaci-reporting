@@ -2,9 +2,9 @@ import express from "express";
 import type { Express } from "express";
 import { env } from "./config/env.js";
 import cors from "cors";
-import swaggerRoutes from "./routes/swagger.route.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import swaggerRoutes from "./routes/swagger.route.js";
 import { smtpConnection } from "./config/mailer.js";
 
 const app: Express = express();
@@ -18,13 +18,12 @@ app.get("/", (req, res) => {
     message: "Koaci Reporting App API",
     version: "1.0.0",
     status: "running",
-    docs: "/api-docs",
   });
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/", swaggerRoutes);
+app.use(swaggerRoutes);
 
 app.use(
   (
@@ -46,11 +45,10 @@ app.use(
 if (env.NODE_ENV !== "production") {
   const port = env.PORT;
   app.listen(port, (): void => {
-    console.log(`[SERVER]: Server running at localhost: ${port}`);
+    console.log(`[SERVER]: Server running at http://localhost:${port}`);
     console.log(
-      `[DOCS]: API Documentation available at http://localhost:${port}/api-docs`,
+      `[SWAGGER]: API Documentation at http://localhost:${port}/api-docs`,
     );
-
     smtpConnection();
   });
 }
