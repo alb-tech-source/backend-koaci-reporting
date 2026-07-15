@@ -11,7 +11,8 @@
       "Bash(git commit -m 'fix: resolve Vercel deployment Prisma import errors *)",
       "Bash(git push *)",
       "Bash(curl -s http://localhost:8000/api-docs.json)",
-      "Bash(git commit -m 'fix: resolve API docs issues in production environment *)"
+      "Bash(git commit -m 'fix: resolve API docs issues in production environment *)",
+      "Bash(pkill -f \"tsx watch\")"
     ]
   }
 }
