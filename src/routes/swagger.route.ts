@@ -31,6 +31,7 @@ router.get("/", (req, res) => {
   });
 });
 
+// JANGAN pakai swaggerUi.serve lagi — itu yang butuh static file serving
 router.get("/api-docs", (req, res) => {
   res.send(
     swaggerUi.generateHTML(swaggerSpec, {
@@ -47,6 +48,7 @@ router.get("/api-docs", (req, res) => {
         filter: true,
         tryItOutEnabled: true,
         docExpansion: "list",
+        url: "/api-docs.json", // eksplisit suruh fetch spec dari sini
       },
     }),
   );
@@ -66,8 +68,7 @@ router.get("/api-docs", (req, res) => {
  *         description: OpenAPI specification JSON
  */
 router.get("/api-docs.json", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
+  res.json(swaggerSpec);
 });
 
 export default router;
