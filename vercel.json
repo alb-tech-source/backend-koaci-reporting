@@ -1,7 +1,32 @@
 {
   "functions": {
-    "api/index.ts": {
+    "dist/index.js": {
       "includeFiles": "node_modules/swagger-ui-dist/**"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api-docs",
+      "destination": "/api-docs"
+    },
+    {
+      "source": "/api-docs/:path*",
+      "destination": "/api-docs/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api-docs/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }

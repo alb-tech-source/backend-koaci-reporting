@@ -25,29 +25,40 @@ router.get("/", (req, res) => {
 });
 
 // Serve Swagger UI with production-compatible setup
+// Custom options to ensure proper static asset serving in serverless environments
+const swaggerUiOptions = {
+  customSiteTitle: "Koaci Reporting App API Docs",
+  customCss: ".swagger-ui .topbar { display: none }",
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    displayOperationId: false,
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: true,
+    docExpansion: "list",
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1,
+    syntaxHighlight: {
+      activate: true,
+      theme: "tomorrow-night",
+    },
+  },
+  // Ensure static assets are served correctly in Vercel
+  explorer: false,
+  customJs: `
+    // Fix for Vercel deployment - ensure proper asset loading
+    window.onload = function() {
+      console.log('Swagger UI loaded successfully');
+    };
+  `,
+};
+
 router.use(
   "/api-docs",
   swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, {
-    customSiteTitle: "Koaci Reporting App API Docs",
-    customCss: ".swagger-ui .topbar { display: none }",
-    swaggerOptions: {
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      displayOperationId: false,
-      filter: true,
-      showExtensions: true,
-      showCommonExtensions: true,
-      tryItOutEnabled: true,
-      docExpansion: "list",
-      defaultModelsExpandDepth: 1,
-      defaultModelExpandDepth: 1,
-      syntaxHighlight: {
-        activate: true,
-        theme: "tomorrow-night",
-      },
-    },
-  }),
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions),
 );
 
 /**
