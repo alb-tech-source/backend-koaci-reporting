@@ -37,7 +37,7 @@ const publicDir = path.join(__dirname, "../../public");
 // IMPORTANT: Order matters!
 // 1. First serve the HTML at /api-docs root
 router.get("/api-docs", (_req, res) => {
-  res.send(swaggerUi.generateHTML(swaggerSpec, {
+  const html = swaggerUi.generateHTML(swaggerSpec, {
     customSiteTitle: "Koaci Reporting App API Docs",
     customCss: ".swagger-ui .topbar { display: none }",
     swaggerOptions: {
@@ -56,7 +56,14 @@ router.get("/api-docs", (_req, res) => {
         theme: "tomorrow-night",
       },
     },
-  }));
+  });
+
+  // Fix asset paths to include /api-docs prefix
+  const fixedHtml = html
+    .replace(/href="([^"]*)\.css"/g, 'href="/api-docs/$1.css"')
+    .replace(/src="([^"]*)\.js"/g, 'src="/api-docs/$1.js"');
+
+  res.send(fixedHtml);
 });
 
 // 2. Then serve static assets for requests like /api-docs/swagger-ui-bundle.js
