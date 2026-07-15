@@ -1,7 +1,7 @@
 {
   "functions": {
-    "dist/index.js": {
-      "includeFiles": "public/**"
+    "api/index.ts": {
+      "includeFiles": "node_modules/swagger-ui-dist/**"
     }
   },
   "rewrites": [
