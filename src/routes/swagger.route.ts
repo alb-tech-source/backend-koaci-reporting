@@ -31,27 +31,44 @@ router.get("/", (req, res) => {
   });
 });
 
-// JANGAN pakai swaggerUi.serve lagi — itu yang butuh static file serving
 router.get("/api-docs", (req, res) => {
-  res.send(
-    swaggerUi.generateHTML(swaggerSpec, {
-      customSiteTitle: "Koaci Reporting App API Docs",
-      customCssUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css",
-      customJs: [
-        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-standalone-preset.min.js",
-      ],
-      swaggerOptions: {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Koaci Reporting App API Docs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css" />
+  <style>
+    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin: 0; background: #fafafa; }
+    .swagger-ui .topbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-standalone-preset.min.js" crossorigin></script>
+  <script>
+    window.onload = function () {
+      window.ui = SwaggerUIBundle({
+        url: "/api-docs.json",
+        dom_id: "#swagger-ui",
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: "StandaloneLayout",
         persistAuthorization: true,
         displayRequestDuration: true,
         filter: true,
         tryItOutEnabled: true,
         docExpansion: "list",
-        url: "/api-docs.json", // eksplisit suruh fetch spec dari sini
-      },
-    }),
-  );
+      });
+    };
+  </script>
+</body>
+</html>`;
+
+  res.setHeader("Content-Type", "text/html");
+  res.send(html);
 });
 
 /**
