@@ -1,31 +1,25 @@
 {
-  "functions": {
-    "api/index.ts": {
-      "includeFiles": "node_modules/swagger-ui-dist/**"
+  "builds": [
+    {
+      "src": "dist/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["node_modules/swagger-ui-dist/**"]
+      }
     }
-  },
-  "rewrites": [
+  ],
+  "routes": [
     {
-      "source": "/api-docs",
-      "destination": "/api-docs"
-    },
-    {
-      "source": "/api-docs/(.*)",
-      "destination": "/api-docs/$1"
+      "src": "/(.*)",
+      "dest": "dist/index.js"
     }
   ],
   "headers": [
     {
       "source": "/api-docs/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=86400" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
   ]
