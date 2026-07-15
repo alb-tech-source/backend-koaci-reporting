@@ -31,52 +31,26 @@ router.get("/", (req, res) => {
   });
 });
 
-// Serve Swagger UI static files from public directory for Vercel compatibility
-const publicDir = path.join(__dirname, "../../public");
-
-// IMPORTANT: Order matters!
-// 1. First serve the HTML at /api-docs root
-router.get("/api-docs", (_req, res) => {
-  const html = swaggerUi.generateHTML(swaggerSpec, {
-    customSiteTitle: "Koaci Reporting App API Docs",
-    customCss: ".swagger-ui .topbar { display: none }",
-    swaggerOptions: {
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      displayOperationId: false,
-      filter: true,
-      showExtensions: true,
-      showCommonExtensions: true,
-      tryItOutEnabled: true,
-      docExpansion: "list",
-      defaultModelsExpandDepth: 1,
-      defaultModelExpandDepth: 1,
-      syntaxHighlight: {
-        activate: true,
-        theme: "tomorrow-night",
+router.get("/api-docs", (req, res) => {
+  res.send(
+    swaggerUi.generateHTML(swaggerSpec, {
+      customSiteTitle: "Koaci Reporting App API Docs",
+      customCssUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.min.css",
+      customJs: [
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-standalone-preset.min.js",
+      ],
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        filter: true,
+        tryItOutEnabled: true,
+        docExpansion: "list",
       },
-    },
-  });
-
-  // Fix asset paths to include /api-docs prefix
-  const fixedHtml = html
-    .replace(/href="([^"]*)\.css"/g, 'href="/api-docs/$1.css"')
-    .replace(/src="([^"]*)\.js"/g, 'src="/api-docs/$1.js"');
-
-  res.send(fixedHtml);
+    }),
+  );
 });
-
-// 2. Then serve static assets for requests like /api-docs/swagger-ui-bundle.js
-router.use("/api-docs", express.static(publicDir, {
-  setHeaders: (res, filepath) => {
-    // Set proper content types for static assets
-    if (filepath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    } else if (filepath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    }
-  }
-}));
 
 /**
  * @swagger
