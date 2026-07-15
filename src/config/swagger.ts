@@ -13,7 +13,9 @@ const getServerUrl = () => {
   }
 };
 
-const isProd = process.env.NODE_ENV === "production";
+const nodeEnv = process.env.NODE_ENV || "development";
+
+const isProd = nodeEnv === "production";
 
 const options: swaggerJsdoc.Options = {
   definition: {
