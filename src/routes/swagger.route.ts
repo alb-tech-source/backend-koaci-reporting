@@ -1,8 +1,15 @@
 import { Router } from "express";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "../config/swagger.js";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const router = Router();
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * @swagger
@@ -24,42 +31,45 @@ router.get("/", (req, res) => {
   });
 });
 
-// Serve Swagger UI with production-compatible setup
-// Custom options to ensure proper static asset serving in serverless environments
-const swaggerUiOptions = {
-  customSiteTitle: "Koaci Reporting App API Docs",
-  customCss: ".swagger-ui .topbar { display: none }",
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true,
-    displayOperationId: false,
-    filter: true,
-    showExtensions: true,
-    showCommonExtensions: true,
-    tryItOutEnabled: true,
-    docExpansion: "list",
-    defaultModelsExpandDepth: 1,
-    defaultModelExpandDepth: 1,
-    syntaxHighlight: {
-      activate: true,
-      theme: "tomorrow-night",
-    },
-  },
-  // Ensure static assets are served correctly in Vercel
-  explorer: false,
-  customJs: `
-    // Fix for Vercel deployment - ensure proper asset loading
-    window.onload = function() {
-      console.log('Swagger UI loaded successfully');
-    };
-  `,
-};
+// Serve Swagger UI static files from public directory for Vercel compatibility
+const publicDir = path.join(__dirname, "../../public");
 
-router.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, swaggerUiOptions),
-);
+// IMPORTANT: Order matters!
+// 1. First serve the HTML at /api-docs root
+router.get("/api-docs", (_req, res) => {
+  res.send(swaggerUi.generateHTML(swaggerSpec, {
+    customSiteTitle: "Koaci Reporting App API Docs",
+    customCss: ".swagger-ui .topbar { display: none }",
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      displayOperationId: false,
+      filter: true,
+      showExtensions: true,
+      showCommonExtensions: true,
+      tryItOutEnabled: true,
+      docExpansion: "list",
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
+      syntaxHighlight: {
+        activate: true,
+        theme: "tomorrow-night",
+      },
+    },
+  }));
+});
+
+// 2. Then serve static assets for requests like /api-docs/swagger-ui-bundle.js
+router.use("/api-docs", express.static(publicDir, {
+  setHeaders: (res, filepath) => {
+    // Set proper content types for static assets
+    if (filepath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (filepath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 /**
  * @swagger

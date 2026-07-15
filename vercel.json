@@ -1,7 +1,7 @@
 {
   "functions": {
     "dist/index.js": {
-      "includeFiles": "node_modules/swagger-ui-dist/**"
+      "includeFiles": ["node_modules/swagger-ui-dist/**", "public/**"]
     }
   },
   "rewrites": [
@@ -10,8 +10,8 @@
       "destination": "/api-docs"
     },
     {
-      "source": "/api-docs/:path*",
-      "destination": "/api-docs/:path*"
+      "source": "/api-docs/(.*)",
+      "destination": "/api-docs/$1"
     }
   ],
   "headers": [
