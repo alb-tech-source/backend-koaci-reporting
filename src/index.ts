@@ -21,9 +21,9 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use(swaggerRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use(swaggerRoutes);
 
 app.use(
   (
