@@ -13,6 +13,8 @@ const getServerUrl = () => {
   }
 };
 
+const isProd = process.env.NODE_ENV === "production";
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
@@ -33,7 +35,10 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: getServerUrl(),
-        description: process.env.NODE_ENV === "production" ? "Production server" : "Development server",
+        description:
+          process.env.NODE_ENV === "production"
+            ? "Production server"
+            : "Development server",
       },
     ],
     components: {
@@ -680,7 +685,9 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ["./src/routes/*.ts", "./src/modules/**/*.ts"],
+  apis: isProd
+    ? ["./dist/routes/*.js", "./dist/modules/**/*.js"]
+    : ["./src/routes/*.ts", "./src/modules/**/*.ts"],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
