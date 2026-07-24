@@ -112,6 +112,28 @@ export const userService = {
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        select: {
+          user_id: true,
+          firstname: true,
+          lastname: true,
+          email: true,
+          is_active: true,
+          last_login_at: true,
+          createdAt: true,
+          updatedAt: true,
+          role: {
+            select: {
+              role_id: true,
+              role_name: true,
+              rolePermissions: {
+                select: {
+                  permission_id: true,
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
       }),
     ]);
 
