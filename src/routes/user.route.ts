@@ -4,7 +4,11 @@ import {
   authMiddleware,
   requirePermission,
 } from "../middleware/auth.middleware.js";
-import { validate, validateQuery, validateParams } from "../middleware/validate.middleware.js";
+import {
+  validate,
+  validateQuery,
+  validateParams,
+} from "../middleware/validate.middleware.js";
 import {
   createUserSchema,
   updateUserSchema,
@@ -23,7 +27,7 @@ router.get(
   authMiddleware,
   requirePermission(["users:read"]),
   validateQuery(listUserQuerySchema),
-  userController.list
+  userController.list,
 );
 
 router.get(
@@ -41,7 +45,7 @@ router.get(
   authMiddleware,
   requirePermission(["users:read"]),
   validateParams(userIdParamSchema),
-  userController.getById
+  userController.getById,
 );
 
 router.post(
@@ -61,7 +65,7 @@ router.post(
   authMiddleware,
   requirePermission(["users:create"]),
   validate(createUserSchema),
-  userController.create
+  userController.create,
 );
 
 router.put(
@@ -88,7 +92,7 @@ router.put(
   requirePermission(["users:update"]),
   validateParams(userIdParamSchema),
   validate(updateUserSchema),
-  userController.update
+  userController.update,
 );
 
 router.patch(
@@ -96,6 +100,14 @@ router.patch(
   /*
     #swagger.summary = 'Toggle user activation status'
     #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/ChangeActivationUserRequest" }
+        }
+      }
+    }
     #swagger.parameters['id'] = {
       description: 'User ID',
       required: true,
@@ -106,7 +118,7 @@ router.patch(
   authMiddleware,
   requirePermission(["users:update"]),
   validateParams(userIdParamSchema),
-  userController.changeActivation
+  userController.changeActivation,
 );
 
 router.post(
@@ -124,7 +136,7 @@ router.post(
   authMiddleware,
   requirePermission(["users:manage_roles"]),
   validateParams(userIdParamSchema),
-  userController.resetPassword
+  userController.resetPassword,
 );
 
 router.delete(
@@ -142,7 +154,7 @@ router.delete(
   authMiddleware,
   requirePermission(["users:delete"]),
   validateParams(userIdParamSchema),
-  userController.remove
+  userController.remove,
 );
 
 export default router;

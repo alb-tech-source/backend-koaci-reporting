@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8000/api",
+      "url": "http://localhost:8000/",
       "description": "Local Server"
     },
     {
@@ -372,7 +372,17 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeActivationUserRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/api/users/{id}/reset-password": {
@@ -543,6 +553,15 @@
             "example": "NewPassword123"
           },
           "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "ChangeActivationUserRequest": {
+        "type": "object",
+        "properties": {
+          "isActive": {
             "type": "boolean",
             "example": true
           }

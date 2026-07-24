@@ -221,8 +221,6 @@ export const userService = {
       throw new ApiError(404, "User tidak ditemukan!");
     }
 
-    console.log(isActive);
-
     const updatedUser = await prisma.user.update({
       where: {
         user_id: userId,

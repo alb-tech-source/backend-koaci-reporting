@@ -12,7 +12,7 @@ const doc = {
   },
   servers: [
     {
-      url: "http://localhost:8000/api",
+      url: "http://localhost:8000/",
       description: "Local Server",
     },
     {
@@ -65,6 +65,9 @@ const doc = {
         email: "jane.doe@example.com",
         password: "NewPassword123",
         is_active: true,
+      },
+      ChangeActivationUserRequest: {
+        isActive: true,
       },
       ListUserQuery: {
         page: 1,
