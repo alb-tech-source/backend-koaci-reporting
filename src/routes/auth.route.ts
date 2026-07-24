@@ -14,44 +14,107 @@ const router = Router();
 
 router.post(
   "/register",
+  /*
+    #swagger.summary = 'Register new user'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/RegisterRequest" }
+        }
+      }
+    }
+  */
   validate(registerSchema),
-  authController.register
+  authController.register,
 );
 
 router.post(
   "/login",
+  /*
+    #swagger.summary = 'Login users'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/LoginRequest" }
+        }
+      }
+    }
+  */
   validate(loginSchema),
-  authController.login
+  authController.login,
 );
 
 router.post(
   "/refresh",
+  /*
+    #swagger.summary = 'Refresh access token'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/RefreshTokenRequest" }
+        }
+      }
+    }
+  */
   validate(refreshTokenSchema),
-  authController.refreshAccessToken
+  authController.refreshAccessToken,
 );
 
 router.post(
   "/forgot-password",
+  /*
+    #swagger.summary = 'Request password reset email'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/ForgotPasswordRequest" }
+        }
+      }
+    }
+  */
   validate(forgotPasswordSchema),
-  authController.forgotPassword
+  authController.forgotPassword,
 );
 
 router.post(
   "/reset-password",
+  /*
+    #swagger.summary = 'Reset password with token'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/ResetPasswordRequest" }
+        }
+      }
+    }
+  */
   validate(resetPasswordSchema),
-  authController.resetPassword
+  authController.resetPassword,
 );
 
 router.get(
   "/me",
+  /*
+    #swagger.summary = 'Get current authenticated user'
+    #swagger.security = [{ "bearerAuth": [] }]
+  */
   authMiddleware,
-  authController.getCurrentUser
+  authController.getCurrentUser,
 );
 
 router.post(
   "/logout",
+  /*
+    #swagger.summary = 'Logout current user'
+    #swagger.security = [{ "bearerAuth": [] }]
+  */
   authMiddleware,
-  authController.logout
+  authController.logout,
 );
 
 export default router;

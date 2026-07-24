@@ -15,7 +15,12 @@
       "Bash(pkill -f \"tsx watch\")",
       "Bash(curl -s http://localhost:8000/)",
       "Bash(curl -s http://localhost:8000/api-docs)",
-      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"wrongpassword\"}')"
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"wrongpassword\"}')",
+      "Bash(cd \"/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend\" && rm -f src/config/swagger.ts src/routes/swagger.route.ts src/config/doc/swagger-output.json)",
+      "Bash(npm uninstall *)"
+    ],
+    "additionalDirectories": [
+      "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config"
     ]
   }
 }

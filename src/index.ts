@@ -2,10 +2,9 @@ import express from "express";
 import type { Express } from "express";
 import { env } from "./config/env.js";
 import cors from "cors";
-import authRoutes from "./routes/auth.route.js";
-import userRoutes from "./routes/user.route.js";
-import swaggerRoutes from "./routes/swagger.route.js";
+import routes from "./routes/index.route.js";
 import { smtpConnection } from "./config/mailer.js";
+import docs from "./docs/route.js";
 
 const app: Express = express();
 
@@ -21,9 +20,11 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use(swaggerRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+// All Routes
+routes(app);
+
+// api-docs
+docs(app);
 
 app.use(
   (
@@ -46,9 +47,6 @@ if (env.NODE_ENV !== "production") {
   const port = env.PORT;
   app.listen(port, (): void => {
     console.log(`[SERVER]: Server running at http://localhost:${port}`);
-    console.log(
-      `[SWAGGER]: API Documentation at http://localhost:${port}/api-docs`,
-    );
     smtpConnection();
   });
 }
