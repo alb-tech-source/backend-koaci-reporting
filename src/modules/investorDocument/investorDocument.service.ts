@@ -49,7 +49,7 @@ export const investorDocumentService = {
     input: GetInvestorDocumentInput,
   ): Promise<string> => {
     const doc = await prisma.investorDocument.findUniqueOrThrow({
-      where: { document_id: input.document_id },
+      where: { document_id: input.documentId },
     });
 
     const command = new GetObjectCommand({
@@ -86,7 +86,7 @@ export const investorDocumentService = {
     input: DeleteInvestorDocumentInput,
   ): Promise<SafeInvestorDocument> => {
     const doc = await prisma.investorDocument.findUniqueOrThrow({
-      where: { document_id: input.document_id },
+      where: { document_id: input.documentId },
     });
 
     await r2Client.send(
@@ -94,7 +94,7 @@ export const investorDocumentService = {
     );
 
     return prisma.investorDocument.delete({
-      where: { document_id: input.document_id },
+      where: { document_id: input.documentId },
     });
   },
 };
