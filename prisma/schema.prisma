@@ -12,9 +12,33 @@ datasource db {
 }
 
 enum RoleName {
-  bod
-  admin
+  user
   investor
+  admin
+  superadmin
+  bod
+}
+
+enum InvestorType {
+  individual
+  corporation
+}
+
+enum InvestorStatus {
+  active
+  inactive
+  blacklist
+}
+
+enum Gender {
+  men
+  women
+}
+
+enum StorageProvider {
+  cloudflare
+  tencent
+  aws
 }
 
 model User {
@@ -31,6 +55,7 @@ model User {
   updatedAt           DateTime  @updatedAt
 
   role                Role?
+  investor            Investor?
 }
 
 model Role {
@@ -59,3 +84,44 @@ model RolePermission {
 
   @@id([role_id, permission_id])   // composite primary key, wajib biar model valid
 }
+
+model Investor {
+  investor_id       String  @id @default(uuid())
+  user_id           String  @unique
+  investor_type     InvestorType
+  status            InvestorStatus @default(inactive)
+  gender            Gender
+  nik               String
+  address           String
+  privy             String?
+  phone             String
+  account_number    String
+  bank_name         String
+  heir_name         String?
+  heir_relationship String?
+  heir_nik          String?
+  heir_address      String?
+  heir_account_number   String?
+  heir_bank_name    String?
+  heir_phone        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User     @relation(fields: [user_id], references: [user_id])
+
+  InvestorDocument  InvestorDocument[]
+}
+
+model InvestorDocument {
+  document_id       String   @id  @default(uuid())
+  investor_id       String
+  document_name     String     
+  storage_provider  StorageProvider  @default(cloudflare)
+  object_key        String
+  file_size_bytes   BigInt?
+  mime_type         String?
+  uploaded_at       DateTime  @default(now())
+
+  investor          Investor  @relation(fields: [investor_id], references: [investor_id])
+}
+

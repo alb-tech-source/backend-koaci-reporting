@@ -19,6 +19,10 @@ const envSchema = zod.object({
   FRONTEND_URL: zod.string(),
   NODE_ENV: zod.string(),
   VERCEL_URL: zod.string().optional(),
+  R2_ACCOUNT_ID: zod.string(),
+  R2_ACCESS_KEY_ID: zod.string(),
+  R2_SECRET_ACCESS_KEY: zod.string(),
+  R2_BUCKET_NAME: zod.string(),
 });
 
 export const env = envSchema.parse(process.env);

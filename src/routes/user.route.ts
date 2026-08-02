@@ -21,6 +21,7 @@ const router = Router();
 router.get(
   "/",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'List all users with pagination and filters'
     #swagger.security = [{ "bearerAuth": [] }]
   */
@@ -33,6 +34,7 @@ router.get(
 router.get(
   "/:id",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Get user by ID'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {
@@ -51,6 +53,7 @@ router.get(
 router.post(
   "/",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Create new user'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.requestBody = {
@@ -71,6 +74,7 @@ router.post(
 router.put(
   "/:id",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Update user by ID'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {
@@ -98,6 +102,7 @@ router.put(
 router.patch(
   "/:id/activate",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Toggle user activation status'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.requestBody = {
@@ -124,6 +129,7 @@ router.patch(
 router.post(
   "/:id/reset-password",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Reset user password (admin only)'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {
@@ -142,6 +148,7 @@ router.post(
 router.delete(
   "/:id",
   /*
+    #swagger.tags = ['User']
     #swagger.summary = 'Delete user by ID'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {

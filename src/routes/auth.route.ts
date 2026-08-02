@@ -15,6 +15,7 @@ const router = Router();
 router.post(
   "/register",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Register new user'
     #swagger.requestBody = {
       required: true,
@@ -32,6 +33,7 @@ router.post(
 router.post(
   "/login",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Login users'
     #swagger.requestBody = {
       required: true,
@@ -49,6 +51,7 @@ router.post(
 router.post(
   "/refresh",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Refresh access token'
     #swagger.requestBody = {
       required: true,
@@ -66,6 +69,7 @@ router.post(
 router.post(
   "/forgot-password",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Request password reset email'
     #swagger.requestBody = {
       required: true,
@@ -83,6 +87,7 @@ router.post(
 router.post(
   "/reset-password",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Reset password with token'
     #swagger.requestBody = {
       required: true,
@@ -100,6 +105,7 @@ router.post(
 router.get(
   "/me",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Get current authenticated user'
     #swagger.security = [{ "bearerAuth": [] }]
   */
@@ -110,6 +116,7 @@ router.get(
 router.post(
   "/logout",
   /*
+    #swagger.tags = ['Auth']
     #swagger.summary = 'Logout current user'
     #swagger.security = [{ "bearerAuth": [] }]
   */

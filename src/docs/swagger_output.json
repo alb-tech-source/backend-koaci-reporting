@@ -15,9 +15,30 @@
       "description": "Deploy Server"
     }
   ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication & authorization endpoints"
+    },
+    {
+      "name": "User",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Investor",
+      "description": "Investor management endpoints"
+    },
+    {
+      "name": "Investor Document",
+      "description": "Investor document endpoints"
+    }
+  ],
   "paths": {
     "/api/auth/register": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Register new user",
         "description": "",
         "responses": {
@@ -39,6 +60,9 @@
     },
     "/api/auth/login": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Login users",
         "description": "",
         "responses": {
@@ -60,6 +84,9 @@
     },
     "/api/auth/refresh": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Refresh access token",
         "description": "",
         "responses": {
@@ -81,6 +108,9 @@
     },
     "/api/auth/forgot-password": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Request password reset email",
         "description": "",
         "responses": {
@@ -102,6 +132,9 @@
     },
     "/api/auth/reset-password": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Reset password with token",
         "description": "",
         "responses": {
@@ -123,6 +156,9 @@
     },
     "/api/auth/me": {
       "get": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Get current authenticated user",
         "description": "",
         "parameters": [
@@ -148,6 +184,9 @@
     },
     "/api/auth/logout": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "summary": "Logout current user",
         "description": "",
         "parameters": [
@@ -173,6 +212,9 @@
     },
     "/api/users/": {
       "get": {
+        "tags": [
+          "User"
+        ],
         "summary": "List all users with pagination and filters",
         "description": "",
         "parameters": [
@@ -196,6 +238,9 @@
         ]
       },
       "post": {
+        "tags": [
+          "User"
+        ],
         "summary": "Create new user",
         "description": "",
         "parameters": [
@@ -231,6 +276,9 @@
     },
     "/api/users/{id}": {
       "get": {
+        "tags": [
+          "User"
+        ],
         "summary": "Get user by ID",
         "description": "",
         "parameters": [
@@ -264,6 +312,9 @@
         ]
       },
       "put": {
+        "tags": [
+          "User"
+        ],
         "summary": "Update user by ID",
         "description": "",
         "parameters": [
@@ -307,6 +358,9 @@
         }
       },
       "delete": {
+        "tags": [
+          "User"
+        ],
         "summary": "Delete user by ID",
         "description": "",
         "parameters": [
@@ -342,6 +396,9 @@
     },
     "/api/users/{id}/activate": {
       "patch": {
+        "tags": [
+          "User"
+        ],
         "summary": "Toggle user activation status",
         "description": "",
         "parameters": [
@@ -387,6 +444,9 @@
     },
     "/api/users/{id}/reset-password": {
       "post": {
+        "tags": [
+          "User"
+        ],
         "summary": "Reset user password (admin only)",
         "description": "",
         "parameters": [
@@ -419,6 +479,921 @@
           }
         ]
       }
+    },
+    "/api/investors/": {
+      "get": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "List all investors with pagination and filters",
+        "description": "Get list of investors with pagination support. Admin and above can see all investors, while investors can only see their own data.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "description": "Page number",
+            "default": 1,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Items per page (max 100)",
+            "default": 10,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "description": "Search by full_name, email, or NIK",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "investor_type",
+            "description": "Filter by investor type",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "individual",
+                    "corporation"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "in": "query"
+          },
+          {
+            "name": "status",
+            "description": "Filter by status",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "active",
+                    "inactive",
+                    "blacklist"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "in": "query"
+          },
+          {
+            "name": "gender",
+            "description": "Filter by gender",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "men",
+                    "women"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Create new investor",
+        "description": "Create a new investor profile. Automatically assigns \"investor\" role to the user (if user role was \"user\" or no role).",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Investor created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvestorRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/investors/{id}": {
+      "get": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Get investor by ID",
+        "description": "Get detailed investor information by investor_id. Requires investors:read or investors:read_own permission.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Investor ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Investor found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Update investor by ID",
+        "description": "Update investor information. All fields are optional (partial update).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Investor ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Investor updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvestorRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Delete investor by ID",
+        "description": "Permanently delete investor and all related documents. This action cannot be undone.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Investor ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Investor deleted successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investors/user/{userId}": {
+      "get": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Get investor by user ID",
+        "description": "Get investor profile by user_id. Useful for getting current user investor profile.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investors/{id}/status": {
+      "patch": {
+        "tags": [
+          "Investor"
+        ],
+        "summary": "Update investor status",
+        "description": "Update investor status (active/inactive/blacklist). Only admin and above can change status.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Investor ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvestorStatusRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/investor-documents/investor/{investorId}": {
+      "get": {
+        "tags": [
+          "Investor Document"
+        ],
+        "summary": "Get list of investor documents",
+        "description": "Get all documents for a specific investor with pagination support.",
+        "parameters": [
+          {
+            "name": "investorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Investor ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of investor documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "document_id": {
+                            "type": "string",
+                            "example": "uuid-doc-id"
+                          },
+                          "investor_id": {
+                            "type": "string",
+                            "example": "uuid-investor-id"
+                          },
+                          "document_name": {
+                            "type": "string",
+                            "example": "KTP.pdf"
+                          },
+                          "storage_provider": {
+                            "type": "string",
+                            "example": "cloudflare"
+                          },
+                          "object_key": {
+                            "type": "string",
+                            "example": "investor/uuid/uuid-KTP.pdf"
+                          },
+                          "file_size_bytes": {
+                            "type": "number",
+                            "example": 1024000
+                          },
+                          "mime_type": {
+                            "type": "string",
+                            "example": "application/pdf"
+                          },
+                          "uploaded_at": {
+                            "type": "string",
+                            "example": "2024-01-01T00:00:00.000Z"
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "example": 10
+                        },
+                        "page": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "number",
+                          "example": 10
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "document_id": {
+                            "type": "string",
+                            "example": "uuid-doc-id"
+                          },
+                          "investor_id": {
+                            "type": "string",
+                            "example": "uuid-investor-id"
+                          },
+                          "document_name": {
+                            "type": "string",
+                            "example": "KTP.pdf"
+                          },
+                          "storage_provider": {
+                            "type": "string",
+                            "example": "cloudflare"
+                          },
+                          "object_key": {
+                            "type": "string",
+                            "example": "investor/uuid/uuid-KTP.pdf"
+                          },
+                          "file_size_bytes": {
+                            "type": "number",
+                            "example": 1024000
+                          },
+                          "mime_type": {
+                            "type": "string",
+                            "example": "application/pdf"
+                          },
+                          "uploaded_at": {
+                            "type": "string",
+                            "example": "2024-01-01T00:00:00.000Z"
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "example": 10
+                        },
+                        "page": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "number",
+                          "example": 10
+                        },
+                        "totalPages": {
+                          "type": "number",
+                          "example": 1
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investor-documents/{documentId}/download": {
+      "get": {
+        "tags": [
+          "Investor Document"
+        ],
+        "summary": "Get document download URL",
+        "description": "Get a presigned URL for downloading a specific document. URL is valid for 1 hour.",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Document ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Download URL generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "downloadUrl": {
+                      "type": "string",
+                      "example": "https://presigned-url-here"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "URL download berhasil dibuat"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "downloadUrl": {
+                      "type": "string",
+                      "example": "https://presigned-url-here"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "URL download berhasil dibuat"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investor-documents/": {
+      "post": {
+        "tags": [
+          "Investor Document"
+        ],
+        "summary": "Upload investor document",
+        "description": "Upload a new document for an investor. Supports multipart/form-data for file upload.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "type": "object",
+                      "properties": {
+                        "document_id": {
+                          "type": "string",
+                          "example": "uuid-doc-id"
+                        },
+                        "investor_id": {
+                          "type": "string",
+                          "example": "uuid-investor-id"
+                        },
+                        "document_name": {
+                          "type": "string",
+                          "example": "KTP.pdf"
+                        },
+                        "storage_provider": {
+                          "type": "string",
+                          "example": "cloudflare"
+                        },
+                        "object_key": {
+                          "type": "string",
+                          "example": "investor/uuid/uuid-KTP.pdf"
+                        },
+                        "file_size_bytes": {
+                          "type": "number",
+                          "example": 1024000
+                        },
+                        "mime_type": {
+                          "type": "string",
+                          "example": "application/pdf"
+                        },
+                        "uploaded_at": {
+                          "type": "string",
+                          "example": "2024-01-01T00:00:00.000Z"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Dokumen investor berhasil diunggah"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "type": "object",
+                      "properties": {
+                        "document_id": {
+                          "type": "string",
+                          "example": "uuid-doc-id"
+                        },
+                        "investor_id": {
+                          "type": "string",
+                          "example": "uuid-investor-id"
+                        },
+                        "document_name": {
+                          "type": "string",
+                          "example": "KTP.pdf"
+                        },
+                        "storage_provider": {
+                          "type": "string",
+                          "example": "cloudflare"
+                        },
+                        "object_key": {
+                          "type": "string",
+                          "example": "investor/uuid/uuid-KTP.pdf"
+                        },
+                        "file_size_bytes": {
+                          "type": "number",
+                          "example": 1024000
+                        },
+                        "mime_type": {
+                          "type": "string",
+                          "example": "application/pdf"
+                        },
+                        "uploaded_at": {
+                          "type": "string",
+                          "example": "2024-01-01T00:00:00.000Z"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Dokumen investor berhasil diunggah"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "investor_id",
+                  "document_name",
+                  "file"
+                ],
+                "properties": {
+                  "investor_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Investor ID"
+                  },
+                  "document_name": {
+                    "type": "string",
+                    "description": "Document name (e.g., KTP.pdf)"
+                  },
+                  "storage_provider": {
+                    "type": "string",
+                    "enum": [
+                      "cloudflare",
+                      "aws",
+                      "tencent"
+                    ],
+                    "default": "cloudflare",
+                    "description": "Storage provider"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File to upload"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "contentType": [
+                    "application/pdf",
+                    "image/jpeg",
+                    "image/png",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/investor-documents/{documentId}": {
+      "delete": {
+        "tags": [
+          "Investor Document"
+        ],
+        "summary": "Delete investor document",
+        "description": "Permanently delete a document from storage and database. This action cannot be undone.",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Document ID (UUID)",
+            "format": "uuid"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Dokumen investor berhasil dihapus"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Dokumen investor berhasil dihapus"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -440,6 +1415,9 @@
             "type": "string",
             "example": "password123"
           }
+        },
+        "xml": {
+          "name": "LoginRequest"
         }
       },
       "RegisterRequest": {
@@ -461,6 +1439,9 @@
             "type": "string",
             "example": "Password123"
           }
+        },
+        "xml": {
+          "name": "RegisterRequest"
         }
       },
       "ForgotPasswordRequest": {
@@ -470,6 +1451,9 @@
             "type": "string",
             "example": "user@example.com"
           }
+        },
+        "xml": {
+          "name": "ForgotPasswordRequest"
         }
       },
       "ResetPasswordRequest": {
@@ -483,6 +1467,9 @@
             "type": "string",
             "example": "NewPassword123"
           }
+        },
+        "xml": {
+          "name": "ResetPasswordRequest"
         }
       },
       "RefreshTokenRequest": {
@@ -492,6 +1479,9 @@
             "type": "string",
             "example": "your_refresh_token_here"
           }
+        },
+        "xml": {
+          "name": "RefreshTokenRequest"
         }
       },
       "CreateUserRequest": {
@@ -531,6 +1521,9 @@
               "type": "string"
             }
           }
+        },
+        "xml": {
+          "name": "CreateUserRequest"
         }
       },
       "UpdateUserRequest": {
@@ -556,6 +1549,9 @@
             "type": "boolean",
             "example": true
           }
+        },
+        "xml": {
+          "name": "UpdateUserRequest"
         }
       },
       "ChangeActivationUserRequest": {
@@ -565,6 +1561,9 @@
             "type": "boolean",
             "example": true
           }
+        },
+        "xml": {
+          "name": "ChangeActivationUserRequest"
         }
       },
       "ListUserQuery": {
@@ -586,6 +1585,475 @@
             "type": "string",
             "example": "true"
           }
+        },
+        "xml": {
+          "name": "ListUserQuery"
+        }
+      },
+      "CreateInvestorRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "example": "uuid-of-existing-user"
+          },
+          "investor_type": {
+            "type": "string",
+            "example": "individual"
+          },
+          "status": {
+            "type": "string",
+            "example": "inactive"
+          },
+          "gender": {
+            "type": "string",
+            "example": "men"
+          },
+          "nik": {
+            "type": "string",
+            "example": "1234567890123456"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Investor No. 123, Jakarta"
+          },
+          "privy": {
+            "type": "string",
+            "example": "privy-id-optional"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+6281234567890"
+          },
+          "account_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "bank_name": {
+            "type": "string",
+            "example": "BCA"
+          },
+          "heir_name": {
+            "type": "string",
+            "example": "Jane Heir"
+          },
+          "heir_relationship": {
+            "type": "string",
+            "example": "Daughter"
+          },
+          "heir_nik": {
+            "type": "string",
+            "example": "9876543210987654"
+          },
+          "heir_address": {
+            "type": "string",
+            "example": "Jl. Heir No. 456, Jakarta"
+          },
+          "heir_account_number": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "heir_bank_name": {
+            "type": "string",
+            "example": "Mandiri"
+          },
+          "heir_phone": {
+            "type": "string",
+            "example": "+6289876543210"
+          }
+        },
+        "xml": {
+          "name": "CreateInvestorRequest"
+        }
+      },
+      "UpdateInvestorRequest": {
+        "type": "object",
+        "properties": {
+          "investor_type": {
+            "type": "string",
+            "example": "corporation"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "gender": {
+            "type": "string",
+            "example": "women"
+          },
+          "nik": {
+            "type": "string",
+            "example": "1234567890123456"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Updated Address No. 789"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+6281112223333"
+          },
+          "account_number": {
+            "type": "string",
+            "example": "9988776655"
+          },
+          "bank_name": {
+            "type": "string",
+            "example": "BNI"
+          }
+        },
+        "xml": {
+          "name": "UpdateInvestorRequest"
+        }
+      },
+      "UpdateInvestorStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "active"
+          }
+        },
+        "xml": {
+          "name": "UpdateInvestorStatusRequest"
+        }
+      },
+      "ListInvestorQuery": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 10
+          },
+          "search": {
+            "type": "string",
+            "example": "john"
+          },
+          "investor_type": {
+            "type": "string",
+            "example": "individual"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "gender": {
+            "type": "string",
+            "example": "men"
+          }
+        },
+        "xml": {
+          "name": "ListInvestorQuery"
+        }
+      },
+      "InvestorResponse": {
+        "type": "object",
+        "properties": {
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "user_id": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "investor_type": {
+            "type": "string",
+            "example": "individual"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "full_name": {
+            "type": "string",
+            "example": "John Doe Investor"
+          },
+          "gender": {
+            "type": "string",
+            "example": "men"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.investor@example.com"
+          },
+          "nik": {
+            "type": "string",
+            "example": "1234567890123456"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Investor No. 123, Jakarta"
+          },
+          "privy": {
+            "type": "string",
+            "example": "privy-id-optional"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+6281234567890"
+          },
+          "account_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "bank_name": {
+            "type": "string",
+            "example": "BCA"
+          },
+          "heir_name": {
+            "type": "string",
+            "example": "Jane Heir"
+          },
+          "heir_relationship": {
+            "type": "string",
+            "example": "Daughter"
+          },
+          "heir_nik": {
+            "type": "string",
+            "example": "9876543210987654"
+          },
+          "heir_address": {
+            "type": "string",
+            "example": "Jl. Heir No. 456, Jakarta"
+          },
+          "heir_account_number": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "heir_bank_name": {
+            "type": "string",
+            "example": "Mandiri"
+          },
+          "heir_phone": {
+            "type": "string",
+            "example": "+6289876543210"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "John"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Investor"
+              },
+              "email": {
+                "type": "string",
+                "example": "john.investor@example.com"
+              },
+              "is_active": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          },
+          "InvestorDocument": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "document_id": {
+                  "type": "string",
+                  "example": "uuid-doc-id"
+                },
+                "document_name": {
+                  "type": "string",
+                  "example": "KTP.pdf"
+                },
+                "storage_provider": {
+                  "type": "string",
+                  "example": "cloudflare"
+                },
+                "object_key": {
+                  "type": "string",
+                  "example": "documents/ktp.pdf"
+                },
+                "file_size_bytes": {
+                  "type": "number",
+                  "example": 1024000
+                },
+                "mime_type": {
+                  "type": "string",
+                  "example": "application/pdf"
+                },
+                "uploaded_at": {
+                  "type": "string",
+                  "example": "2024-01-01T00:00:00.000Z"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "InvestorResponse"
+        }
+      },
+      "UploadInvestorDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "document_name": {
+            "type": "string",
+            "example": "KTP.pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "file": {
+            "type": "string",
+            "example": "binary-file-data"
+          }
+        },
+        "xml": {
+          "name": "UploadInvestorDocumentRequest"
+        }
+      },
+      "InvestorDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "example": "uuid-doc-id"
+          },
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "document_name": {
+            "type": "string",
+            "example": "KTP.pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "object_key": {
+            "type": "string",
+            "example": "investor/uuid/uuid-KTP.pdf"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 1024000
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "xml": {
+          "name": "InvestorDocumentResponse"
+        }
+      },
+      "InvestorDocumentDownloadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "downloadUrl": {
+            "type": "string",
+            "example": "https://presigned-url-here"
+          },
+          "message": {
+            "type": "string",
+            "example": "URL download berhasil dibuat"
+          }
+        },
+        "xml": {
+          "name": "InvestorDocumentDownloadUrlResponse"
+        }
+      },
+      "ListInvestorDocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "document_id": {
+                  "type": "string",
+                  "example": "uuid-doc-id"
+                },
+                "investor_id": {
+                  "type": "string",
+                  "example": "uuid-investor-id"
+                },
+                "document_name": {
+                  "type": "string",
+                  "example": "KTP.pdf"
+                },
+                "storage_provider": {
+                  "type": "string",
+                  "example": "cloudflare"
+                },
+                "object_key": {
+                  "type": "string",
+                  "example": "investor/uuid/uuid-KTP.pdf"
+                },
+                "file_size_bytes": {
+                  "type": "number",
+                  "example": 1024000
+                },
+                "mime_type": {
+                  "type": "string",
+                  "example": "application/pdf"
+                },
+                "uploaded_at": {
+                  "type": "string",
+                  "example": "2024-01-01T00:00:00.000Z"
+                }
+              }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 10
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListInvestorDocumentsResponse"
         }
       }
     }

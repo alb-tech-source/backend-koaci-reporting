@@ -1,63 +1,26 @@
-import bcrypt from "bcrypt";
-
 import prisma from "../../src/lib/prisma.ts";
+
 /**
- * Seeder untuk User, Role, Permission, dan RolePermission
+ * Seeder untuk FORCE UPDATE Role & Permissions
+ *
+ * ⚠️  PERHATIAN: Seeder ini akan MENGHAPUS SEMUA role permissions
+ * dan me-recreate dengan mapping terbaru dari ROLE_PERMISSIONS.
  *
  * Schema flow:
- * User -> Role (1:1) -> RolePermission (many) -> Permission
+ * 1. Delete semua RolePermission entries
+ * 2. Create missing permissions (skip duplicates)
+ * 3. Re-link roles dengan permissions terbaru
  *
- * Role yang ada:
- * - user: User biasa (belum ada role spesifik)
- * - investor: Investor
- * - admin: Administrator
- * - superadmin: Super Administrator
- * - bod: Board of Directors
+ * Gunakan ini ketika:
+ * - Ada perubahan di ROLE_PERMISSIONS mapping
+ * - Ingin reset semua permissions ke default
+ * - Debugging permission issues
+ *
+ * Yang TIDAK akan dihapus:
+ * - Users (tetap ada)
+ * - Roles (tetap ada, hanya permissions yang di-reset)
+ * - Data lain (investors, documents, dll)
  */
-
-// Sample users to be created with their roles
-const SAMPLE_USERS = [
-  {
-    email: "bod@koaci.com",
-    firstname: "Board",
-    lastname: "Director",
-    password: "password123",
-    role: "bod",
-    isActive: true,
-  },
-  {
-    email: "superadmin@koaci.com",
-    firstname: "Super",
-    lastname: "Admin",
-    password: "password123",
-    role: "superadmin",
-    isActive: true,
-  },
-  {
-    email: "admin@koaci.com",
-    firstname: "Admin",
-    lastname: "Staff",
-    password: "password123",
-    role: "admin",
-    isActive: true,
-  },
-  {
-    email: "user@koaci.com",
-    firstname: "Regular",
-    lastname: "User",
-    password: "password123",
-    role: "user",
-    isActive: true,
-  },
-  {
-    email: "investor@koaci.com",
-    firstname: "Investor",
-    lastname: "One",
-    password: "password123",
-    role: "investor",
-    isActive: true,
-  },
-];
 
 // Available permissions
 const PERMISSIONS = {
@@ -167,12 +130,17 @@ const ROLE_PERMISSIONS = {
   ],
 };
 
-async function seedUsersAndPermissions() {
-  console.log("🌱 Starting User, Role & Permission seeding...");
+async function forceUpdatePermissions() {
+  console.log("🔄 Starting Force Update Role Permissions...\n");
 
   try {
-    // 1. Create Permissions
-    console.log("📝 Creating permissions...");
+    // STEP 1: Delete all existing role permissions
+    console.log("🗑️  STEP 1: Deleting ALL existing role permissions...");
+    const deletedCount = await prisma.rolePermission.deleteMany({});
+    console.log(`✅ Deleted ${deletedCount.count} role permission entries\n`);
+
+    // STEP 2: Create/update permissions
+    console.log("📝 STEP 2: Creating/updating permissions...");
     const permissionEntries = Object.entries(PERMISSIONS);
 
     await prisma.permission.createMany({
@@ -183,84 +151,36 @@ async function seedUsersAndPermissions() {
     });
 
     const allPermissions = await prisma.permission.findMany();
-    console.log(`✅ Created ${allPermissions.length} permissions`);
+    console.log(`✅ Total permissions in database: ${allPermissions.length}\n`);
 
-    // 2. Fetch permission IDs for linking
+    // STEP 3: Fetch permission IDs for linking
+    console.log("🔗 STEP 3: Linking permissions to roles...");
     const permissionMap = new Map(
       allPermissions.map((p) => [p.permission_key, p.permission_id]),
     );
 
-    // 3. Create Users with their Roles
-    console.log("👥 Creating users with roles...");
-    const createdRoles = [];
+    // STEP 4: Get all existing roles
+    console.log("👥 STEP 4: Fetching all existing roles...");
+    const allRoles = await prisma.role.findMany();
+    console.log(`✅ Found ${allRoles.length} roles in database\n`);
 
-    for (const userData of SAMPLE_USERS) {
-      // Check if user exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email: userData.email },
-      });
+    // STEP 5: Create RolePermissions for each role
+    console.log("🔗 STEP 5: Creating new role permissions...\n");
 
-      if (!existingUser) {
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
+    let totalLinked = 0;
+    const roleSummary: any = {};
 
-        const user = await prisma.user.create({
-          data: {
-            email: userData.email,
-            firstname: userData.firstname,
-            lastname: userData.lastname,
-            password: hashedPassword,
-            is_active: userData.isActive,
-          },
-        });
-
-        // Create Role for this user
-        const role = await prisma.role.create({
-          data: {
-            user_id: user.user_id,
-            role_name: userData.role as any,
-          },
-        });
-
-        createdRoles.push({ role, roleName: userData.role });
-        console.log(
-          `✅ Created user: ${userData.email} with role: ${userData.role}`,
-        );
-      } else {
-        // Check if user has role
-        const existingRole = await prisma.role.findUnique({
-          where: { user_id: existingUser.user_id },
-        });
-
-        if (existingRole) {
-          createdRoles.push({
-            role: existingRole,
-            roleName: existingRole.role_name,
-          });
-          console.log(`ℹ️  User already exists: ${userData.email}`);
-        } else {
-          // Create role for existing user
-          const role = await prisma.role.create({
-            data: {
-              user_id: existingUser.user_id,
-              role_name: userData.role as any,
-            },
-          });
-
-          createdRoles.push({ role, roleName: userData.role });
-          console.log(`✅ Created role for existing user: ${userData.email}`);
-        }
-      }
-    }
-
-    // 4. Create RolePermissions
-    console.log("🔗 Linking permissions to roles...");
-
-    for (const { role, roleName } of createdRoles) {
+    for (const role of allRoles) {
+      const roleName = role.role_name;
       const permissionKeys =
         ROLE_PERMISSIONS[roleName as keyof typeof ROLE_PERMISSIONS];
 
       if (!permissionKeys) {
         console.warn(`⚠️  No permissions defined for role: ${roleName}`);
+        roleSummary[roleName] = {
+          permissions: 0,
+          status: "No mapping defined",
+        };
         continue;
       }
 
@@ -283,23 +203,39 @@ async function seedUsersAndPermissions() {
         skipDuplicates: true,
       });
 
+      totalLinked += rolePermissionData.length;
+      roleSummary[roleName] = {
+        permissions: rolePermissionData.length,
+        status: "✅ Updated",
+      };
+
       console.log(
-        `✅ Linked ${rolePermissionData.length} permissions to role: ${roleName}`,
+        `✅ Role: ${String(roleName).padEnd(12)} → ${rolePermissionData.length} permissions linked`,
       );
     }
 
-    console.log("🎉 Seeding completed successfully!");
-    console.log("\n📊 Summary:");
-    console.log(`   - Permissions: ${allPermissions.length}`);
-    console.log(`   - Users created: ${SAMPLE_USERS.length}`);
-    console.log(`   - Roles created: ${createdRoles.length}`);
-
-    console.log("\n🔑 Test Accounts:");
-    SAMPLE_USERS.forEach((u) => {
-      console.log(`   - ${u.email} | ${u.password} | Role: ${u.role}`);
+    console.log("\n" + "=".repeat(50));
+    console.log("🎉 Force Update completed successfully!\n");
+    console.log("📊 Summary:");
+    console.log(`   - Total permissions: ${allPermissions.length}`);
+    console.log(`   - Total roles: ${allRoles.length}`);
+    console.log(`   - Total permissions linked: ${totalLinked}`);
+    console.log("\n📋 Role Details:");
+    Object.entries(roleSummary).forEach(([role, info]: [string, any]) => {
+      console.log(
+        `   - ${String(role).padEnd(12)}: ${info.permissions} permissions ${info.status}`,
+      );
     });
+
+    console.log("\n" + "=".repeat(50));
+    console.log("⚠️  IMPORTANT:");
+    console.log(
+      "   All role permissions have been reset to the latest mapping.",
+    );
+    console.log("   Users and roles remain unchanged.");
+    console.log("=".repeat(50));
   } catch (error) {
-    console.error("❌ Error during seeding:", error);
+    console.error("❌ Error during force update:", error);
     throw error;
   } finally {
     await prisma.$disconnect();
@@ -307,12 +243,27 @@ async function seedUsersAndPermissions() {
 }
 
 // Run seeder
-seedUsersAndPermissions()
-  .then(() => {
-    console.log("✅ Seeder completed");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error("❌ Seeder failed:", error);
-    process.exit(1);
-  });
+console.log("\n" + "⚠️ ".repeat(25));
+console.log("⚠️  FORCE UPDATE PERMISSIONS SEEDER");
+console.log("⚠️ ".repeat(25));
+console.log(
+  "\n⚠️  WARNING: This will DELETE ALL role permissions and recreate them!",
+);
+console.log(
+  "⚠️  Make sure you have the correct ROLE_PERMISSIONS mapping in this file.",
+);
+console.log("\n" + "⚠️ ".repeat(25) + "\n");
+
+// Tunggu 3 detik sebelum proceed (gives time to cancel)
+setTimeout(() => {
+  console.log("⏳ Proceeding with force update...\n");
+  forceUpdatePermissions()
+    .then(() => {
+      console.log("\n✅ Force update completed");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("\n❌ Force update failed:", error);
+      process.exit(1);
+    });
+}, 3000);

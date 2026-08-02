@@ -10,7 +10,7 @@ export const createUserSchema = z.object({
     .max(50)
     .optional(),
   is_active: z.boolean().optional().default(false),
-  role_name: z.enum(["bod", "admin", "investor"]),
+  role_name: z.enum(["user", "investor", "admin", "superadmin", "bod"]),
   permission_ids: z.array(z.string().uuid()).optional().default([]),
 });
 
