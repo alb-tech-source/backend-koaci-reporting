@@ -23,6 +23,11 @@ const envSchema = zod.object({
   R2_ACCESS_KEY_ID: zod.string(),
   R2_SECRET_ACCESS_KEY: zod.string(),
   R2_BUCKET_NAME: zod.string(),
+  GOOGLE_CLIENT_ID: zod.string(),
+  GOOGLE_CLIENT_SECRET: zod.string(),
+  GOOGLE_REDIRECT_URL: zod.string(),
+  CLIENT_URL: zod.string(),
+  SESSION_SECRET: zod.string(),
 });
 
 export const env = envSchema.parse(process.env);

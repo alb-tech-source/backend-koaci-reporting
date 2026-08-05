@@ -9,6 +9,7 @@ import {
 } from "./auth.validation.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
+import { env } from "../../config/env.js";
 
 /**
  * Auth Controller
@@ -64,6 +65,31 @@ export const authController = {
           tokens: result.tokens,
         },
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Login user with google
+   * POST /api/auth/google
+   */
+  async googleLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const userId = (req.user as any)?.user_id;
+
+    try {
+      // Login user
+      const result = await authService.googleLogin(userId);
+
+      return res.redirect(
+        `${env.CLIENT_URL}/auth/callback?` +
+          `access_token=${result.tokens.accessToken}&` +
+          `refresh_token=${result.tokens.refreshToken}`,
+      );
     } catch (error) {
       next(error);
     }
@@ -169,7 +195,7 @@ export const authController = {
   ): Promise<void> {
     try {
       // User info from auth middleware
-      const userId = req.user?.userId;
+      const userId = (req.user as any)?.user_id;
 
       if (!userId) {
         throw new ApiError(401, "User tidak terautentikasi");
@@ -228,7 +254,7 @@ export const authController = {
    */
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = (req.user as any)?.user_id;
 
       if (!userId) {
         throw new ApiError(401, "User tidak terautentikasi");

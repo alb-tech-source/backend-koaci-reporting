@@ -43,6 +43,7 @@ enum StorageProvider {
 
 model User {
   user_id             String    @id @default(uuid())
+  googleId            String?
   firstname           String?
   lastname            String?
   email               String    @unique

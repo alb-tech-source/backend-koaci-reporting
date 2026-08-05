@@ -5,12 +5,30 @@ import cors from "cors";
 import routes from "./routes/index.route.js";
 import { smtpConnection } from "./config/mailer.js";
 import docs from "./docs/route.js";
+import passport from "./config/passport.js";
+import session from "express-session";
 
 const app: Express = express();
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(
+  session({
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true, // wajib true, karena state disimpan sebelum user login
+    cookie: {
+      maxAge: 1000 * 60 * 5, // 5 menit cukup, cuma buat handshake
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+    },
+  }),
+);
+
+// Passport must be initialized before routes that use passport.authenticate().
+app.use(passport.initialize());
 
 app.get("/", (req, res) => {
   res.json({

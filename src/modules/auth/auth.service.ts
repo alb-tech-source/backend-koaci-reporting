@@ -90,7 +90,7 @@ export const authService = {
     const tokens = generateTokens({
       userId: user.user_id,
       email: user.email,
-      role: user.role?.role_name ?? "investor", // default role dengan akses paling terbatas
+      role: user.role?.role_name ?? "user", // default role dengan akses paling terbatas
       permissions: permissions,
     });
 
@@ -100,6 +100,51 @@ export const authService = {
     });
 
     return { user: toSafeUser(user), tokens };
+  },
+
+  async googleLogin(user_id: string) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { user_id: user_id },
+        include: {
+          role: {
+            include: {
+              rolePermissions: {
+                include: {
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        throw new ApiError(401, "Credential anda belum tervalidasi");
+      }
+
+      // Extract permissions from role
+      const permissions =
+        user.role?.rolePermissions?.map(
+          (rp: any) => rp.permission.permission_key,
+        ) ?? [];
+
+      const tokens = generateTokens({
+        userId: user.user_id,
+        email: user.email,
+        role: user.role?.role_name ?? "user", // default role dengan akses paling terbatas
+        permissions: permissions,
+      });
+
+      await prisma.user.update({
+        where: { user_id: user.user_id },
+        data: { last_login_at: new Date() },
+      });
+
+      return { user: toSafeUser(user), tokens };
+    } catch (err) {
+      throw new ApiError(401, `Gagal validasi google ${err}`);
+    }
   },
 
   async refreshAccessToken(refreshToken: string): Promise<AuthTokens> {
