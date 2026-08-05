@@ -79,7 +79,9 @@ export const authController = {
     res: Response,
     next: NextFunction,
   ): Promise<void> {
-    const userId = req.authUser?.userId;
+    // Passport may attach user with different shape; coerce to any to read user_id or id
+    const userObj: any = req.user;
+    const userId = userObj?.user_id ?? userObj?.id;
 
     try {
       // Validate user ID

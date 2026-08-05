@@ -23,7 +23,7 @@ declare global {
 export const authMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
@@ -63,7 +63,7 @@ export const authMiddleware = async (
  */
 export const requirePermission = (
   requiredPermissions: string[],
-  requireAll: boolean = false
+  requireAll: boolean = false,
 ) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
@@ -81,7 +81,7 @@ export const requirePermission = (
       if (!hasPermission) {
         throw new ApiError(
           403,
-          `Anda tidak memiliki izin: ${requiredPermissions.join(", ")}`
+          `Anda tidak memiliki izin: ${requiredPermissions.join(", ")}`,
         );
       }
 
@@ -111,7 +111,7 @@ export const requireRole = (allowedRoles: string[]) => {
       if (!allowedRoles.includes(req.authUser.role)) {
         throw new ApiError(
           403,
-          `Anda tidak memiliki akses. Role required: ${allowedRoles.join(", ")}`
+          `Anda tidak memiliki akses. Role required: ${allowedRoles.join(", ")}`,
         );
       }
 
@@ -136,7 +136,7 @@ export const requireRole = (allowedRoles: string[]) => {
 export const requireRoleAndPermission = (
   allowedRoles: string[],
   requiredPermissions: string[],
-  requireAll: boolean = false
+  requireAll: boolean = false,
 ) => {
   return [
     requireRole(allowedRoles),
