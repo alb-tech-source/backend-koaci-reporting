@@ -79,9 +79,14 @@ export const authController = {
     res: Response,
     next: NextFunction,
   ): Promise<void> {
-    const userId = (req.user as any)?.user_id;
+    const userId = req.authUser?.userId;
 
     try {
+      // Validate user ID
+      if (!userId) {
+        throw new ApiError(401, "User ID tidak ditemukan dalam token");
+      }
+
       // Login user
       const result = await authService.googleLogin(userId);
 
@@ -195,7 +200,7 @@ export const authController = {
   ): Promise<void> {
     try {
       // User info from auth middleware
-      const userId = (req.user as any)?.user_id;
+      const userId = req.authUser?.userId;
 
       if (!userId) {
         throw new ApiError(401, "User tidak terautentikasi");
@@ -254,7 +259,7 @@ export const authController = {
    */
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = (req.user as any)?.user_id;
+      const userId = req.authUser?.userId;
 
       if (!userId) {
         throw new ApiError(401, "User tidak terautentikasi");

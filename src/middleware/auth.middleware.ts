@@ -5,12 +5,13 @@ import { ApiError } from "../utils/apiError.js";
 import type { JwtPayload } from "../types/auth.types.js";
 
 /**
- * Extend Express Request type to include user info
+ * Extend Express Request type to include authenticated user info
+ * Note: Using 'authUser' instead of 'user' to avoid conflict with Express's built-in User type
  */
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload;
+      authUser?: JwtPayload;
     }
   }
 }
@@ -41,7 +42,7 @@ export const authMiddleware = async (
     }
 
     // Attach user info to request
-    req.user = decoded;
+    req.authUser = decoded;
     next();
   } catch (error) {
     next(error);
@@ -66,11 +67,11 @@ export const requirePermission = (
 ) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
-      if (!req.user) {
+      if (!req.authUser) {
         throw new ApiError(401, "User tidak terautentikasi");
       }
 
-      const userPermissions = req.user.permissions || [];
+      const userPermissions = req.authUser.permissions || [];
 
       // Check if user has required permissions
       const hasPermission = requireAll
@@ -103,11 +104,11 @@ export const requirePermission = (
 export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
-      if (!req.user) {
+      if (!req.authUser) {
         throw new ApiError(401, "User tidak terautentikasi");
       }
 
-      if (!allowedRoles.includes(req.user.role)) {
+      if (!allowedRoles.includes(req.authUser.role)) {
         throw new ApiError(
           403,
           `Anda tidak memiliki akses. Role required: ${allowedRoles.join(", ")}`
