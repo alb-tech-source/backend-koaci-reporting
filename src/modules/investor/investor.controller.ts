@@ -3,10 +3,31 @@ import { investorService } from "./investor.service.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { ApiResponse } from "../../utils/apiResponse.js";
 import type { ListInvestorQuery } from "../../types/investor.types.js";
+import { activityLogService } from "../activityLog/activityLog.service.js";
 
 export const investorController = {
   create: asyncHandler(async (req: Request, res: Response) => {
     const investor = await investorService.createInvestor(req.body);
+
+    // Log investor creation
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "INVESTOR_CREATE",
+        entityType: "Investor",
+        entityId: investor.investor_id,
+        description: `Investor ${investor.nik} berhasil dibuat oleh ${req.authUser!.email}`,
+        metadata: {
+          createdInvestor: {
+            investorId: investor.investor_id,
+            nik: investor.nik,
+            investorType: investor.investor_type,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log investor creation:", err));
 
     return ApiResponse(res, 201, {
       investor,
@@ -54,10 +75,28 @@ export const investorController = {
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
-    const investor = await investorService.updateInvestor(
-      req.params.id as string,
-      req.body,
-    );
+    const investor = await investorService.updateInvestor(req.params.id as string, req.body);
+
+    // Log investor update
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "INVESTOR_UPDATE",
+        entityType: "Investor",
+        entityId: investor.investor_id,
+        description: `Investor ${investor.nik} berhasil diupdate oleh ${req.authUser!.email}`,
+        metadata: {
+          updatedInvestor: {
+            investorId: investor.investor_id,
+            nik: investor.nik,
+            changes: req.body,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log investor update:", err));
+
     return ApiResponse(res, 200, {
       investor,
       message: "Investor berhasil diupdate",
@@ -66,10 +105,29 @@ export const investorController = {
 
   updateStatus: asyncHandler(async (req: Request, res: Response) => {
     const { status } = req.body;
-    const investor = await investorService.updateInvestorStatus(
-      req.params.id as string,
-      status,
-    );
+    const investor = await investorService.updateInvestorStatus(req.params.id as string, status);
+
+    // Log investor status change
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "INVESTOR_STATUS_CHANGE",
+        entityType: "Investor",
+        entityId: investor.investor_id,
+        description: `Status investor ${investor.nik} berhasil diubah ke ${status} oleh ${req.authUser!.email}`,
+        metadata: {
+          investor: {
+            investorId: investor.investor_id,
+            nik: investor.nik,
+            oldStatus: investor.status,
+            newStatus: status,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log investor status change:", err));
+
     return ApiResponse(res, 200, {
       investor,
       message: "Status investor berhasil diupdate",
@@ -77,7 +135,33 @@ export const investorController = {
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
-    await investorService.deleteInvestor(req.params.id as string);
+    const investorId = req.params.id as string;
+
+    // Get investor info before deletion for logging
+    const investor = await investorService.getInvestorById(investorId);
+
+    await investorService.deleteInvestor(investorId);
+
+    // Log investor deletion
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "INVESTOR_DELETE",
+        entityType: "Investor",
+        entityId: investorId,
+        description: `Investor ${investor.nik} berhasil dihapus oleh ${req.authUser!.email}`,
+        metadata: {
+          deletedInvestor: {
+            investorId: investor.investor_id,
+            nik: investor.nik,
+            investorType: investor.investor_type,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log investor deletion:", err));
+
     return ApiResponse(res, 200, "Investor berhasil dihapus permanen");
   }),
 };

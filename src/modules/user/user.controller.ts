@@ -7,10 +7,32 @@ import type {
   UpdateUserInput,
   ListUserQuery,
 } from "../../types/user.types.js";
+import { activityLogService } from "../activityLog/activityLog.service.js";
 
 export const userController = {
   create: asyncHandler(async (req: Request, res: Response) => {
     const { user, temporaryPassword } = await userService.createUser(req.body);
+
+    // Log user creation
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "USER_CREATE",
+        entityType: "User",
+        entityId: user.user_id,
+        description: `User ${user.email} berhasil dibuat oleh ${req.authUser!.email}`,
+        metadata: {
+          createdUser: {
+            userId: user.user_id,
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log user creation:", err));
 
     return ApiResponse(res, 201, {
       user,
@@ -48,29 +70,117 @@ export const userController = {
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.updateUser(
-      req.params.id as string,
-      req.body,
-    );
+    const user = await userService.updateUser(req.params.id as string, req.body);
+
+    // Log user update
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "USER_UPDATE",
+        entityType: "User",
+        entityId: user.user_id,
+        description: `User ${user.email} berhasil diupdate oleh ${req.authUser!.email}`,
+        metadata: {
+          updatedUser: {
+            userId: user.user_id,
+            email: user.email,
+            changes: req.body,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log user update:", err));
+
     return ApiResponse(res, 200, user);
   }),
 
   changeActivation: asyncHandler(async (req: Request, res: Response) => {
     const { isActive } = req.body ? req.body : undefined;
-    const user = await userService.changeUserActivation(
-      req.params.id as string,
-      isActive,
-    );
+    const user = await userService.changeUserActivation(req.params.id as string, isActive);
+
+    // Log user activation/deactivation
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: isActive ? "USER_ACTIVATE" : "USER_DEACTIVATE",
+        entityType: "User",
+        entityId: user.user_id,
+        description: `User ${user.email} berhasil ${isActive ? "diaktifkan" : "dinonaktifkan"} oleh ${req.authUser!.email}`,
+        metadata: {
+          targetUser: {
+            userId: user.user_id,
+            email: user.email,
+            isActive: user.is_active,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log user activation change:", err));
+
     return ApiResponse(res, 200, user);
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
-    await userService.deleteUser(req.params.id as string);
+    const userId = req.params.id as string;
+
+    // Get user info before deletion for logging
+    const user = await userService.getUserById(userId);
+
+    await userService.deleteUser(userId);
+
+    // Log user deletion
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "USER_DELETE",
+        entityType: "User",
+        entityId: userId,
+        description: `User ${user.email} berhasil dihapus oleh ${req.authUser!.email}`,
+        metadata: {
+          deletedUser: {
+            userId: user.user_id,
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log user deletion:", err));
+
     return ApiResponse(res, 200, "User berhasil dihapus permanen");
   }),
 
   resetPassword: asyncHandler(async (req: Request, res: Response) => {
-    const result = await userService.resetPasswordUser(req.params.id as string);
+    const userId = req.params.id as string;
+
+    // Get user info before password reset for logging
+    const user = await userService.getUserById(userId);
+
+    const result = await userService.resetPasswordUser(userId);
+
+    // Log password reset
+    await activityLogService
+      .logActivity({
+        userId: req.authUser!.userId,
+        action: "USER_RESET_PASSWORD",
+        entityType: "User",
+        entityId: userId,
+        description: `Password user ${user.email} berhasil direset oleh ${req.authUser!.email}`,
+        metadata: {
+          targetUser: {
+            userId: user.user_id,
+            email: user.email,
+          },
+        },
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      })
+      .catch((err) => console.error("Failed to log password reset:", err));
+
     return ApiResponse(res, 200, result);
   }),
 };

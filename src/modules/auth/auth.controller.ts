@@ -10,6 +10,7 @@ import {
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
 import { env } from "../../config/env.js";
+import { activityLogService } from "../activityLog/activityLog.service.js";
 
 /**
  * Auth Controller
@@ -57,6 +58,17 @@ export const authController = {
       // Login user
       const result = await authService.login(validatedData);
 
+      // Log successful login
+      await activityLogService.logActivity({
+        userId: result.user.user_id,
+        action: "LOGIN_SUCCESS",
+        entityType: "User",
+        entityId: result.user.user_id,
+        description: `User ${result.user.email} berhasil login`,
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      }).catch((err) => console.error("Failed to log login:", err));
+
       res.status(200).json({
         success: true,
         message: "Login berhasil",
@@ -66,6 +78,20 @@ export const authController = {
         },
       });
     } catch (error) {
+      // Log failed login attempt
+      if (error instanceof ApiError && error.statusCode === 401) {
+        await activityLogService
+          .logActivity({
+            userId: "anonymous",
+            action: "LOGIN_FAILED",
+            entityType: "User",
+            entityId: req.body.email || "unknown",
+            description: `Gagal login untuk email ${req.body.email}`,
+            ipAddress: req.ip || req.socket.remoteAddress,
+            userAgent: req.get("user-agent"),
+          })
+          .catch((err) => console.error("Failed to log failed login:", err));
+      }
       next(error);
     }
   },
@@ -74,11 +100,7 @@ export const authController = {
    * Login user with google
    * POST /api/auth/google
    */
-  async googleLogin(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
+  async googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
     // Passport may attach user with different shape; coerce to any to read user_id or id
     const userObj: any = req.user;
     const userId = userObj?.user_id ?? userObj?.id;
@@ -91,6 +113,20 @@ export const authController = {
 
       // Login user
       const result = await authService.googleLogin(userId);
+
+      // Log successful Google login
+      await activityLogService
+        .logActivity({
+          userId: result.user.user_id,
+          action: "LOGIN_SUCCESS",
+          entityType: "User",
+          entityId: result.user.user_id,
+          description: `User ${result.user.email} berhasil login melalui Google OAuth`,
+          metadata: { method: "Google OAuth" },
+          ipAddress: req.ip || req.socket.remoteAddress,
+          userAgent: req.get("user-agent"),
+        })
+        .catch((err) => console.error("Failed to log Google login:", err));
 
       return res.redirect(
         `${env.CLIENT_URL}/auth/callback?` +
@@ -262,10 +298,24 @@ export const authController = {
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.authUser?.userId;
+      const userEmail = req.authUser?.email;
 
       if (!userId) {
         throw new ApiError(401, "User tidak terautentikasi");
       }
+
+      // Log logout activity
+      await activityLogService
+        .logActivity({
+          userId: userId,
+          action: "LOGOUT",
+          entityType: "User",
+          entityId: userId,
+          description: `User ${userEmail} berhasil logout`,
+          ipAddress: req.ip || req.socket.remoteAddress,
+          userAgent: req.get("user-agent"),
+        })
+        .catch((err) => console.error("Failed to log logout:", err));
 
       // Update last logout time (optional, for audit purposes)
       // const prisma = await import("../../lib/prisma").then((m) => m.default);

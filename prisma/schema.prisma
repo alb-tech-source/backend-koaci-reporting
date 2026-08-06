@@ -41,6 +41,25 @@ enum StorageProvider {
   aws
 }
 
+enum ActivityAction {
+  USER_CREATE
+  USER_UPDATE
+  USER_DELETE
+  USER_ACTIVATE
+  USER_DEACTIVATE
+  USER_RESET_PASSWORD
+  INVESTOR_CREATE
+  INVESTOR_UPDATE
+  INVESTOR_DELETE
+  INVESTOR_STATUS_CHANGE
+  DOCUMENT_UPLOAD
+  DOCUMENT_DELETE
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  ROLE_CHANGE
+}
+
 model User {
   user_id             String    @id @default(uuid())
   googleId            String?
@@ -57,16 +76,37 @@ model User {
 
   role                Role?
   investor            Investor?
+  activityLogs        ActivityLog[]
 }
 
 model Role {
   role_id   String   @id @default(uuid())
-  user_id   String   @unique          
+  user_id   String   @unique
   role_name RoleName
 
   user      User     @relation(fields: [user_id], references: [user_id])
-  
+
   rolePermissions RolePermission[]
+}
+
+model ActivityLog {
+  activity_id      String         @id @default(uuid())
+  user_id          String
+  action           ActivityAction
+  entity_type      String         // "User", "Investor", "InvestorDocument", etc.
+  entity_id        String         // ID dari entity yang di-affected
+  description      String         // Deskripsi human-readable
+  metadata         Json?          // Additional data (before/after changes, IP, etc)
+  ip_address       String?
+  user_agent       String?
+  timestamp        DateTime       @default(now())
+
+  user             User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([action])
+  @@index([entity_type, entity_id])
+  @@index([timestamp])
 }
 
 model Permission {
