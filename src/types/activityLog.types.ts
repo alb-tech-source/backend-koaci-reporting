@@ -20,7 +20,10 @@ export type ActivityAction =
   | "LOGIN_SUCCESS"
   | "LOGIN_FAILED"
   | "LOGOUT"
-  | "ROLE_CHANGE";
+  | "ROLE_CHANGE"
+  | "PERMISSION_CREATE"
+  | "PERMISSION_UPDATE"
+  | "PERMISSION_DELETE";
 
 /**
  * Activity Log Input
