@@ -252,7 +252,9 @@ export const userService = {
       prisma.rolePermission.deleteMany({
         where: { role_id: existingUser.role?.role_id || "" },
       }),
-      prisma.role.delete({ where: { user_id: userId } }),
+      prisma.role.deleteMany({
+        where: { user_id: userId },
+      }),
       prisma.user.delete({ where: { user_id: userId } }),
     ]);
   },
