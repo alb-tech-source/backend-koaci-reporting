@@ -112,10 +112,30 @@
           "Auth"
         ],
         "summary": "Request password reset email",
-        "description": "",
+        "description": "Request password reset email. Note: Users registered via Google OAuth cannot reset password through this system and must use Google OAuth for authentication.",
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden - Google user cannot reset password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -136,10 +156,30 @@
           "Auth"
         ],
         "summary": "Reset password with token",
-        "description": "",
+        "description": "Reset password using token received from forgot-password email. Note: Users registered via Google OAuth cannot reset password through this system and must use Google OAuth for authentication.",
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden - Google user cannot reset password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -208,6 +248,69 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/auth/send-verify-email": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Send Email Verification",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailVerification"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/verify-email": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Verify Email with Token",
+        "description": "",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Email verification token from email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/auth/google": {
@@ -361,7 +464,7 @@
           "User"
         ],
         "summary": "Create new user",
-        "description": "",
+        "description": "Create new user with role and permissions. Role Restriction: Admin users cannot create users with SuperAdmin role.",
         "parameters": [
           {
             "name": "authorization",
@@ -372,8 +475,25 @@
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "403": {
+            "description": "Forbidden - Role elevation not allowed or insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -435,7 +555,7 @@
           "User"
         ],
         "summary": "Update user by ID",
-        "description": "",
+        "description": "Update user data. Use flat format with role_name and permission_ids. Important: When email is changed, email_verified will be reset to false and the user must verify the new email. Note: Users registered via Google OAuth can only update role, permissions, and is_active fields. Personal data (firstname, lastname, email, password) cannot be modified for Google users. Role Restriction: Admin users cannot elevate other users to SuperAdmin role.",
         "parameters": [
           {
             "name": "id",
@@ -456,8 +576,57 @@
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User berhasil diupdate"
+                    },
+                    "requiresEmailVerification": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/UserResponse"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Role elevation not allowed or insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -481,7 +650,7 @@
           "User"
         ],
         "summary": "Delete user by ID",
-        "description": "",
+        "description": "Delete user by ID. Role Restriction: Only SuperAdmin can delete users with BOD or SuperAdmin roles. Other roles cannot delete these protected users.",
         "parameters": [
           {
             "name": "id",
@@ -502,8 +671,25 @@
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "403": {
+            "description": "Forbidden - Attempting to delete protected role or insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Hanya SuperAdmin yang dapat menghapus user dengan role bod. User dengan role admin tidak memiliki izin untuk user ini."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2571,6 +2757,18 @@
           "name": "ForgotPasswordRequest"
         }
       },
+      "SendEmailVerification": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          }
+        },
+        "xml": {
+          "name": "SendEmailVerification"
+        }
+      },
       "ResetPasswordRequest": {
         "type": "object",
         "properties": {
@@ -2663,10 +2861,217 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "role_name": {
+            "type": "string",
+            "example": "admin"
+          },
+          "permission_ids": {
+            "type": "array",
+            "example": [
+              "uuid-permission-1",
+              "uuid-permission-2",
+              "uuid-permission-3"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "xml": {
           "name": "UpdateUserRequest"
+        }
+      },
+      "UpdateGoogleUserRequest": {
+        "type": "object",
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "role_name": {
+            "type": "string",
+            "example": "investor"
+          },
+          "permission_ids": {
+            "type": "array",
+            "example": [
+              "uuid-permission-1",
+              "uuid-permission-2"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "xml": {
+          "name": "UpdateGoogleUserRequest"
+        }
+      },
+      "AdminElevationForbiddenResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini."
+          }
+        },
+        "xml": {
+          "name": "AdminElevationForbiddenResponse"
+        }
+      },
+      "GoogleUserPasswordResetForbidden": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+          }
+        },
+        "xml": {
+          "name": "GoogleUserPasswordResetForbidden"
+        }
+      },
+      "UpdateUserResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "User berhasil diupdate"
+          },
+          "requiresEmailVerification": {
+            "type": "boolean",
+            "example": false
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "uuid-user-id"
+                  },
+                  "firstname": {
+                    "type": "string",
+                    "example": "Jane"
+                  },
+                  "lastname": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "jane.doe@example.com"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "email_verified": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "role": {
+                    "type": "object",
+                    "properties": {
+                      "role_id": {
+                        "type": "string",
+                        "example": "uuid-role-id"
+                      },
+                      "role_name": {
+                        "type": "string",
+                        "example": "admin"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "UpdateUserResponse"
+        }
+      },
+      "UpdateUserEmailChangedResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Email telah diubah. User perlu memverifikasi email baru melalui endpoint /api/auth/send-verify-email"
+          },
+          "requiresEmailVerification": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "uuid-user-id"
+                  },
+                  "firstname": {
+                    "type": "string",
+                    "example": "Jane"
+                  },
+                  "lastname": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "jane.new@example.com"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "email_verified": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "role": {
+                    "type": "object",
+                    "properties": {
+                      "role_id": {
+                        "type": "string",
+                        "example": "uuid-role-id"
+                      },
+                      "role_name": {
+                        "type": "string",
+                        "example": "admin"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "UpdateUserEmailChangedResponse"
         }
       },
       "ChangeActivationUserRequest": {

@@ -49,6 +49,9 @@ const doc = {
       ForgotPasswordRequest: {
         email: "user@example.com",
       },
+      SendEmailVerification: {
+        email: "user@example.com",
+      },
       ResetPasswordRequest: {
         token: "reset_token_here",
         newPassword: "NewPassword123",
@@ -71,6 +74,59 @@ const doc = {
         email: "jane.doe@example.com",
         password: "NewPassword123",
         is_active: true,
+        role_name: "admin",
+        permission_ids: ["uuid-permission-1", "uuid-permission-2", "uuid-permission-3"],
+      },
+      UpdateGoogleUserRequest: {
+        is_active: true,
+        role_name: "investor",
+        permission_ids: ["uuid-permission-1", "uuid-permission-2"],
+      },
+      AdminElevationForbiddenResponse: {
+        success: false,
+        message: "Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini."
+      },
+      GoogleUserPasswordResetForbidden: {
+        success: false,
+        message: "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+      },
+      UpdateUserResponse: {
+        success: true,
+        message: "User berhasil diupdate",
+        requiresEmailVerification: false,
+        data: {
+          user: {
+            user_id: "uuid-user-id",
+            firstname: "Jane",
+            lastname: "Doe",
+            email: "jane.doe@example.com",
+            is_active: true,
+            email_verified: false,
+            role: {
+              role_id: "uuid-role-id",
+              role_name: "admin"
+            }
+          }
+        }
+      },
+      UpdateUserEmailChangedResponse: {
+        success: true,
+        message: "Email telah diubah. User perlu memverifikasi email baru melalui endpoint /api/auth/send-verify-email",
+        requiresEmailVerification: true,
+        data: {
+          user: {
+            user_id: "uuid-user-id",
+            firstname: "Jane",
+            lastname: "Doe",
+            email: "jane.new@example.com",
+            is_active: true,
+            email_verified: false,
+            role: {
+              role_id: "uuid-role-id",
+              role_name: "admin"
+            }
+          }
+        }
       },
       ChangeActivationUserRequest: {
         isActive: true,

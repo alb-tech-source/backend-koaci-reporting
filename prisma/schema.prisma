@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,12 +6,112 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  user_id             String        @id @default(uuid())
+  firstname           String?
+  lastname            String?
+  email               String        @unique
+  password            String
+  reset_token         String?
+  reset_token_expires DateTime?
+  is_active           Boolean       @default(false)
+  last_login_at       DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  googleId            String?
+  activityLogs        ActivityLog[]
+  investor            Investor?
+  role                Role?
+  email_verified      Boolean     @default(false)
+  email_verification_token  String?
+  email_verification_expires  String?
+}
+
+model Role {
+  role_id         String           @id @default(uuid())
+  user_id         String           @unique
+  role_name       RoleName
+  user            User             @relation(fields: [user_id], references: [user_id])
+  rolePermissions RolePermission[]
+}
+
+model ActivityLog {
+  activity_id String         @id @default(uuid())
+  user_id     String
+  action      ActivityAction
+  entity_type String
+  entity_id   String
+  description String
+  metadata    Json?
+  ip_address  String?
+  user_agent  String?
+  timestamp   DateTime       @default(now())
+  user        User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([action])
+  @@index([entity_type, entity_id])
+  @@index([timestamp])
+}
+
+model Permission {
+  permission_id   String           @id @default(uuid())
+  permission_key  String           @unique
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  role_id       String
+  permission_id String
+  permission    Permission @relation(fields: [permission_id], references: [permission_id])
+  role          Role       @relation(fields: [role_id], references: [role_id])
+
+  @@id([role_id, permission_id])
+}
+
+model Investor {
+  investor_id         String             @id @default(uuid())
+  user_id             String             @unique
+  investor_type       InvestorType
+  status              InvestorStatus     @default(inactive)
+  gender              Gender
+  nik                 String
+  address             String
+  privy               String?
+  phone               String
+  account_number      String
+  bank_name           String
+  heir_name           String?
+  heir_relationship   String?
+  heir_nik            String?
+  heir_address        String?
+  heir_account_number String?
+  heir_bank_name      String?
+  heir_phone          String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  user                User               @relation(fields: [user_id], references: [user_id])
+  InvestorDocument    InvestorDocument[]
+}
+
+model InvestorDocument {
+  document_id      String          @id @default(uuid())
+  investor_id      String
+  document_name    String
+  storage_provider StorageProvider @default(cloudflare)
+  object_key       String
+  file_size_bytes  BigInt?
+  mime_type        String?
+  uploaded_at      DateTime        @default(now())
+  investor         Investor        @relation(fields: [investor_id], references: [investor_id])
+}
+
 enum RoleName {
-  user
-  investor
-  admin
-  superadmin
   bod
+  admin
+  investor
+  user
+  superadmin
 }
 
 enum InvestorType {
@@ -62,110 +157,3 @@ enum ActivityAction {
   PERMISSION_UPDATE
   PERMISSION_DELETE
 }
-
-model User {
-  user_id             String    @id @default(uuid())
-  googleId            String?
-  firstname           String?
-  lastname            String?
-  email               String    @unique
-  password            String
-  reset_token         String?
-  reset_token_expires DateTime?
-  is_active           Boolean   @default(false)
-  last_login_at       DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  role                Role?
-  investor            Investor?
-  activityLogs        ActivityLog[]
-}
-
-model Role {
-  role_id   String   @id @default(uuid())
-  user_id   String   @unique
-  role_name RoleName
-
-  user      User     @relation(fields: [user_id], references: [user_id])
-
-  rolePermissions RolePermission[]
-}
-
-model ActivityLog {
-  activity_id      String         @id @default(uuid())
-  user_id          String
-  action           ActivityAction
-  entity_type      String         // "User", "Investor", "InvestorDocument", etc.
-  entity_id        String         // ID dari entity yang di-affected
-  description      String         // Deskripsi human-readable
-  metadata         Json?          // Additional data (before/after changes, IP, etc)
-  ip_address       String?
-  user_agent       String?
-  timestamp        DateTime       @default(now())
-
-  user             User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
-  @@index([action])
-  @@index([entity_type, entity_id])
-  @@index([timestamp])
-}
-
-model Permission {
-  permission_id   String    @id @default(uuid())
-  permission_key  String
-
-  rolePermissions RolePermission[]
-}
-
-model RolePermission {
-  role_id       String
-  permission_id String
-
-  role       Role       @relation(fields: [role_id], references: [role_id])
-  permission Permission @relation(fields: [permission_id], references: [permission_id])
-
-  @@id([role_id, permission_id])   // composite primary key, wajib biar model valid
-}
-
-model Investor {
-  investor_id       String  @id @default(uuid())
-  user_id           String  @unique
-  investor_type     InvestorType
-  status            InvestorStatus @default(inactive)
-  gender            Gender
-  nik               String
-  address           String
-  privy             String?
-  phone             String
-  account_number    String
-  bank_name         String
-  heir_name         String?
-  heir_relationship String?
-  heir_nik          String?
-  heir_address      String?
-  heir_account_number   String?
-  heir_bank_name    String?
-  heir_phone        String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  user              User     @relation(fields: [user_id], references: [user_id])
-
-  InvestorDocument  InvestorDocument[]
-}
-
-model InvestorDocument {
-  document_id       String   @id  @default(uuid())
-  investor_id       String
-  document_name     String     
-  storage_provider  StorageProvider  @default(cloudflare)
-  object_key        String
-  file_size_bytes   BigInt?
-  mime_type         String?
-  uploaded_at       DateTime  @default(now())
-
-  investor          Investor  @relation(fields: [investor_id], references: [investor_id])
-}
-

@@ -16,14 +16,28 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = z
   .object({
-    firstname: z.string().min(1).max(50),
-    lastname: z.string().min(1).max(50),
+    firstname: z.string().min(1).max(50).optional(),
+    lastname: z.string().min(1).max(50).optional(),
     email: z.email("Format email tidak valid").optional(),
-    password: z.string().min(8).optional(),
+    password: z.string().min(8).max(50).optional(),
     is_active: z.boolean().optional(),
+    role_name: z.enum(["user", "investor", "admin", "superadmin", "bod"]).optional(),
+    permission_ids: z.array(z.string().uuid()).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Minimal satu field harus diisi untuk update.",
+  })
+  .refine((data) => {
+    // Check for duplicate permission_ids
+    if (data.permission_ids && data.permission_ids.length > 0) {
+      const unique = new Set(data.permission_ids);
+      if (unique.size !== data.permission_ids.length) {
+        return false; // Has duplicates
+      }
+    }
+    return true;
+  }, {
+    message: "permission_ids tidak boleh mengandung duplikat",
   });
 
 export const listUserQuerySchema = z.object({

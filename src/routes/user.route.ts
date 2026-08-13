@@ -3,6 +3,8 @@ import { userController } from "../modules/user/user.controller.js";
 import {
   authMiddleware,
   requirePermission,
+  restrictRoleElevation,
+  restrictRoleDeletion,
 } from "../middleware/auth.middleware.js";
 import {
   validate,
@@ -55,6 +57,7 @@ router.post(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Create new user'
+    #swagger.description = 'Create new user with role and permissions. Role Restriction: Admin users cannot create users with SuperAdmin role.'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.requestBody = {
       required: true,
@@ -64,9 +67,24 @@ router.post(
         }
       }
     }
+    #swagger.responses[403] = {
+      description: 'Forbidden - Role elevation not allowed or insufficient permissions',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini.' }
+            }
+          }
+        }
+      }
+    }
   */
   authMiddleware,
   requirePermission(["users:create"]),
+  restrictRoleElevation([["admin", "superadmin"]]),
   validate(createUserSchema),
   userController.create,
 );
@@ -76,6 +94,7 @@ router.put(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Update user by ID'
+    #swagger.description = 'Update user data. Use flat format with role_name and permission_ids. Important: When email is changed, email_verified will be reset to false and the user must verify the new email. Note: Users registered via Google OAuth can only update role, permissions, and is_active fields. Personal data (firstname, lastname, email, password) cannot be modified for Google users. Role Restriction: Admin users cannot elevate other users to SuperAdmin role.'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
@@ -91,9 +110,45 @@ router.put(
         }
       }
     }
+    #swagger.responses[200] = {
+      description: 'User updated successfully',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: true },
+              message: { type: 'string', example: 'User berhasil diupdate' },
+              requiresEmailVerification: { type: 'boolean', example: false },
+              data: {
+                type: 'object',
+                properties: {
+                  user: { $ref: '#/components/schemas/UserResponse' }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[403] = {
+      description: 'Forbidden - Role elevation not allowed or insufficient permissions',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'Role admin tidak memiliki izin untuk mengubah user menjadi role superadmin. Hubungi superadmin untuk perubahan ini.' }
+            }
+          }
+        }
+      }
+    }
   */
   authMiddleware,
   requirePermission(["users:update"]),
+  restrictRoleElevation([["admin", "superadmin"]]),
   validateParams(userIdParamSchema),
   validate(updateUserSchema),
   userController.update,
@@ -150,6 +205,7 @@ router.delete(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Delete user by ID'
+    #swagger.description = 'Delete user by ID. Role Restriction: Only SuperAdmin can delete users with BOD or SuperAdmin roles. Other roles cannot delete these protected users.'
     #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
@@ -157,9 +213,24 @@ router.delete(
       type: 'string',
       format: 'uuid'
     }
+  #swagger.responses[403] = {
+      description: 'Forbidden - Attempting to delete protected role or insufficient permissions',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'Hanya SuperAdmin yang dapat menghapus user dengan role bod. User dengan role admin tidak memiliki izin untuk user ini.' }
+            }
+          }
+        }
+      }
+    }
   */
   authMiddleware,
   requirePermission(["users:delete"]),
+  restrictRoleDeletion(["bod", "superadmin"]),
   validateParams(userIdParamSchema),
   userController.remove,
 );

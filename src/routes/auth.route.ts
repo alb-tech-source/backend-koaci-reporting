@@ -9,6 +9,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   refreshTokenSchema,
+  verifyEmailSchema,
 } from "../modules/auth/auth.validation.js";
 import { env } from "../config/env.js";
 
@@ -73,11 +74,26 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Request password reset email'
+    #swagger.description = 'Request password reset email. Note: Users registered via Google OAuth cannot reset password through this system and must use Google OAuth for authentication.'
     #swagger.requestBody = {
       required: true,
       content: {
         "application/json": {
           schema: { $ref: "#/components/schemas/ForgotPasswordRequest" }
+        }
+      }
+    }
+  #swagger.responses[403] = {
+      description: 'Forbidden - Google user cannot reset password',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth.' }
+            }
+          }
         }
       }
     }
@@ -91,11 +107,26 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Reset password with token'
+    #swagger.description = 'Reset password using token received from forgot-password email. Note: Users registered via Google OAuth cannot reset password through this system and must use Google OAuth for authentication.'
     #swagger.requestBody = {
       required: true,
       content: {
         "application/json": {
           schema: { $ref: "#/components/schemas/ResetPasswordRequest" }
+        }
+      }
+    }
+  #swagger.responses[403] = {
+      description: 'Forbidden - Google user cannot reset password',
+      content: {
+        "application/json": {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean', example: false },
+              message: { type: 'string', example: 'User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth.' }
+            }
+          }
         }
       }
     }
@@ -124,6 +155,41 @@ router.post(
   */
   authMiddleware,
   authController.logout,
+);
+
+router.post(
+  "/send-verify-email",
+  /*
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Send Email Verification'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/SendEmailVerification" }
+        }
+      }
+    }
+  */
+  validate(verifyEmailSchema),
+  authMiddleware,
+  authController.sendVerifyEmailController,
+);
+
+router.get(
+  "/verify-email",
+  /*
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Verify Email with Token'
+    #swagger.parameters['token'] = {
+      in: 'query',
+      description: 'Email verification token from email',
+      required: true,
+      type: 'string'
+    }
+  */
+  authController.verifyEmailController,
 );
 
 router.get(

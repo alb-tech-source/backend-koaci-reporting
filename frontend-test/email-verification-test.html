@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Test - Koaci Reporting App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .form-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #888;
+            font-size: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e1e1;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .user-info p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .user-info .verified {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .user-info .not-verified {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.verified {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.not-verified {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #e1e1e1;
+        }
+
+        .api-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            border: 1px solid #ffc107;
+        }
+
+        .api-info h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .api-info p {
+            color: #856404;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Email Verification Test</h1>
+            <p>Koaci Reporting App - Testing Environment</p>
+        </div>
+
+        <div class="api-info">
+            <h4>⚙️ API Configuration</h4>
+            <p><strong>Backend URL:</strong> <span id="api-url">http://localhost:8000</span></p>
+            <p><button onclick="changeApiUrl()" class="btn-secondary" style="padding: 5px 10px; font-size: 12px; width: auto;">Change URL</button></p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('register')">Register</button>
+            <button class="tab" onclick="showTab('login')">Login</button>
+            <button class="tab" onclick="showTab('verify')">Verify Email</button>
+            <button class="tab" onclick="showTab('profile')">Profile</button>
+        </div>
+
+        <!-- Register Tab -->
+        <div id="register-tab" class="form-content active">
+            <div id="register-message"></div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="reg-firstname">First Name</label>
+                    <input type="text" id="reg-firstname" required placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label for="reg-lastname">Last Name</label>
+                    <input type="text" id="reg-lastname" required placeholder="Doe">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required placeholder="Min 8 chars, 1 uppercase, 1 number">
+                    <small>Minimal 8 karakter, harus mengandung huruf kapital dan angka</small>
+                </div>
+                <button type="submit" class="btn btn-primary" id="register-btn">
+                    <span id="register-btn-text">Register</span>
+                    <span id="register-btn-loading" class="loading hidden"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="login-tab" class="form-content">
+            <div id="login-message"></div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Your password">
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    <span id="login-btn-text">Login</span>
+                    <span id="login-btn-loading" class="loading hidden"></span>
+                </button>
+            </form>
+            <div id="login-success" class="user-info hidden">
+                <h3>✅ Login Successful!</h3>
+                <p><strong>Tokens stored:</strong></p>
+                <div class="token-display">
+                    <strong>Access Token:</strong><br>
+                    <span id="access-token-display"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verify Email Tab -->
+        <div id="verify-tab" class="form-content">
+            <div id="verify-message"></div>
+
+            <div class="user-info">
+                <h3>📧 Email Verification</h3>
+                <p>Step 1: Request verification email (requires login)</p>
+                <p>Step 2: Click the link in email or enter token manually</p>
+            </div>
+
+            <form onsubmit="handleSendVerifyEmail(event)">
+                <div class="form-group">
+                    <label for="verify-email">Email Address</label>
+                    <input type="email" id="verify-email" required placeholder="john@example.com">
+                    <small>Enter your registered email address</small>
+                </div>
+                <button type="submit" class="btn btn-success" id="send-verify-btn">
+                    <span id="send-verify-btn-text">📧 Send Verification Email</span>
+                    <span id="send-verify-btn-loading" class="loading hidden"></span>
+                </button>
+            </form>
+
+            <div style="margin-top: 30px; text-align: center; color: #666;">— OR —</div>
+
+            <form onsubmit="handleVerifyToken(event)" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label for="verify-token">Verification Token</label>
+                    <input type="text" id="verify-token" required placeholder="Paste token from email">
+                    <small>Paste the token from the verification email link</small>
+                </div>
+                <button type="submit" class="btn btn-primary" id="verify-token-btn">
+                    <span id="verify-token-btn-text">✅ Verify Email</span>
+                    <span id="verify-token-btn-loading" class="loading hidden"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile-tab" class="form-content">
+            <div id="profile-message"></div>
+            <button onclick="fetchProfile()" class="btn btn-secondary" style="margin-bottom: 20px;">
+                🔄 Refresh Profile
+            </button>
+            <div id="profile-content">
+                <p style="text-align: center; color: #888;">Click refresh to load your profile</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        let API_BASE_URL = 'http://localhost:8000';
+
+        // Token storage
+        let accessToken = localStorage.getItem('access_token') || null;
+        let refreshToken = localStorage.getItem('refresh_token') || null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateApiUrlDisplay();
+            if (accessToken) {
+                showTab('profile');
+                fetchProfile();
+            }
+        });
+
+        function changeApiUrl() {
+            const newUrl = prompt('Enter API Base URL:', API_BASE_URL);
+            if (newUrl) {
+                API_BASE_URL = newUrl;
+                updateApiUrlDisplay();
+            }
+        }
+
+        function updateApiUrlDisplay() {
+            document.getElementById('api-url').textContent = API_BASE_URL;
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.form-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // Message display
+        function showMessage(elementId, message, type) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                messageEl.innerHTML = '';
+            }, 5000);
+        }
+
+        // Loading state
+        function setLoading(btnId, isLoading) {
+            const btn = document.getElementById(btnId);
+            const textSpan = document.getElementById(`${btnId}-text`);
+            const loadingSpan = document.getElementById(`${btnId}-loading`);
+
+            if (isLoading) {
+                textSpan.classList.add('hidden');
+                loadingSpan.classList.remove('hidden');
+                btn.disabled = true;
+            } else {
+                textSpan.classList.remove('hidden');
+                loadingSpan.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        // API Helper functions
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE_URL}/api/auth${endpoint}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            if (accessToken && !headers['Authorization']) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'API request failed');
+                }
+
+                return data;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Register handler
+        async function handleRegister(event) {
+            event.preventDefault();
+            setLoading('register-btn', true);
+
+            const firstname = document.getElementById('reg-firstname').value;
+            const lastname = document.getElementById('reg-lastname').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const result = await apiRequest('/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ firstname, lastname, email, password })
+                });
+
+                showMessage('register-message', '✅ Registration successful! Please login.', 'success');
+                // Auto-fill login form
+                document.getElementById('login-email').value = email;
+                showTab('login');
+            } catch (error) {
+                showMessage('register-message', `❌ Registration failed: ${error.message}`, 'error');
+            } finally {
+                setLoading('register-btn', false);
+            }
+        }
+
+        // Login handler
+        async function handleLogin(event) {
+            event.preventDefault();
+            setLoading('login-btn', true);
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const result = await apiRequest('/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+
+                // Store tokens
+                accessToken = result.data.tokens.accessToken;
+                refreshToken = result.data.tokens.refreshToken;
+                localStorage.setItem('access_token', accessToken);
+                localStorage.setItem('refresh_token', refreshToken);
+
+                // Show success
+                document.getElementById('access-token-display').textContent = accessToken.substring(0, 50) + '...';
+                document.getElementById('login-success').classList.remove('hidden');
+                showMessage('login-message', '✅ Login successful!', 'success');
+
+                // Auto-fill verify email
+                document.getElementById('verify-email').value = email;
+            } catch (error) {
+                showMessage('login-message', `❌ Login failed: ${error.message}`, 'error');
+                document.getElementById('login-success').classList.add('hidden');
+            } finally {
+                setLoading('login-btn', false);
+            }
+        }
+
+        // Send verification email
+        async function handleSendVerifyEmail(event) {
+            event.preventDefault();
+            setLoading('send-verify-btn', true);
+
+            const email = document.getElementById('verify-email').value;
+
+            try {
+                const result = await apiRequest('/send-verify-email', {
+                    method: 'POST',
+                    body: JSON.stringify({ email })
+                });
+
+                showMessage('verify-message', '✅ Verification email sent! Please check your inbox.', 'success');
+            } catch (error) {
+                showMessage('verify-message', `❌ Failed to send verification email: ${error.message}`, 'error');
+            } finally {
+                setLoading('send-verify-btn', false);
+            }
+        }
+
+        // Verify email with token
+        async function handleVerifyToken(event) {
+            event.preventDefault();
+            setLoading('verify-token-btn', true);
+
+            const token = document.getElementById('verify-token').value;
+
+            try {
+                // Note: This endpoint might need to be added to backend routes
+                const result = await apiRequest(`/verify-email?token=${token}`, {
+                    method: 'GET'
+                });
+
+                showMessage('verify-message', '✅ Email verified successfully! You can now check your profile.', 'success');
+
+                // Clear token input
+                document.getElementById('verify-token').value = '';
+            } catch (error) {
+                showMessage('verify-message', `❌ Verification failed: ${error.message}`, 'error');
+            } finally {
+                setLoading('verify-token-btn', false);
+            }
+        }
+
+        // Fetch user profile
+        async function fetchProfile() {
+            const content = document.getElementById('profile-content');
+            content.innerHTML = '<p style="text-align: center;">Loading...</p>';
+
+            try {
+                const result = await apiRequest('/me');
+                const user = result.data.user;
+
+                const verificationStatus = user.isVerified
+                    ? '<span class="status-badge verified">✅ Verified</span>'
+                    : '<span class="status-badge not-verified">❌ Not Verified</span>';
+
+                content.innerHTML = `
+                    <div class="user-info">
+                        <h3>👤 User Profile</h3>
+                        <p><strong>Name:</strong> ${user.firstname} ${user.lastname}</p>
+                        <p><strong>Email:</strong> ${user.email} ${verificationStatus}</p>
+                        <p><strong>User ID:</strong> ${user.user_id}</p>
+                        <p><strong>Active:</strong> ${user.is_active ? '✅ Yes' : '❌ No'}</p>
+                        <p><strong>Role:</strong> ${result.data.role || 'N/A'}</p>
+                        <p><strong>Permissions:</strong> ${result.data.permissions.length || 0}</p>
+                        <p style="margin-top: 15px; font-size: 12px; color: #888;">
+                            Permissions: ${result.data.permissions.join(', ') || 'None'}
+                        </p>
+                    </div>
+                    <button onclick="logout()" class="btn btn-secondary">🚪 Logout</button>
+                `;
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="message error">
+                        ❌ Failed to load profile: ${error.message}
+                    </div>
+                    <button onclick="logout()" class="btn btn-secondary">🚪 Logout</button>
+                `;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            accessToken = null;
+            refreshToken = null;
+            document.getElementById('login-success').classList.add('hidden');
+            showTab('login');
+            showMessage('login-message', 'Logged out successfully', 'info');
+        }
+    </script>
+</body>
+</html>

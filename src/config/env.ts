@@ -28,6 +28,7 @@ const envSchema = zod.object({
   GOOGLE_REDIRECT_URL: zod.string(),
   CLIENT_URL: zod.string(),
   SESSION_SECRET: zod.string(),
+  JWT_VERIFY_SECRET: zod.string(),
 });
 
 export const env = envSchema.parse(process.env);

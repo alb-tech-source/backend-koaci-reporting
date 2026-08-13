@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto";
+import crypto, { verify } from "crypto";
 import Jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import prisma from "../../lib/prisma.js";
@@ -11,10 +11,16 @@ import type {
   ResetPasswordInput,
   JwtPayload,
   AuthTokens,
+  EmailVerify,
 } from "../../types/auth.types.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
 import { transporter } from "../../config/mailer.js";
+import {
+  generateEmailVerificationToken,
+  verifyEmailVerificationToken,
+} from "../../utils/emailToken.js";
+import { email } from "zod";
 
 const SALT_ROUNDS = 10;
 
@@ -91,6 +97,7 @@ export const authService = {
       userId: user.user_id,
       email: user.email,
       role: user.role?.role_name ?? "user", // default role dengan akses paling terbatas
+      isActive: user.is_active,
       permissions: permissions,
     });
 
@@ -133,6 +140,7 @@ export const authService = {
         userId: user.user_id,
         email: user.email,
         role: user.role?.role_name ?? "user", // default role dengan akses paling terbatas
+        isActive: user.is_active,
         permissions: permissions,
       });
 
@@ -171,10 +179,23 @@ export const authService = {
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {
     const user = await prisma.user.findUnique({
       where: { email: input.email },
+      select: {
+        user_id: true,
+        email: true,
+        googleId: true,
+      },
     });
 
     // Selalu return sukses walau user gak ketemu (hindari email enumeration)
     if (!user) return;
+
+    // Cek apakah user login via Google
+    if (user.googleId) {
+      throw new ApiError(
+        403,
+        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+      );
+    }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 menit
@@ -206,10 +227,24 @@ export const authService = {
         reset_token: input.token,
         reset_token_expires: { gt: new Date() },
       },
+      select: {
+        user_id: true,
+        email: true,
+        googleId: true,
+        reset_token: true,
+      },
     });
 
     if (!user) {
       throw new ApiError(400, "Token reset tidak valid atau sudah kadaluarsa");
+    }
+
+    // Cek apakah user login via Google
+    if (user.googleId) {
+      throw new ApiError(
+        403,
+        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+      );
     }
 
     const hashedPassword = await bcrypt.hash(input.newPassword, SALT_ROUNDS);
@@ -222,5 +257,74 @@ export const authService = {
         reset_token_expires: null,
       },
     });
+  },
+
+  async sendVerifyEmail(input: EmailVerify): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { email: input.email },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User untuk email ini tidak ditemukan");
+    }
+
+    const verificationToken = generateEmailVerificationToken({
+      userId: user.user_id,
+      email: user.email,
+    });
+
+    const verifyUrl = `${env.FRONTEND_URL}/auth/send-verify-email?token=${verificationToken}`;
+
+    await transporter.sendMail({
+      from: `"Koaci Reporting App" <${env.SMTP_USER}>`,
+      to: user.email,
+      subject: "Verifikasi Email Anda",
+      html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2>Verifikasi Email</h2>
+        <p>Klik tombol di bawah untuk verifikasi email kamu. Link berlaku selama 30 menit.</p>
+        <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:6px;">
+          Verifikasi Email
+        </a>
+        <p style="margin-top:16px;font-size:12px;color:#666;">
+          Atau salin link berikut ke browser:<br/>${verifyUrl}
+        </p>
+      </div>
+    `,
+    });
+
+    return;
+  },
+
+  async verifyEmail(token: string): Promise<void> {
+    if (!token || typeof token !== "string") {
+      throw new ApiError(400, "Token tidak ditemukan");
+    }
+
+    let decoded;
+    try {
+      decoded = verifyEmailVerificationToken(token);
+    } catch (error) {
+      throw new ApiError(400, "Token tidak valid atau sudah kadaluarsa");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { user_id: decoded.userId },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User tidak ditemukan");
+    }
+
+    if (user.email_verified) {
+      return;
+    }
+
+    await prisma.user.update({
+      where: { user_id: user.user_id },
+      data: { email_verified: true },
+    });
+
+    return;
   },
 };

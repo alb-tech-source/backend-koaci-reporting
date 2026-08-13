@@ -72,6 +72,10 @@ export const userController = {
   update: asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.updateUser(req.params.id as string, req.body);
 
+    // Extract metadata if present (for email verification warnings)
+    const meta = (user as any)._meta;
+    const userResponse = meta ? { ...user, _meta: undefined } : user;
+
     // Log user update
     await activityLogService
       .logActivity({
@@ -79,12 +83,13 @@ export const userController = {
         action: "USER_UPDATE",
         entityType: "User",
         entityId: user.user_id,
-        description: `User ${user.email} berhasil diupdate oleh ${req.authUser!.email}`,
+        description: `User ${user.email} berhasil diupdate oleh ${req.authUser!.email}${meta ? " - Email changed, verification required" : ""}`,
         metadata: {
           updatedUser: {
             userId: user.user_id,
             email: user.email,
             changes: req.body,
+            emailChanged: meta?.requiresEmailVerification || false,
           },
         },
         ipAddress: req.ip || req.socket.remoteAddress,
@@ -92,7 +97,12 @@ export const userController = {
       })
       .catch((err) => console.error("Failed to log user update:", err));
 
-    return ApiResponse(res, 200, user);
+    // Return response with appropriate message
+    return ApiResponse(res, 200, {
+      user: userResponse,
+      message: meta?.message || "User berhasil diupdate",
+      requiresEmailVerification: meta?.requiresEmailVerification || false,
+    });
   }),
 
   changeActivation: asyncHandler(async (req: Request, res: Response) => {

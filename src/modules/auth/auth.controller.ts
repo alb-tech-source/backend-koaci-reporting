@@ -6,6 +6,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   refreshTokenSchema,
+  verifyEmailSchema,
 } from "./auth.validation.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
@@ -59,15 +60,17 @@ export const authController = {
       const result = await authService.login(validatedData);
 
       // Log successful login
-      await activityLogService.logActivity({
-        userId: result.user.user_id,
-        action: "LOGIN_SUCCESS",
-        entityType: "User",
-        entityId: result.user.user_id,
-        description: `User ${result.user.email} berhasil login`,
-        ipAddress: req.ip || req.socket.remoteAddress,
-        userAgent: req.get("user-agent"),
-      }).catch((err) => console.error("Failed to log login:", err));
+      await activityLogService
+        .logActivity({
+          userId: result.user.user_id,
+          action: "LOGIN_SUCCESS",
+          entityType: "User",
+          entityId: result.user.user_id,
+          description: `User ${result.user.email} berhasil login`,
+          ipAddress: req.ip || req.socket.remoteAddress,
+          userAgent: req.get("user-agent"),
+        })
+        .catch((err) => console.error("Failed to log login:", err));
 
       res.status(200).json({
         success: true,
@@ -100,7 +103,11 @@ export const authController = {
    * Login user with google
    * POST /api/auth/google
    */
-  async googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async googleLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     // Passport may attach user with different shape; coerce to any to read user_id or id
     const userObj: any = req.user;
     const userId = userObj?.user_id ?? userObj?.id;
@@ -329,6 +336,50 @@ export const authController = {
       res.status(200).json({
         success: true,
         message: "Logout berhasil",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Send email verification
+   * POST /api/auth/send-verify-email
+   */
+  async sendVerifyEmailController(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      // Validate input
+      const validateInput = verifyEmailSchema.parse(req.body);
+
+      // Process send verify email
+      await authService.sendVerifyEmail(validateInput);
+
+      // Selalu return sukses
+      res.status(200).json({
+        success: true,
+        message: "Email verifikasi telah dikirim ke email anda",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async verifyEmailController(req: Request, res: Response, next: NextFunction) {
+    const { token } = req.query;
+
+    try {
+      const verify = await authService.verifyEmail(token as string);
+
+      // Selalu return sukses
+      res.status(200).json({
+        success: true,
+        message: "Akun anda telah berhasil diverifikasi",
         data: null,
       });
     } catch (error) {
