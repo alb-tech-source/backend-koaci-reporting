@@ -72,13 +72,24 @@ export const authController = {
         })
         .catch((err) => console.error("Failed to log login:", err));
 
+      // Send accessToken to cookies
+      res.cookie("access_token", result.tokens.accessToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 1000,
+      });
+
+      res.cookie("refresh_token", result.tokens.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       res.status(200).json({
         success: true,
         message: "Login berhasil",
-        data: {
-          user: result.user,
-          tokens: result.tokens,
-        },
       });
     } catch (error) {
       // Log failed login attempt

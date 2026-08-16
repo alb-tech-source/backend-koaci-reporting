@@ -2,9 +2,8 @@ import { Router } from "express";
 import { userController } from "../modules/user/user.controller.js";
 import {
   authMiddleware,
-  requirePermission,
-  restrictRoleElevation,
-  restrictRoleDeletion,
+  authorize,
+  authorizeRoleMutation,
 } from "../middleware/auth.middleware.js";
 import {
   validate,
@@ -28,7 +27,7 @@ router.get(
     #swagger.security = [{ "bearerAuth": [] }]
   */
   authMiddleware,
-  requirePermission(["users:read"]),
+  authorize("users", "read"),
   validateQuery(listUserQuerySchema),
   userController.list,
 );
@@ -47,7 +46,7 @@ router.get(
     }
   */
   authMiddleware,
-  requirePermission(["users:read"]),
+  authorize("users", "read"),
   validateParams(userIdParamSchema),
   userController.getById,
 );
@@ -83,8 +82,8 @@ router.post(
     }
   */
   authMiddleware,
-  requirePermission(["users:create"]),
-  restrictRoleElevation([["admin", "superadmin"]]),
+  authorize("users", "create", ["any"]),
+  authorizeRoleMutation,
   validate(createUserSchema),
   userController.create,
 );
@@ -147,8 +146,8 @@ router.put(
     }
   */
   authMiddleware,
-  requirePermission(["users:update"]),
-  restrictRoleElevation([["admin", "superadmin"]]),
+  authorize("users", "update"),
+  authorizeRoleMutation,
   validateParams(userIdParamSchema),
   validate(updateUserSchema),
   userController.update,
@@ -176,7 +175,7 @@ router.patch(
     }
   */
   authMiddleware,
-  requirePermission(["users:update"]),
+  authorize("users", "update", ["any"]),
   validateParams(userIdParamSchema),
   userController.changeActivation,
 );
@@ -195,7 +194,7 @@ router.post(
     }
   */
   authMiddleware,
-  requirePermission(["users:manage_roles"]),
+  authorize("users", "update", ["any"]),
   validateParams(userIdParamSchema),
   userController.resetPassword,
 );
@@ -229,8 +228,7 @@ router.delete(
     }
   */
   authMiddleware,
-  requirePermission(["users:delete"]),
-  restrictRoleDeletion(["bod", "superadmin"]),
+  authorize("users", "delete"),
   validateParams(userIdParamSchema),
   userController.remove,
 );

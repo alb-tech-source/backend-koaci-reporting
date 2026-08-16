@@ -2,7 +2,7 @@ import { Router } from "express";
 import { investorController } from "../modules/investor/investor.controller.js";
 import {
   authMiddleware,
-  requirePermission,
+  authorize,
 } from "../middleware/auth.middleware.js";
 import {
   validate,
@@ -35,7 +35,7 @@ router.get(
     #swagger.parameters['gender'] = { description: 'Filter by gender', schema: { type: 'string', enum: ['men', 'women'] } }
   */
   authMiddleware,
-  requirePermission(["investors:read_all", "investors:read_own"]),
+  authorize("investors", "read"),
   validateQuery(listInvestorQuerySchema),
   investorController.list,
 );
@@ -60,7 +60,7 @@ router.get(
     }
   */
   authMiddleware,
-  requirePermission(["investors:read", "investors:read_own"]),
+  authorize("investors", "read"),
   validateParams(investorIdParamSchema),
   investorController.getById,
 );
@@ -81,7 +81,7 @@ router.get(
     }
   */
   authMiddleware,
-  requirePermission(["investors:read", "investors:read_own"]),
+  authorize("investors", "read"),
   validateParams(userIdParamSchema), // Using same UUID validation
   investorController.getByUserId,
 );
@@ -108,7 +108,7 @@ router.post(
     }
   */
   authMiddleware,
-  requirePermission(["investors:create"]),
+  authorize("investors", "create"),
   validate(createInvestorSchema),
   investorController.create,
 );
@@ -141,7 +141,7 @@ router.put(
     }
   */
   authMiddleware,
-  requirePermission(["investors:update"]),
+  authorize("investors", "update"),
   validateParams(investorIdParamSchema),
   validate(updateInvestorSchema),
   investorController.update,
@@ -171,7 +171,7 @@ router.patch(
     }
   */
   authMiddleware,
-  requirePermission(["investors:update_status"]),
+  authorize("investors", "update", ["any"]),
   validateParams(investorIdParamSchema),
   investorController.updateStatus,
 );
@@ -195,7 +195,7 @@ router.delete(
     }
   */
   authMiddleware,
-  requirePermission(["investors:delete"]),
+  authorize("investors", "delete"),
   validateParams(investorIdParamSchema),
   investorController.remove,
 );

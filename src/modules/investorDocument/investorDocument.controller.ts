@@ -22,7 +22,10 @@ export const investorDocumentController = {
       mime_type: req.file.mimetype,
     };
 
-    const document = await investorDocumentService.uploadInvestorDocument(input);
+    const document = await investorDocumentService.uploadInvestorDocument(
+      input,
+      req.access!,
+    );
 
     // Log document upload
     await activityLogService
@@ -55,14 +58,14 @@ export const investorDocumentController = {
   getList: asyncHandler(async (req: Request, res: Response) => {
     const result = await investorDocumentService.getListInvestorDocuments({
       investor_id: req.params.investorId as string,
-    });
+    }, req.access!);
     return ApiResponse(res, 200, result.data, result.meta);
   }),
 
   getDownloadUrl: asyncHandler(async (req: Request, res: Response) => {
     const downloadUrl = await investorDocumentService.getDocumentDownloadUrl({
       documentId: req.params.documentId as string,
-    });
+    }, req.access!);
 
     return ApiResponse(res, 200, {
       downloadUrl,
@@ -76,11 +79,11 @@ export const investorDocumentController = {
     // Get document info before deletion for logging
     const document = await investorDocumentService.getDocumentDownloadUrl({
       documentId,
-    });
+    }, req.access!);
 
     await investorDocumentService.deleteInvestorDocument({
       documentId,
-    });
+    }, req.access!);
 
     // Log document deletion
     await activityLogService

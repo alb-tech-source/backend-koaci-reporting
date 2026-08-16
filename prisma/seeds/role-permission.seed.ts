@@ -1,6 +1,10 @@
 import bcrypt from "bcrypt";
 
 import prisma from "../../src/lib/prisma.ts";
+import {
+  CANONICAL_PERMISSIONS,
+  CANONICAL_ROLE_PERMISSIONS,
+} from "./permission.config.ts";
 /**
  * Seeder untuk User, Role, Permission, dan RolePermission
  *
@@ -18,7 +22,7 @@ import prisma from "../../src/lib/prisma.ts";
 // Sample users to be created with their roles
 const SAMPLE_USERS = [
   {
-    email: "bod@koaci.com",
+    email: "bod@koaci.id",
     firstname: "Board",
     lastname: "Director",
     password: "password123",
@@ -26,7 +30,7 @@ const SAMPLE_USERS = [
     isActive: true,
   },
   {
-    email: "superadmin@koaci.com",
+    email: "superadmin@koaci.id",
     firstname: "Super",
     lastname: "Admin",
     password: "password123",
@@ -34,7 +38,7 @@ const SAMPLE_USERS = [
     isActive: true,
   },
   {
-    email: "admin@koaci.com",
+    email: "admin@koaci.id",
     firstname: "Admin",
     lastname: "Staff",
     password: "password123",
@@ -42,7 +46,7 @@ const SAMPLE_USERS = [
     isActive: true,
   },
   {
-    email: "user@koaci.com",
+    email: "user@koaci.id",
     firstname: "Regular",
     lastname: "User",
     password: "password123",
@@ -50,7 +54,7 @@ const SAMPLE_USERS = [
     isActive: true,
   },
   {
-    email: "investor@koaci.com",
+    email: "investor@koaci.id",
     firstname: "Investor",
     lastname: "One",
     password: "password123",
@@ -173,7 +177,7 @@ async function seedUsersAndPermissions() {
   try {
     // 1. Create Permissions
     console.log("📝 Creating permissions...");
-    const permissionEntries = Object.entries(PERMISSIONS);
+    const permissionEntries = Object.entries(CANONICAL_PERMISSIONS);
 
     await prisma.permission.createMany({
       data: permissionEntries.map(([key]) => ({
@@ -257,7 +261,9 @@ async function seedUsersAndPermissions() {
 
     for (const { role, roleName } of createdRoles) {
       const permissionKeys =
-        ROLE_PERMISSIONS[roleName as keyof typeof ROLE_PERMISSIONS];
+        CANONICAL_ROLE_PERMISSIONS[
+          roleName as keyof typeof CANONICAL_ROLE_PERMISSIONS
+        ];
 
       if (!permissionKeys) {
         console.warn(`⚠️  No permissions defined for role: ${roleName}`);

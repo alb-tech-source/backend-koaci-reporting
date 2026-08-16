@@ -59,18 +59,25 @@ export const userController = {
       return out as ListUserQuery;
     };
 
-    const query = parseQuery(req.query as unknown as Record<string, any>);
-    const result = await userService.listUsers(query);
+    // validatedQuery is added by validation middleware; cast to any to avoid TS error
+    const query = parseQuery(
+      (req as any).validatedQuery as Record<string, any>,
+    );
+    const result = await userService.listUsers(query, req.access!);
     return ApiResponse(res, 200, result.data, result.meta);
   }),
 
   getById: asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.getUserById(req.params.id as string);
+    const user = await userService.getUserById(req.params.id as string, req.access!);
     return ApiResponse(res, 200, user);
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.updateUser(req.params.id as string, req.body);
+    const user = await userService.updateUser(
+      req.params.id as string,
+      req.body,
+      req.access!,
+    );
 
     // Extract metadata if present (for email verification warnings)
     const meta = (user as any)._meta;
@@ -107,7 +114,10 @@ export const userController = {
 
   changeActivation: asyncHandler(async (req: Request, res: Response) => {
     const { isActive } = req.body ? req.body : undefined;
-    const user = await userService.changeUserActivation(req.params.id as string, isActive);
+    const user = await userService.changeUserActivation(
+      req.params.id as string,
+      isActive,
+    );
 
     // Log user activation/deactivation
     await activityLogService
@@ -127,7 +137,9 @@ export const userController = {
         ipAddress: req.ip || req.socket.remoteAddress,
         userAgent: req.get("user-agent"),
       })
-      .catch((err) => console.error("Failed to log user activation change:", err));
+      .catch((err) =>
+        console.error("Failed to log user activation change:", err),
+      );
 
     return ApiResponse(res, 200, user);
   }),
@@ -136,9 +148,9 @@ export const userController = {
     const userId = req.params.id as string;
 
     // Get user info before deletion for logging
-    const user = await userService.getUserById(userId);
+    const user = await userService.getUserById(userId, req.access!);
 
-    await userService.deleteUser(userId);
+    await userService.deleteUser(userId, req.access!);
 
     // Log user deletion
     await activityLogService
@@ -168,7 +180,7 @@ export const userController = {
     const userId = req.params.id as string;
 
     // Get user info before password reset for logging
-    const user = await userService.getUserById(userId);
+    const user = await userService.getUserById(userId, req.access!);
 
     const result = await userService.resetPasswordUser(userId);
 

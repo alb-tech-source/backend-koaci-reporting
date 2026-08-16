@@ -10,6 +10,7 @@ import type {
 import { ApiResponse } from "../../utils/apiResponse.js";
 import { ApiError } from "../../utils/apiError.js";
 import prisma from "../../lib/prisma.js";
+import type { AccessContext } from "../../middleware/auth.middleware.js";
 import { email } from "zod";
 
 const SALT_ROUNDS = 10;
@@ -90,11 +91,13 @@ export const userService = {
 
   listUsers: async (
     query: ListUserQuery,
+    access: AccessContext,
   ): Promise<PaginatedResult<SafeUser>> => {
     const { page, limit, search, is_active } = query;
     const skip = (page - 1) * limit;
 
     const where = {
+      ...(access.scope === "own" && { user_id: access.userId }),
       ...(is_active !== undefined && { is_active }),
       ...(search && {
         OR: [
@@ -148,10 +151,14 @@ export const userService = {
     };
   },
 
-  getUserById: async (userId: string): Promise<SafeUser> => {
-    const user = await prisma.user.findUnique({
+  getUserById: async (
+    userId: string,
+    access: AccessContext,
+  ): Promise<SafeUser> => {
+    const user = await prisma.user.findFirst({
       where: {
         user_id: userId,
+        ...(access.scope === "own" && { user_id: access.userId }),
       },
       include: {
         role: {
@@ -183,9 +190,25 @@ export const userService = {
   updateUser: async (
     userId: string,
     input: UpdateUserInput,
+    access: AccessContext,
   ): Promise<SafeUser> => {
-    const existingUser = await prisma.user.findUnique({
-      where: { user_id: userId },
+    if (
+      access.scope === "own" &&
+      (input.role_name !== undefined ||
+        input.permission_ids !== undefined ||
+        input.is_active !== undefined)
+    ) {
+      throw new ApiError(
+        403,
+        "Role, permission, dan status aktivasi hanya dapat diubah dengan scope any",
+      );
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        user_id: userId,
+        ...(access.scope === "own" && { user_id: access.userId }),
+      },
       include: {
         role: {
           include: {
@@ -398,9 +421,15 @@ export const userService = {
     return toSafeUser(updatedUser);
   },
 
-  deleteUser: async (userId: string): Promise<void> => {
-    const existingUser = await prisma.user.findUnique({
-      where: { user_id: userId },
+  deleteUser: async (
+    userId: string,
+    access: AccessContext,
+  ): Promise<void> => {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        user_id: userId,
+        ...(access.scope === "own" && { user_id: access.userId }),
+      },
       include: {
         role: {
           select: {

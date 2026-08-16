@@ -7,7 +7,7 @@ import { activityLogService } from "../activityLog/activityLog.service.js";
 
 export const investorController = {
   create: asyncHandler(async (req: Request, res: Response) => {
-    const investor = await investorService.createInvestor(req.body);
+    const investor = await investorService.createInvestor(req.body, req.access!);
 
     // Log investor creation
     await activityLogService
@@ -55,13 +55,14 @@ export const investorController = {
     };
 
     const query = parseQuery(req.query as unknown as Record<string, any>);
-    const result = await investorService.listInvestors(query);
+    const result = await investorService.listInvestors(query, req.access!);
     return ApiResponse(res, 200, result.data, result.meta);
   }),
 
   getById: asyncHandler(async (req: Request, res: Response) => {
     const investor = await investorService.getInvestorById(
       req.params.id as string,
+      req.access!,
     );
     return ApiResponse(res, 200, investor);
   }),
@@ -70,12 +71,17 @@ export const investorController = {
     console.log("req.params.userId", req.params.userId);
     const investor = await investorService.getInvestorByUserId(
       req.params.userId as string,
+      req.access!,
     );
     return ApiResponse(res, 200, investor);
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
-    const investor = await investorService.updateInvestor(req.params.id as string, req.body);
+    const investor = await investorService.updateInvestor(
+      req.params.id as string,
+      req.body,
+      req.access!,
+    );
 
     // Log investor update
     await activityLogService
@@ -105,7 +111,11 @@ export const investorController = {
 
   updateStatus: asyncHandler(async (req: Request, res: Response) => {
     const { status } = req.body;
-    const investor = await investorService.updateInvestorStatus(req.params.id as string, status);
+    const investor = await investorService.updateInvestorStatus(
+      req.params.id as string,
+      status,
+      req.access!,
+    );
 
     // Log investor status change
     await activityLogService
@@ -138,9 +148,9 @@ export const investorController = {
     const investorId = req.params.id as string;
 
     // Get investor info before deletion for logging
-    const investor = await investorService.getInvestorById(investorId);
+    const investor = await investorService.getInvestorById(investorId, req.access!);
 
-    await investorService.deleteInvestor(investorId);
+    await investorService.deleteInvestor(investorId, req.access!);
 
     // Log investor deletion
     await activityLogService

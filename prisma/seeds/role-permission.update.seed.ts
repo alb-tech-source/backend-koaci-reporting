@@ -1,4 +1,8 @@
 import prisma from "../../src/lib/prisma.ts";
+import {
+  CANONICAL_PERMISSIONS,
+  CANONICAL_ROLE_PERMISSIONS,
+} from "./permission.config.ts";
 
 /**
  * Seeder untuk FORCE UPDATE Role & Permissions
@@ -141,7 +145,7 @@ async function forceUpdatePermissions() {
 
     // STEP 2: Create/update permissions
     console.log("📝 STEP 2: Creating/updating permissions...");
-    const permissionEntries = Object.entries(PERMISSIONS);
+    const permissionEntries = Object.entries(CANONICAL_PERMISSIONS);
 
     await prisma.permission.createMany({
       data: permissionEntries.map(([key]) => ({
@@ -173,7 +177,9 @@ async function forceUpdatePermissions() {
     for (const role of allRoles) {
       const roleName = role.role_name;
       const permissionKeys =
-        ROLE_PERMISSIONS[roleName as keyof typeof ROLE_PERMISSIONS];
+        CANONICAL_ROLE_PERMISSIONS[
+          roleName as keyof typeof CANONICAL_ROLE_PERMISSIONS
+        ];
 
       if (!permissionKeys) {
         console.warn(`⚠️  No permissions defined for role: ${roleName}`);

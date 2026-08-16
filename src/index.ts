@@ -7,12 +7,14 @@ import { smtpConnection } from "./config/mailer.js";
 import docs from "./docs/route.js";
 import passport from "./config/passport.js";
 import session from "express-session";
+import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(
   session({

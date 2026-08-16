@@ -7,6 +7,10 @@ import type {
 } from "../../types/investor.types.js";
 import { ApiError } from "../../utils/apiError.js";
 import prisma from "../../lib/prisma.js";
+import type { AccessContext } from "../../middleware/auth.middleware.js";
+
+const investorAccessWhere = (access: AccessContext) =>
+  access.scope === "own" ? { user_id: access.userId } : {};
 
 export function toSafeInvestor(investor: any): SafeInvestor {
   return {
@@ -44,10 +48,18 @@ export function toSafeInvestor(investor: any): SafeInvestor {
 }
 
 export const investorService = {
-  createInvestor: async (input: CreateInvestorInput): Promise<SafeInvestor> => {
+  createInvestor: async (
+    input: CreateInvestorInput,
+    access: AccessContext,
+  ): Promise<SafeInvestor> => {
+    const effectiveInput = {
+      ...input,
+      user_id: access.scope === "own" ? access.userId : input.user_id,
+      status: access.scope === "own" ? "inactive" as const : input.status,
+    };
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { user_id: input.user_id },
+      where: { user_id: effectiveInput.user_id },
       include: {
         role: true,
       },
@@ -59,7 +71,7 @@ export const investorService = {
 
     // Check if investor already exists for this user
     const existingInvestor = await prisma.investor.findUnique({
-      where: { user_id: input.user_id },
+      where: { user_id: effectiveInput.user_id },
     });
 
     if (existingInvestor) {
@@ -68,52 +80,16 @@ export const investorService = {
 
     // Check if NIK is already registered
     const existingNIK = await prisma.investor.findFirst({
-      where: { nik: input.nik },
+      where: { nik: effectiveInput.nik },
     });
 
     if (existingNIK) {
       throw new ApiError(409, "NIK sudah terdaftar.");
     }
 
-    // Validate and update role to investor
-    // Only users with role "user" can be promoted to "investor"
-    const restrictedRoles = ["admin", "superadmin", "bod"];
-
-    if (user.role && restrictedRoles.includes(user.role.role_name)) {
-      throw new ApiError(
-        403,
-        `User dengan role ${user.role.role_name} tidak dapat diubah menjadi investor.`,
-      );
-    }
-
-    // Create or update role to investor
-    if (user.role && user.role.role_name === "user") {
-      // Update existing role from user to investor
-      await prisma.role.update({
-        where: { user_id: input.user_id },
-        data: { role_name: "investor" },
-      });
-    }
-
     const investor = await prisma.investor.create({
       data: {
-        user_id: input.user_id,
-        investor_type: input.investor_type,
-        status: input.status,
-        gender: input.gender,
-        nik: input.nik,
-        address: input.address,
-        privy: input.privy,
-        phone: input.phone,
-        account_number: input.account_number,
-        bank_name: input.bank_name,
-        heir_name: input.heir_name,
-        heir_relationship: input.heir_relationship,
-        heir_nik: input.heir_nik,
-        heir_address: input.heir_address,
-        heir_account_number: input.heir_account_number,
-        heir_bank_name: input.heir_bank_name,
-        heir_phone: input.heir_phone,
+        ...effectiveInput,
       },
       include: {
         user: {
@@ -134,11 +110,13 @@ export const investorService = {
 
   listInvestors: async (
     query: ListInvestorQuery,
+    access: AccessContext,
   ): Promise<PaginatedResult<SafeInvestor>> => {
     const { page, limit, search, investor_type, status, gender } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {
+      ...investorAccessWhere(access),
       ...(investor_type && { investor_type }),
       ...(status && { status }),
       ...(gender && { gender }),
@@ -195,10 +173,14 @@ export const investorService = {
     };
   },
 
-  getInvestorById: async (investorId: string): Promise<SafeInvestor> => {
-    const investor = await prisma.investor.findUnique({
+  getInvestorById: async (
+    investorId: string,
+    access: AccessContext,
+  ): Promise<SafeInvestor> => {
+    const investor = await prisma.investor.findFirst({
       where: {
         investor_id: investorId,
+        ...investorAccessWhere(access),
       },
       include: {
         user: {
@@ -223,10 +205,14 @@ export const investorService = {
     return toSafeInvestor(investor);
   },
 
-  getInvestorByUserId: async (userId: string): Promise<SafeInvestor> => {
-    const investor = await prisma.investor.findUnique({
+  getInvestorByUserId: async (
+    userId: string,
+    access: AccessContext,
+  ): Promise<SafeInvestor> => {
+    const investor = await prisma.investor.findFirst({
       where: {
         user_id: userId,
+        ...investorAccessWhere(access),
       },
       include: {
         user: {
@@ -254,9 +240,17 @@ export const investorService = {
   updateInvestor: async (
     investorId: string,
     input: UpdateInvestorInput,
+    access: AccessContext,
   ): Promise<SafeInvestor> => {
-    const existingInvestor = await prisma.investor.findUnique({
-      where: { investor_id: investorId },
+    if (access.scope === "own" && input.status !== undefined) {
+      throw new ApiError(
+        403,
+        "Status investor hanya dapat diubah dengan scope any",
+      );
+    }
+
+    const existingInvestor = await prisma.investor.findFirst({
+      where: { investor_id: investorId, ...investorAccessWhere(access) },
     });
 
     if (!existingInvestor) {
@@ -274,9 +268,13 @@ export const investorService = {
       }
     }
 
-    const updatedInvestor = await prisma.investor.update({
-      where: { investor_id: investorId },
+    await prisma.investor.updateMany({
+      where: { investor_id: investorId, ...investorAccessWhere(access) },
       data: input,
+    });
+
+    const updatedInvestor = await prisma.investor.findFirstOrThrow({
+      where: { investor_id: investorId, ...investorAccessWhere(access) },
       include: {
         user: {
           select: {
@@ -297,9 +295,10 @@ export const investorService = {
   updateInvestorStatus: async (
     investorId: string,
     status: "active" | "inactive" | "blacklist",
+    access: AccessContext,
   ): Promise<SafeInvestor> => {
-    const existingInvestor = await prisma.investor.findUnique({
-      where: { investor_id: investorId },
+    const existingInvestor = await prisma.investor.findFirst({
+      where: { investor_id: investorId, ...investorAccessWhere(access) },
     });
 
     if (!existingInvestor) {
@@ -330,9 +329,12 @@ export const investorService = {
     return toSafeInvestor(updatedInvestor);
   },
 
-  deleteInvestor: async (investorId: string): Promise<void> => {
-    const existingInvestor = await prisma.investor.findUnique({
-      where: { investor_id: investorId },
+  deleteInvestor: async (
+    investorId: string,
+    access: AccessContext,
+  ): Promise<void> => {
+    const existingInvestor = await prisma.investor.findFirst({
+      where: { investor_id: investorId, ...investorAccessWhere(access) },
       include: {
         InvestorDocument: {
           select: {

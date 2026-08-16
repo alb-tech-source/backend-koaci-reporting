@@ -2,6 +2,8 @@ import authRoutes from "./auth.route.js";
 import userRoutes from "./user.route.js";
 import investorRoutes from "./investor.route.js";
 import investorDocumentRoutes from "./investorDocument.route.js";
+import companyRoutes from "./company.route.js";
+import companyDocumentRoutes from "./companyDocument.route.js";
 import activityLogRoutes from "./activityLog.route.js";
 import permissionRoutes from "./permission.route.js";
 import type { Express } from "express";
@@ -11,6 +13,8 @@ const initRoutes = (app: Express) => {
   app.use("/api/users", userRoutes);
   app.use("/api/investors", investorRoutes);
   app.use("/api/investor-documents", investorDocumentRoutes);
+  app.use("/api/companies", companyRoutes);
+  app.use("/api/company-documents", companyDocumentRoutes);
   app.use("/api/activity-logs", activityLogRoutes);
   app.use("/api/permissions", permissionRoutes);
 };

@@ -7,24 +7,25 @@ datasource db {
 }
 
 model User {
-  user_id             String        @id @default(uuid())
-  firstname           String?
-  lastname            String?
-  email               String        @unique
-  password            String
-  reset_token         String?
-  reset_token_expires DateTime?
-  is_active           Boolean       @default(false)
-  last_login_at       DateTime?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  googleId            String?
-  activityLogs        ActivityLog[]
-  investor            Investor?
-  role                Role?
-  email_verified      Boolean     @default(false)
-  email_verification_token  String?
-  email_verification_expires  String?
+  user_id                    String            @id @default(uuid())
+  firstname                  String?
+  lastname                   String?
+  email                      String            @unique
+  password                   String
+  reset_token                String?
+  reset_token_expires        DateTime?
+  is_active                  Boolean           @default(false)
+  last_login_at              DateTime?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  googleId                   String?
+  activityLogs               ActivityLog[]
+  companyDocument            CompanyDocument[]
+  investor                   Investor?
+  role                       Role?
+  email_verified             Boolean           @default(false)
+  email_verification_token   String?
+  email_verification_expires String?
 }
 
 model Role {
@@ -106,6 +107,54 @@ model InvestorDocument {
   investor         Investor        @relation(fields: [investor_id], references: [investor_id])
 }
 
+model Company {
+  company_id             String            @id @default(uuid())
+  company_name           String
+  company_type           CompanyType       @default(PT)
+  industry_sector        String?
+  description            String?
+  director_name          String
+  director_phone         String
+  company_email          String?
+  director_privy         String?
+  company_address        String
+  website                String?
+  heirs_director_name    String?
+  heirs_director_phone   String?
+  heirs_director_address String?
+  status                 CompanyStatus     @default(active)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  companyDocument        CompanyDocument[]
+}
+
+model CompanyDocument {
+  document_id      String          @id @default(uuid())
+  company_id       String
+  document_type    String?
+  document_name    String
+  storage_provider StorageProvider @default(cloudflare)
+  object_key       String
+  file_size_bytes  BigInt?
+  mime_type        String?
+  uploaded_by      String
+  uploaded_at      DateTime        @default(now())
+
+  company Company @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
+  user    User    @relation(fields: [uploaded_by], references: [user_id])
+
+  @@index([company_id])
+  @@index([uploaded_by])
+  @@index([uploaded_at])
+}
+
+enum CompanyType {
+  PT
+  CV
+  Firma
+  Perorangan
+}
+
 enum RoleName {
   bod
   admin
@@ -120,6 +169,12 @@ enum InvestorType {
 }
 
 enum InvestorStatus {
+  active
+  inactive
+  blacklist
+}
+
+enum CompanyStatus {
   active
   inactive
   blacklist
@@ -156,4 +211,10 @@ enum ActivityAction {
   PERMISSION_CREATE
   PERMISSION_UPDATE
   PERMISSION_DELETE
+  COMPANY_CREATE
+  COMPANY_UPDATE
+  COMPANY_DELETE
+  COMPANY_DOCUMENT_UPLOAD
+  COMPANY_DOCUMENT_UPDATE
+  COMPANY_DOCUMENT_DELETE
 }

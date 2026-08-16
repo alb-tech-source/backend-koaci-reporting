@@ -2,7 +2,7 @@ import { Router } from "express";
 import { investorDocumentController } from "../modules/investorDocument/investorDocument.controller.js";
 import {
   authMiddleware,
-  requirePermission,
+  authorize,
 } from "../middleware/auth.middleware.js";
 import {
   validate,
@@ -57,7 +57,7 @@ router.get(
     }
   */
   authMiddleware,
-  requirePermission(["investors:read", "investors:read_own"]),
+  authorize("investor_documents", "download"),
   validateParams(investorIdParamSchema),
   investorDocumentController.getList,
 );
@@ -85,7 +85,7 @@ router.get(
     }
   */
   authMiddleware,
-  requirePermission(["investors:read", "investors:read_own"]),
+  authorize("investor_documents", "download"),
   validateParams(getInvestorDocumentSchema),
   investorDocumentController.getDownloadUrl,
 );
@@ -154,7 +154,7 @@ router.post(
     }
   */
   authMiddleware,
-  requirePermission(["investors:update", "investors:update_own"]),
+  authorize("investor_documents", "upload"),
   upload.single("file"),
   investorDocumentController.upload,
 );
@@ -181,7 +181,7 @@ router.delete(
     }
   */
   authMiddleware,
-  requirePermission(["investors:update", "investors:update_own"]),
+  authorize("investor_documents", "delete"),
   validateParams(deleteInvestorDocumentSchema),
   investorDocumentController.delete,
 );

@@ -1,8 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import Jwt from "jsonwebtoken";
+import type { Express } from "express";
+import express from "express";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/apiError.js";
 import type { JwtPayload } from "../types/auth.types.js";
+
+export type AccessScope = "any" | "own";
+export type AccessResource =
+  | "users"
+  | "roles"
+  | "investors"
+  | "investor_documents"
+  | "companies"
+  | "company_documents";
+
+export interface AccessContext {
+  resource: AccessResource;
+  action: string;
+  scope: AccessScope;
+  userId: string;
+}
 
 /**
  * Extend Express Request type to include authenticated user info
@@ -12,6 +30,7 @@ declare global {
   namespace Express {
     interface Request {
       authUser?: JwtPayload;
+      access?: AccessContext;
     }
   }
 }
@@ -26,13 +45,11 @@ export const authMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.access_token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       throw new ApiError(401, "Token tidak ditemukan");
     }
-
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
 
     let decoded: JwtPayload;
     try {
@@ -61,22 +78,115 @@ export const authMiddleware = async (
  * - app.post("/reports", authMiddleware, requirePermission(["reports:create"]), createReport)
  * - app.delete("/users/:id", authMiddleware, requirePermission(["users:delete"], true), deleteUser)
  */
-export const requirePermission = (
-  requiredPermissions: string[],
-  requireAll: boolean = false,
+export const authorize = (
+  resource: AccessResource,
+  action: string,
+  allowedScopes: readonly AccessScope[] = ["any", "own"],
 ) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       if (!req.authUser) {
         throw new ApiError(401, "User tidak terautentikasi");
       }
 
-      const userPermissions = req.authUser.permissions || [];
+      const permissions = new Set(req.authUser.permissions ?? []);
+      const scope = allowedScopes.find((candidate) =>
+        permissions.has(`${resource}:${action}:${candidate}`),
+      );
 
-      // Check if user has required permissions
+      if (!scope) {
+        const expected = allowedScopes.map(
+          (candidate) => `${resource}:${action}:${candidate}`,
+        );
+        throw new ApiError(
+          403,
+          `Anda tidak memiliki izin: ${expected.join(" atau ")}`,
+        );
+      }
+
+      req.access = {
+        resource,
+        action,
+        scope,
+        userId: req.authUser.userId,
+      };
+      return next();
+    } catch (error) {
+      return next(error);
+    }
+  };
+};
+
+export const authorizeRoleMutation = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (!req.authUser) {
+      throw new ApiError(401, "User tidak terautentikasi");
+    }
+
+    const changesRole = req.body?.role_name !== undefined;
+    const permissionIds = req.body?.permission_ids as string[] | undefined;
+    if (!changesRole && permissionIds === undefined) return next();
+
+    const actorPermissions = new Set(req.authUser.permissions ?? []);
+    if (!actorPermissions.has("roles:update:any")) {
+      throw new ApiError(403, "Anda tidak memiliki izin: roles:update:any");
+    }
+
+    if (permissionIds?.length) {
+      const prisma = await import("../lib/prisma.js").then(
+        (module) => module.default,
+      );
+      const requested = await prisma.permission.findMany({
+        where: { permission_id: { in: permissionIds } },
+        select: { permission_key: true },
+      });
+
+      if (requested.length !== new Set(permissionIds).size) {
+        throw new ApiError(400, "Terdapat permission_id yang tidak valid");
+      }
+
+      const canGrant = requested.every(({ permission_key }) => {
+        if (actorPermissions.has(permission_key)) return true;
+        const parts = permission_key.split(":");
+        if (parts.length !== 3 || parts[2] !== "own") return false;
+        return actorPermissions.has(`${parts[0]}:${parts[1]}:any`);
+      });
+
+      if (!canGrant) {
+        throw new ApiError(
+          403,
+          "Anda tidak dapat memberikan permission di luar akses Anda",
+        );
+      }
+    }
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** @deprecated Gunakan authorize(resource, action). */
+export const adminRequirePermission = (
+  requiredPermissions: string[],
+  requireAll: boolean = false,
+) => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    try {
+      if (!req.authUser) {
+        throw new ApiError(401, "User tidak terautentikasi");
+      }
       const hasPermission = requireAll
-        ? requiredPermissions.every((perm) => userPermissions.includes(perm))
-        : requiredPermissions.some((perm) => userPermissions.includes(perm));
+        ? requiredPermissions.every((perm) =>
+            req.authUser!.permissions.includes(perm),
+          )
+        : requiredPermissions.some((perm) =>
+            req.authUser!.permissions.includes(perm),
+          );
 
       if (!hasPermission) {
         throw new ApiError(
@@ -84,10 +194,9 @@ export const requirePermission = (
           `Anda tidak memiliki izin: ${requiredPermissions.join(", ")}`,
         );
       }
-
-      next();
+      return next();
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 };
@@ -140,113 +249,8 @@ export const requireRoleAndPermission = (
 ) => {
   return [
     requireRole(allowedRoles),
-    requirePermission(requiredPermissions, requireAll),
+    adminRequirePermission(requiredPermissions, requireAll),
   ];
-};
-
-/**
- * Role elevation restriction middleware
- * Prevents users from elevating others to roles higher than their own
- * Specifically: Admin cannot elevate users to SuperAdmin
- *
- * @param restrictedElevations - Array of [fromRole, toRole] pairs that are restricted
- *
- * Usage:
- * - app.put("/users/:id", authMiddleware, restrictRoleElevation([["admin", "superadmin"]]), updateUser)
- */
-export const restrictRoleElevation = (
-  restrictedElevations: [string, string][]
-) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
-    try {
-      if (!req.authUser) {
-        throw new ApiError(401, "User tidak terautentikasi");
-      }
-
-      const currentUserRole = req.authUser.role;
-      const targetRole = req.body.role_name;
-
-      // Only check if role elevation is being attempted
-      if (targetRole && targetRole !== currentUserRole) {
-        // Check if this elevation is restricted
-        const isRestricted = restrictedElevations.some(
-          ([fromRole, toRole]) =>
-            fromRole === currentUserRole && toRole === targetRole
-        );
-
-        if (isRestricted) {
-          throw new ApiError(
-            403,
-            `Role ${currentUserRole} tidak memiliki izin untuk mengubah user menjadi role ${targetRole}. Hubungi superadmin untuk perubahan ini.`
-          );
-        }
-      }
-
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
-};
-
-/**
- * Role deletion protection middleware
- * Prevents users from deleting other users with protected roles
- * Only SuperAdmin can delete BOD and SuperAdmin users
- *
- * @param protectedRoles - Array of roles that can only be deleted by superadmin
- *
- * Usage:
- * - app.delete("/users/:id", authMiddleware, restrictRoleDeletion(["bod", "superadmin"]), deleteUser)
- */
-export const restrictRoleDeletion = (
-  protectedRoles: string[]
-) => {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
-    try {
-      if (!req.authUser) {
-        throw new ApiError(401, "User tidak terautentikasi");
-      }
-
-      const currentUserRole = req.authUser.role;
-      const targetUserId = req.params.id as string;
-
-      // Only superadmin can delete protected roles
-      if (currentUserRole !== "superadmin") {
-        // Fetch target user to check their role
-        const prisma = await import("../lib/prisma.js").then((m) => m.default);
-        const targetUser = await prisma.user.findUnique({
-          where: { user_id: targetUserId },
-          select: {
-            user_id: true,
-            role: {
-              select: {
-                role_name: true,
-              },
-            },
-          },
-        });
-
-        if (!targetUser) {
-          throw new ApiError(404, "User tidak ditemukan");
-        }
-
-        const targetUserRole = targetUser.role?.role_name;
-
-        // Check if target user has protected role
-        if (targetUserRole && protectedRoles.includes(targetUserRole)) {
-          throw new ApiError(
-            403,
-            `Hanya SuperAdmin yang dapat menghapus user dengan role ${targetUserRole}. User dengan role ${currentUserRole} tidak memiliki izin untuk user ini.`
-          );
-        }
-      }
-
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
 };
 
 /**
