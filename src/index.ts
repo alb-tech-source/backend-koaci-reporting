@@ -16,6 +16,7 @@ const allowedOrigins = [
   "http://localhost:3001",
   "https://frontend-koaci-reporting-mobile.vercel.app/",
   "https://frontend-koaci-reporting-web.vercel.app/",
+  "https://backend-koaci-reporting.vercel.app/",
 ];
 
 app.use(
