@@ -59,6 +59,7 @@ app.use(
       maxAge: 1000 * 60 * 5, // 5 menit cukup, cuma buat handshake
       httpOnly: true,
       secure: env.NODE_ENV === "production",
+      sameSite: env.NODE_ENV === "production" ? "none" : "lax", // "none" untuk cross-domain production
     },
   }),
 );
