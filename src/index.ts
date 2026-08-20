@@ -11,20 +11,35 @@ import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
+// Get allowed origins from environment variables with fallback
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
+  env.CLIENT_URL,
+  env.FRONTEND_URL,
   "https://frontend-koaci-reporting-mobile.vercel.app",
   "https://frontend-koaci-reporting-web.vercel.app",
   "https://backend-koaci-reporting.vercel.app",
-];
+].filter(Boolean); // Remove any empty/undefined values
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Log for debugging (remove in production)
+      if (env.NODE_ENV !== "production") {
+        console.log("CORS request from origin:", origin);
+      }
+
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Check if origin is allowed
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("CORS blocked origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
