@@ -24,7 +24,7 @@ router.get(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'List all users with pagination and filters'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
   */
   authMiddleware,
   authorize("users", "read"),
@@ -37,7 +37,7 @@ router.get(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Get user by ID'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
       required: true,
@@ -57,7 +57,7 @@ router.post(
     #swagger.tags = ['User']
     #swagger.summary = 'Create new user'
     #swagger.description = 'Create new user with role and permissions. Role Restriction: Admin users cannot create users with SuperAdmin role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -94,7 +94,7 @@ router.put(
     #swagger.tags = ['User']
     #swagger.summary = 'Update user by ID'
     #swagger.description = 'Update user data. Use flat format with role_name and permission_ids. Important: When email is changed, email_verified will be reset to false and the user must verify the new email. Note: Users registered via Google OAuth can only update role, permissions, and is_active fields. Personal data (firstname, lastname, email, password) cannot be modified for Google users. Role Restriction: Admin users cannot elevate other users to SuperAdmin role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
       required: true,
@@ -158,7 +158,7 @@ router.patch(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Toggle user activation status'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -185,7 +185,7 @@ router.post(
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Reset user password (admin only)'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
       required: true,
@@ -205,7 +205,7 @@ router.delete(
     #swagger.tags = ['User']
     #swagger.summary = 'Delete user by ID'
     #swagger.description = 'Delete user by ID. Role Restriction: Only SuperAdmin can delete users with BOD or SuperAdmin roles. Other roles cannot delete these protected users.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'User ID',
       required: true,

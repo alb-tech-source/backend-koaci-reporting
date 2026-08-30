@@ -8,7 +8,6 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  refreshTokenSchema,
   verifyEmailSchema,
 } from "../modules/auth/auth.validation.js";
 import { env } from "../config/env.js";
@@ -56,16 +55,8 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Refresh access token'
-    #swagger.requestBody = {
-      required: true,
-      content: {
-        "application/json": {
-          schema: { $ref: "#/components/schemas/RefreshTokenRequest" }
-        }
-      }
-    }
+    #swagger.description = 'Membaca refresh_token dari httpOnly cookie, lalu mengganti access_token dan refresh_token cookie. Tidak ada token dalam request body maupun response body.'
   */
-  validate(refreshTokenSchema),
   authController.refreshAccessToken,
 );
 
@@ -140,7 +131,7 @@ router.get(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Get current authenticated user'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
   */
   authMiddleware,
   authController.getCurrentUser,
@@ -151,7 +142,7 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Logout current user'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
   */
   authMiddleware,
   authController.logout,
@@ -162,7 +153,7 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Send Email Verification'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -218,7 +209,7 @@ router.get(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Google OAuth callback endpoint'
-    #swagger.description = 'Handles callback from Google OAuth. On success, redirects to client with access_token and refresh_token as query parameters. On failure, redirects to login page with error.'
+    #swagger.description = 'Handles callback from Google OAuth. On success, sets httpOnly access_token and refresh_token cookies and redirects to the client callback page (no tokens in URL). On failure, redirects to login page with error.'
     #swagger.parameters['code'] = {
       in: 'query',
       description: 'Authorization code from Google',
@@ -244,14 +235,14 @@ router.get(
       type: 'string'
     }
     #swagger.responses[302] = {
-      description: 'Redirect to client application with tokens',
+      description: 'Redirect to client application with httpOnly cookies set',
       schema: {
         type: 'object',
         properties: {
           location: {
             type: 'string',
-            description: 'Redirect URL containing access_token and refresh_token as query parameters',
-            example: 'https://client.example.com/auth/callback?access_token=xxx&refresh_token=yyy'
+            description: 'Redirect URL (tokens are delivered via httpOnly cookies, not in the URL)',
+            example: 'https://client.example.com/auth/callback'
           }
         }
       }

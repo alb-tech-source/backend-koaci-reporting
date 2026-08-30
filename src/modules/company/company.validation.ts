@@ -10,7 +10,11 @@ export const createCompanySchema = z.object({
   description: optionalText(1000),
   director_name: z.string().trim().min(2).max(150),
   director_phone: phone,
-  company_email: z.email("Format email perusahaan tidak valid").optional(),
+  company_email: z
+    .string()
+    .trim()
+    .pipe(z.email("Format email perusahaan tidak valid"))
+    .optional(),
   director_privy: optionalText(150),
   company_address: z.string().trim().min(5).max(500),
   website: z.url("Format website tidak valid").optional(),

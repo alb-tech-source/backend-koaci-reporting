@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+// Trim spasi awal/akhir sebelum validasi format (khas hasil copy-paste di form)
+const emailSchema = z.string().trim().pipe(z.email("Format email tidak valid."));
+
 export const createUserSchema = z.object({
   firstname: z.string().min(1, "Firstname wajib diisi.").max(50),
   lastname: z.string().min(1, "Lastname wajib diisi.").max(50),
-  email: z.email("Format email tidak valid."),
+  email: emailSchema,
   password: z
     .string()
     .min(8, "Password minimal 8 karakter.")
@@ -18,7 +21,7 @@ export const updateUserSchema = z
   .object({
     firstname: z.string().min(1).max(50).optional(),
     lastname: z.string().min(1).max(50).optional(),
-    email: z.email("Format email tidak valid").optional(),
+    email: emailSchema.optional(),
     password: z.string().min(8).max(50).optional(),
     is_active: z.boolean().optional(),
     role_name: z.enum(["user", "investor", "admin", "superadmin", "bod"]).optional(),

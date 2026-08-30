@@ -5,11 +5,11 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  refreshTokenSchema,
   verifyEmailSchema,
 } from "./auth.validation.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
+import { setAuthCookies, clearAuthCookies } from "../../utils/cookies.js";
 import { env } from "../../config/env.js";
 import { activityLogService } from "../activityLog/activityLog.service.js";
 
@@ -72,20 +72,8 @@ export const authController = {
         })
         .catch((err) => console.error("Failed to log login:", err));
 
-      // Send accessToken to cookies
-      res.cookie("access_token", result.tokens.accessToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: env.NODE_ENV === "production" ? "none" : "lax", // "none" untuk cross-domain production
-        maxAge: 60 * 60 * 1000,
-      });
-
-      res.cookie("refresh_token", result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: env.NODE_ENV === "production" ? "none" : "lax", // "none" untuk cross-domain production
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      // Simpan token ke httpOnly cookie
+      setAuthCookies(res, result.tokens);
 
       res.status(200).json({
         success: true,
@@ -146,13 +134,16 @@ export const authController = {
         })
         .catch((err) => console.error("Failed to log Google login:", err));
 
-      return res.redirect(
-        `${env.CLIENT_URL}/auth/callback?` +
-          `access_token=${result.tokens.accessToken}&` +
-          `refresh_token=${result.tokens.refreshToken}`,
-      );
+      // Token dikirim via httpOnly cookie, BUKAN query string
+      setAuthCookies(res, result.tokens);
+
+      // Frontend memanggil GET /api/auth/me (dengan cookie) untuk mengambil user
+      return res.redirect(`${env.CLIENT_URL}/auth/callback`);
     } catch (error) {
-      next(error);
+      // Browser melakukan navigasi penuh: balas dengan redirect, bukan JSON.
+      // Samakan pola dengan failureRedirect passport.
+      console.error("Google login callback failed:", error);
+      return res.redirect(`${env.CLIENT_URL}/login?error=oauth_failed`);
     }
   },
 
@@ -166,20 +157,22 @@ export const authController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      // Validate input
-      const validatedData = refreshTokenSchema.parse(req.body);
+      // Token HANYA dibaca dari httpOnly cookie (tidak ada fallback body)
+      const refreshToken = req.cookies?.refresh_token;
+
+      if (!refreshToken) {
+        throw new ApiError(401, "Refresh token tidak ditemukan");
+      }
 
       // Refresh token
-      const tokens = await authService.refreshAccessToken(
-        validatedData.refreshToken,
-      );
+      const tokens = await authService.refreshAccessToken(refreshToken);
+
+      // Rotasi token via cookie baru
+      setAuthCookies(res, tokens);
 
       res.status(200).json({
         success: true,
         message: "Token berhasil diperbarui",
-        data: {
-          tokens,
-        },
       });
     } catch (error) {
       next(error);
@@ -310,8 +303,8 @@ export const authController = {
    * POST /api/auth/logout
    * Requires auth middleware
    *
-   * Note: JWT is stateless, so real logout happens on client side
-   * by removing the tokens. This endpoint is for cleanup/logging purposes.
+   * Note: JWT is stateless, penghapusan cookie httpOnly di server
+   * menghilangkan akses client terhadap token (logout efektif).
    */
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -343,6 +336,9 @@ export const authController = {
       //   where: { user_id: userId },
       //   data: { last_logout_at: new Date() },
       // });
+
+      // Hapus cookie auth (access & refresh) dari browser
+      clearAuthCookies(res);
 
       res.status(200).json({
         success: true,

@@ -26,7 +26,7 @@ router.get(
     #swagger.tags = ['Investor']
     #swagger.summary = 'List all investors with pagination and filters'
     #swagger.description = 'Get list of investors with pagination support. Admin and above can see all investors, while investors can only see their own data.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['page'] = { description: 'Page number', type: 'number', default: 1 }
     #swagger.parameters['limit'] = { description: 'Items per page (max 100)', type: 'number', default: 10 }
     #swagger.parameters['search'] = { description: 'Search by full_name, email, or NIK', type: 'string' }
@@ -47,7 +47,7 @@ router.get(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Get investor by ID'
     #swagger.description = 'Get detailed investor information by investor_id. Requires investors:read or investors:read_own permission.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Investor ID (UUID)',
       required: true,
@@ -72,7 +72,7 @@ router.get(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Get investor by user ID'
     #swagger.description = 'Get investor profile by user_id. Useful for getting current user investor profile.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['userId'] = {
       description: 'User ID (UUID)',
       required: true,
@@ -93,7 +93,7 @@ router.post(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Create new investor'
     #swagger.description = 'Create a new investor profile. Automatically assigns "investor" role to the user (if user role was "user" or no role).'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -120,7 +120,7 @@ router.put(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Update investor by ID'
     #swagger.description = 'Update investor information. All fields are optional (partial update).'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Investor ID (UUID)',
       required: true,
@@ -154,7 +154,7 @@ router.patch(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Update investor status'
     #swagger.description = 'Update investor status (active/inactive/blacklist). Only admin and above can change status.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Investor ID (UUID)',
       required: true,
@@ -183,7 +183,7 @@ router.delete(
     #swagger.tags = ['Investor']
     #swagger.summary = 'Delete investor by ID'
     #swagger.description = 'Permanently delete investor and all related documents. This action cannot be undone.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Investor ID (UUID)',
       required: true,

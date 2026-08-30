@@ -13,7 +13,9 @@ export type AccessResource =
   | "investors"
   | "investor_documents"
   | "companies"
-  | "company_documents";
+  | "company_documents"
+  | "projects"
+  | "project_documents";
 
 export interface AccessContext {
   resource: AccessResource;

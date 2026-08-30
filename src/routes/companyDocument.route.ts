@@ -18,7 +18,7 @@ router.get(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'List documents by company'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['companyId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.parameters['page'] = { in: 'query', type: 'integer', default: 1 }
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', default: 10 }
@@ -36,7 +36,7 @@ router.get(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'Generate document download URL'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Presigned download URL', schema: { $ref: '#/components/schemas/CompanyDocumentDownloadUrlResponse' } }
   */
@@ -49,7 +49,7 @@ router.get(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'Get company document detail'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Company document detail', schema: { $ref: '#/components/schemas/CompanyDocumentResponse' } }
   */
@@ -62,7 +62,7 @@ router.post(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'Upload company document'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = { required: true, content: { "multipart/form-data": { schema: { type: 'object', required: ['company_id', 'document_name', 'file'], properties: { company_id: { type: 'string', format: 'uuid' }, document_type: { type: 'string' }, document_name: { type: 'string' }, storage_provider: { type: 'string', enum: ['cloudflare', 'aws', 'tencent'], default: 'cloudflare' }, file: { type: 'string', format: 'binary' } } } } } }
     #swagger.responses[201] = { description: 'Document uploaded', schema: { $ref: '#/components/schemas/CompanyDocumentResponse' } }
   */
@@ -75,7 +75,7 @@ router.put(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'Update company document metadata'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/UpdateCompanyDocumentRequest' } } } }
     #swagger.responses[200] = { description: 'Document updated', schema: { $ref: '#/components/schemas/CompanyDocumentResponse' } }
@@ -89,7 +89,7 @@ router.delete(
   /*
     #swagger.tags = ['Company Document']
     #swagger.summary = 'Delete company document'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Document deleted' }
   */

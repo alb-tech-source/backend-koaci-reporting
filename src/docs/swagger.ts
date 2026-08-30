@@ -27,13 +27,17 @@ const doc = {
     { name: "Investor Document", description: "Investor document endpoints" },
     { name: "Company", description: "Company management endpoints" },
     { name: "Company Document", description: "Company document endpoints" },
+    { name: "Project", description: "Project management endpoints" },
+    { name: "Project Document", description: "Project document endpoints" },
   ],
 
   components: {
     securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
+      // Autentikasi via httpOnly cookie yang di-set saat login / refresh
+      cookieAuth: {
+        type: "apiKey",
+        in: "cookie",
+        name: "access_token",
       },
     },
 
@@ -57,9 +61,6 @@ const doc = {
       ResetPasswordRequest: {
         token: "reset_token_here",
         newPassword: "NewPassword123",
-      },
-      RefreshTokenRequest: {
-        refreshToken: "your_refresh_token_here",
       },
       CreateUserRequest: {
         firstname: "Jane",
@@ -358,6 +359,117 @@ const doc = {
         meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
       },
       CompanyDocumentDownloadUrlResponse: {
+        success: true,
+        data: {
+          downloadUrl: "https://presigned-url-here",
+          message: "URL download berhasil dibuat",
+        },
+      },
+
+      // Project Schemas
+      CreateProjectRequest: {
+        company_id: "uuid-company-id",
+        project_key: "proyek-koaci-2026-01",
+        funding_required: 500000000,
+        net_margin_amount: 75000000,
+        applicant_profit_share_percentage: 40,
+        applicant_profit_share_amount: 30000000,
+        koaci_profit_share_percentage: 20,
+        koaci_profit_share_amount: 15000000,
+        koaci_profit_share_beneficiary_percentage: 5,
+        koaci_profit_share_beneficiary_amount: 3750000,
+        investor_profit_share_percentage: 40,
+        investor_profit_share_amount: 30000000,
+        aggregate_fund_amount: 500000000,
+        disbursement_amount: 500000000,
+        disbursement_date: "2026-08-30T00:00:00.000Z",
+        source_account_number: "1234567890",
+        destination_account_number: "0987654321",
+        beneficiary_refund_date: "2027-08-30T00:00:00.000Z",
+        beneficiary_refund_amount: 575000000,
+        beneficiary_repayment_source_account: "0987654321",
+        beneficiary_repayment_destination_account: "1234567890",
+        url_transaction_folder: "https://drive.google.com/folder/xyz",
+        fund_disbursement_official_record: "Berita acara penyaluran dana proyek Koaci 2026-01",
+        status: "open",
+      },
+      UpdateProjectRequest: {
+        funding_required: 600000000,
+        status: "target_achieved",
+      },
+      ProjectResponse: {
+        project_id: "uuid-project-id",
+        project_key: "proyek-koaci-2026-01",
+        company_id: "uuid-company-id",
+        funding_required: "500000000",
+        net_margin_amount: "75000000",
+        applicant_profit_share_percentage: 40,
+        applicant_profit_share_amount: "30000000",
+        koaci_profit_share_percentage: 20,
+        koaci_profit_share_amount: "15000000",
+        koaci_profit_share_beneficiary_percentage: 5,
+        koaci_profit_share_beneficiary_amount: "3750000",
+        investor_profit_share_percentage: 40,
+        investor_profit_share_amount: "30000000",
+        aggregate_fund_amount: "500000000",
+        disbursement_amount: "500000000",
+        disbursement_date: "2026-08-30T00:00:00.000Z",
+        source_account_number: "1234567890",
+        destination_account_number: "0987654321",
+        beneficiary_refund_date: "2027-08-30T00:00:00.000Z",
+        beneficiary_refund_amount: "575000000",
+        beneficiary_repayment_source_account: "0987654321",
+        beneficiary_repayment_destination_account: "1234567890",
+        url_transaction_folder: "https://drive.google.com/folder/xyz",
+        fund_disbursement_official_record: "Berita acara penyaluran dana proyek Koaci 2026-01",
+        status: "open",
+        createdAt: "2026-08-30T00:00:00.000Z",
+        updatedAt: "2026-08-30T00:00:00.000Z",
+        company: { $ref: "#/components/schemas/CompanyResponse" },
+        projectDocument: [],
+      },
+      ListProjectsResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/ProjectResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+
+      // Project Document Schemas
+      UploadProjectDocumentRequest: {
+        project_id: "uuid-project-id",
+        document_type: "laporan_keuangan",
+        document_name: "laporan-keuangan-q1.pdf",
+        storage_provider: "cloudflare",
+        file: "binary-file-data",
+      },
+      UpdateProjectDocumentRequest: {
+        document_type: "proposal",
+        document_name: "proposal-revisi.pdf",
+      },
+      ProjectDocumentResponse: {
+        document_id: "uuid-document-id",
+        project_id: "uuid-project-id",
+        document_type: "laporan_keuangan",
+        document_name: "laporan-keuangan-q1.pdf",
+        storage_provider: "cloudflare",
+        object_key: "project/uuid-project-id/uuid-laporan-keuangan-q1.pdf",
+        file_size_bytes: "1024000",
+        mime_type: "application/pdf",
+        uploaded_by: "uuid-user-id",
+        uploaded_at: "2026-08-30T00:00:00.000Z",
+        user: {
+          user_id: "uuid-user-id",
+          firstname: "Admin",
+          lastname: "Koaci",
+          email: "admin@koaci.id",
+        },
+      },
+      ListProjectDocumentsResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/ProjectDocumentResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+      ProjectDocumentDownloadUrlResponse: {
         success: true,
         data: {
           downloadUrl: "https://presigned-url-here",

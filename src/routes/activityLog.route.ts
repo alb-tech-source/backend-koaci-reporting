@@ -30,7 +30,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get all activity logs'
     #swagger.description = 'Get all activity logs with pagination and filters. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number', default: 1 }
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page (max 100)', default: 50 }
     #swagger.parameters['userId'] = { in: 'query', type: 'string', description: 'Filter by user ID who performed action' }
@@ -69,7 +69,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get activity statistics'
     #swagger.description = 'Get activity statistics for dashboard. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.responses[200] = {
       description: 'Activity statistics retrieved successfully',
       schema: {
@@ -106,7 +106,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get recent activities'
     #swagger.description = 'Get recent activities for dashboard. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Number of recent activities (max 50)', default: 10 }
   */
   authMiddleware,
@@ -125,7 +125,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get activity log detail'
     #swagger.description = 'Get specific activity log detail by ID. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = { description: 'Activity log ID', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = {
       description: 'Activity log retrieved successfully',
@@ -155,7 +155,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get activities by user'
     #swagger.description = 'Get all activities performed by specific user. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['userId'] = { description: 'User ID', required: true, type: 'string', format: 'uuid' }
     #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number', default: 1 }
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page', default: 50 }
@@ -176,7 +176,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get activities by entity'
     #swagger.description = 'Get all activities related to specific entity. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['entityType'] = { description: 'Entity type (User, Investor, etc.)', required: true, type: 'string' }
     #swagger.parameters['entityId'] = { description: 'Entity ID', required: true, type: 'string' }
     #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number', default: 1 }
@@ -198,7 +198,7 @@ router.get(
     #swagger.tags = ['Activity Log']
     #swagger.summary = 'Get activities by action type'
     #swagger.description = 'Get all activities of specific action type. Only accessible by BOD role.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['action'] = { description: 'Action type', required: true, type: 'string', enum: ['USER_CREATE', 'USER_UPDATE', 'USER_DELETE', 'INVESTOR_CREATE', 'LOGIN_SUCCESS', 'LOGIN_FAILED', 'LOGOUT'] }
     #swagger.parameters['page'] = { in: 'query', type: 'integer', description: 'Page number', default: 1 }
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: 'Items per page', default: 50 }

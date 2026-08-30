@@ -173,7 +173,14 @@ export const authService = {
       throw new ApiError(401, "User tidak ditemukan atau tidak aktif");
     }
 
-    return generateTokens(decoded);
+    // Buang klaim waktu (iat/exp) dari token lama agar bisa di-sign ulang
+    // dengan expiry baru (Jwt.sign menolak expiresIn jika payload punya exp)
+    const { iat, exp, ...payload } = decoded as JwtPayload & {
+      iat?: number;
+      exp?: number;
+    };
+
+    return generateTokens(payload);
   },
 
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {

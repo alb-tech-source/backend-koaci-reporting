@@ -21,6 +21,7 @@ model User {
   googleId                   String?
   activityLogs               ActivityLog[]
   companyDocument            CompanyDocument[]
+  projectDocument            ProjectDocument[]
   investor                   Investor?
   role                       Role?
   email_verified             Boolean           @default(false)
@@ -126,6 +127,7 @@ model Company {
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   companyDocument        CompanyDocument[]
+  project                Project[]
 }
 
 model CompanyDocument {
@@ -144,6 +146,62 @@ model CompanyDocument {
   user    User    @relation(fields: [uploaded_by], references: [user_id])
 
   @@index([company_id])
+  @@index([uploaded_by])
+  @@index([uploaded_at])
+}
+
+model Project {
+  project_id                                 String         @id @default(uuid())
+  project_key                                String         @unique
+  company_id                                 String
+  funding_required                           Decimal        @db.Decimal(18, 2)
+  net_margin_amount                          Decimal?       @db.Decimal(18, 2)
+  applicant_profit_share_percentage          Float?
+  applicant_profit_share_amount              Decimal?       @db.Decimal(18, 2)
+  koaci_profit_share_percentage              Float?
+  koaci_profit_share_amount                  Decimal?       @db.Decimal(18, 2)
+  koaci_profit_share_beneficiary_percentage  Float?
+  koaci_profit_share_beneficiary_amount      Decimal?       @db.Decimal(18, 2)
+  investor_profit_share_percentage           Float?
+  investor_profit_share_amount               Decimal?       @db.Decimal(18, 2)
+  aggregate_fund_amount                      Decimal?       @db.Decimal(18, 2)
+  disbursement_amount                        Decimal?       @db.Decimal(18, 2)
+  disbursement_date                          DateTime?
+  source_account_number                      String?
+  destination_account_number                 String?
+  beneficiary_refund_date                    DateTime?
+  beneficiary_refund_amount                  Decimal?       @db.Decimal(18, 2)
+  beneficiary_repayment_source_account       String?
+  beneficiary_repayment_destination_account  String?
+  url_transaction_folder                     String?
+  fund_disbursement_official_record          String?
+  status                                     ProjectStatus  @default(open)
+  createdAt                                  DateTime       @default(now())
+  updatedAt                                  DateTime       @updatedAt
+
+  company         Company          @relation(fields: [company_id], references: [company_id])
+  projectDocument ProjectDocument[]
+
+  @@index([company_id])
+  @@index([status])
+}
+
+model ProjectDocument {
+  document_id      String          @id @default(uuid())
+  project_id       String
+  document_type    String?
+  document_name    String
+  storage_provider StorageProvider @default(cloudflare)
+  object_key       String
+  file_size_bytes  BigInt?
+  mime_type        String?
+  uploaded_by      String
+  uploaded_at      DateTime        @default(now())
+
+  project Project @relation(fields: [project_id], references: [project_id], onDelete: Cascade)
+  user    User    @relation(fields: [uploaded_by], references: [user_id])
+
+  @@index([project_id])
   @@index([uploaded_by])
   @@index([uploaded_at])
 }
@@ -178,6 +236,13 @@ enum CompanyStatus {
   active
   inactive
   blacklist
+}
+
+enum ProjectStatus {
+  open
+  closed
+  target_achieved
+  cancelled
 }
 
 enum Gender {
@@ -217,4 +282,10 @@ enum ActivityAction {
   COMPANY_DOCUMENT_UPLOAD
   COMPANY_DOCUMENT_UPDATE
   COMPANY_DOCUMENT_DELETE
+  PROJECT_CREATE
+  PROJECT_UPDATE
+  PROJECT_DELETE
+  PROJECT_DOCUMENT_UPLOAD
+  PROJECT_DOCUMENT_UPDATE
+  PROJECT_DOCUMENT_DELETE
 }

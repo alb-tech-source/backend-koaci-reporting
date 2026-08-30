@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+// Trim spasi awal/akhir sebelum validasi format (khas hasil copy-paste di form)
+const emailSchema = z.string().trim().pipe(z.email("Format email tidak valid"));
+
 export const registerSchema = z.object({
   firstname: z.string().min(1, "Firstname wajib diisi").max(50),
   lastname: z.string().min(1, "lastname wajib diisi").max(50),
-  email: z.email("Format email tidak valid"),
+  email: emailSchema,
   password: z
     .string()
     .min(8, "Password minimal 8 karakter")
@@ -12,12 +15,12 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.email("Format email tidak valid"),
+  email: emailSchema,
   password: z.string().min(1, "Password wajib diisi"),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Format email tidak valid"),
+  email: emailSchema,
 });
 
 export const resetPasswordSchema = z.object({
@@ -29,10 +32,6 @@ export const resetPasswordSchema = z.object({
     .regex(/[0-9]/, "Password harus mengandung angka"),
 });
 
-export const refreshTokenSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token wajib diisi"),
-});
-
 export const verifyEmailSchema = z.object({
-  email: z.email("Format email tidak valid"),
+  email: emailSchema,
 });

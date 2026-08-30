@@ -16,7 +16,7 @@ router.get(
   /*
     #swagger.tags = ['Company']
     #swagger.summary = 'List companies'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['page'] = { in: 'query', type: 'integer', default: 1 }
     #swagger.parameters['limit'] = { in: 'query', type: 'integer', default: 10 }
     #swagger.parameters['search'] = { in: 'query', type: 'string' }
@@ -33,7 +33,7 @@ router.get(
   /*
     #swagger.tags = ['Company']
     #swagger.summary = 'Get company by ID'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Company detail', schema: { $ref: '#/components/schemas/CompanyResponse' } }
     #swagger.responses[404] = { description: 'Company not found' }
@@ -47,7 +47,7 @@ router.post(
   /*
     #swagger.tags = ['Company']
     #swagger.summary = 'Create company'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/CreateCompanyRequest' } } } }
     #swagger.responses[201] = { description: 'Company created', schema: { $ref: '#/components/schemas/CompanyResponse' } }
   */
@@ -60,7 +60,7 @@ router.put(
   /*
     #swagger.tags = ['Company']
     #swagger.summary = 'Update company'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/UpdateCompanyRequest' } } } }
     #swagger.responses[200] = { description: 'Company updated', schema: { $ref: '#/components/schemas/CompanyResponse' } }
@@ -74,7 +74,7 @@ router.delete(
   /*
     #swagger.tags = ['Company']
     #swagger.summary = 'Delete company'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Company deleted' }
   */

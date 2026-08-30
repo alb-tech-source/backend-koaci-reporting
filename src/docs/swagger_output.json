@@ -39,6 +39,14 @@
     {
       "name": "Company Document",
       "description": "Company document endpoints"
+    },
+    {
+      "name": "Project",
+      "description": "Project management endpoints"
+    },
+    {
+      "name": "Project Document",
+      "description": "Project document endpoints"
     }
   ],
   "paths": {
@@ -96,20 +104,10 @@
           "Auth"
         ],
         "summary": "Refresh access token",
-        "description": "",
+        "description": "Membaca refresh_token dari httpOnly cookie, lalu mengganti access_token dan refresh_token cookie. Tidak ada token dalam request body maupun response body.",
         "responses": {
           "200": {
             "description": "OK"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
-              }
-            }
           }
         }
       }
@@ -216,7 +214,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -235,7 +233,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -254,7 +252,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -367,7 +365,7 @@
           "Auth"
         ],
         "summary": "Google OAuth callback endpoint",
-        "description": "Handles callback from Google OAuth. On success, redirects to client with access_token and refresh_token as query parameters. On failure, redirects to login page with error.",
+        "description": "Handles callback from Google OAuth. On success, sets httpOnly access_token and refresh_token cookies and redirects to the client callback page (no tokens in URL). On failure, redirects to login page with error.",
         "parameters": [
           {
             "name": "code",
@@ -427,7 +425,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -461,7 +459,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -502,7 +500,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -580,7 +578,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -636,7 +634,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -667,7 +665,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -708,7 +706,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -828,7 +826,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -857,7 +855,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -910,7 +908,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -951,7 +949,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -990,7 +988,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1021,7 +1019,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1052,7 +1050,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1237,7 +1235,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1306,7 +1304,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1429,7 +1427,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1542,7 +1540,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1647,7 +1645,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -1676,7 +1674,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1731,7 +1729,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -1771,7 +1769,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1809,7 +1807,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1881,7 +1879,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1923,7 +1921,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -1965,7 +1963,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -2005,7 +2003,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -2043,7 +2041,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2074,7 +2072,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -2090,6 +2088,577 @@
                 ],
                 "properties": {
                   "company_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "document_type": {
+                    "type": "string"
+                  },
+                  "document_name": {
+                    "type": "string"
+                  },
+                  "storage_provider": {
+                    "type": "string",
+                    "enum": [
+                      "cloudflare",
+                      "aws",
+                      "tencent"
+                    ],
+                    "default": "cloudflare"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/": {
+      "get": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "List projects",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "open",
+                    "closed",
+                    "target_achieved",
+                    "cancelled"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Create project",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Project created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Company not found"
+          },
+          "409": {
+            "description": "project_key already used"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}": {
+      "get": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Get project by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Update project",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Delete project",
+        "description": "Menghapus project beserta seluruh dokumennya (object storage dan database).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project deleted"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-documents/project/{projectId}": {
+      "get": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "List documents by project",
+        "description": "",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "document_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project document list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectDocumentsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectDocumentsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-documents/{documentId}/download": {
+      "get": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Generate document download URL",
+        "description": "",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentDownloadUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentDownloadUrlResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-documents/{documentId}": {
+      "get": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Get project document detail",
+        "description": "",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project document detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Update project document metadata",
+        "description": "",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDocumentRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Delete project document",
+        "description": "",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document deleted"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-documents/": {
+      "post": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Upload project document",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Document uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "project_id",
+                  "document_name",
+                  "file"
+                ],
+                "properties": {
+                  "project_id": {
                     "type": "string",
                     "format": "uuid"
                   },
@@ -2316,7 +2885,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2551,7 +3120,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2581,7 +3150,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2684,7 +3253,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2733,7 +3302,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2790,7 +3359,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2847,7 +3416,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2866,7 +3435,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -2885,7 +3454,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -2902,7 +3471,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -2943,7 +3512,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       },
@@ -2972,7 +3541,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -3011,7 +3580,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ]
       }
@@ -3019,9 +3588,10 @@
   },
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token"
       }
     },
     "schemas": {
@@ -3103,18 +3673,6 @@
         },
         "xml": {
           "name": "ResetPasswordRequest"
-        }
-      },
-      "RefreshTokenRequest": {
-        "type": "object",
-        "properties": {
-          "refreshToken": {
-            "type": "string",
-            "example": "your_refresh_token_here"
-          }
-        },
-        "xml": {
-          "name": "RefreshTokenRequest"
         }
       },
       "CreateUserRequest": {
@@ -4285,6 +4843,475 @@
         },
         "xml": {
           "name": "CompanyDocumentDownloadUrlResponse"
+        }
+      },
+      "CreateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "example": "uuid-company-id"
+          },
+          "project_key": {
+            "type": "string",
+            "example": "proyek-koaci-2026-01"
+          },
+          "funding_required": {
+            "type": "number",
+            "example": 500000000
+          },
+          "net_margin_amount": {
+            "type": "number",
+            "example": 75000000
+          },
+          "applicant_profit_share_percentage": {
+            "type": "number",
+            "example": 40
+          },
+          "applicant_profit_share_amount": {
+            "type": "number",
+            "example": 30000000
+          },
+          "koaci_profit_share_percentage": {
+            "type": "number",
+            "example": 20
+          },
+          "koaci_profit_share_amount": {
+            "type": "number",
+            "example": 15000000
+          },
+          "koaci_profit_share_beneficiary_percentage": {
+            "type": "number",
+            "example": 5
+          },
+          "koaci_profit_share_beneficiary_amount": {
+            "type": "number",
+            "example": 3750000
+          },
+          "investor_profit_share_percentage": {
+            "type": "number",
+            "example": 40
+          },
+          "investor_profit_share_amount": {
+            "type": "number",
+            "example": 30000000
+          },
+          "aggregate_fund_amount": {
+            "type": "number",
+            "example": 500000000
+          },
+          "disbursement_amount": {
+            "type": "number",
+            "example": 500000000
+          },
+          "disbursement_date": {
+            "type": "string",
+            "example": "2026-08-30T00:00:00.000Z"
+          },
+          "source_account_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "destination_account_number": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "beneficiary_refund_date": {
+            "type": "string",
+            "example": "2027-08-30T00:00:00.000Z"
+          },
+          "beneficiary_refund_amount": {
+            "type": "number",
+            "example": 575000000
+          },
+          "beneficiary_repayment_source_account": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "beneficiary_repayment_destination_account": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "url_transaction_folder": {
+            "type": "string",
+            "example": "https://drive.google.com/folder/xyz"
+          },
+          "fund_disbursement_official_record": {
+            "type": "string",
+            "example": "Berita acara penyaluran dana proyek Koaci 2026-01"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          }
+        },
+        "xml": {
+          "name": "CreateProjectRequest"
+        }
+      },
+      "UpdateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "funding_required": {
+            "type": "number",
+            "example": 600000000
+          },
+          "status": {
+            "type": "string",
+            "example": "target_achieved"
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectRequest"
+        }
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "project_key": {
+            "type": "string",
+            "example": "proyek-koaci-2026-01"
+          },
+          "company_id": {
+            "type": "string",
+            "example": "uuid-company-id"
+          },
+          "funding_required": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "net_margin_amount": {
+            "type": "string",
+            "example": "75000000"
+          },
+          "applicant_profit_share_percentage": {
+            "type": "number",
+            "example": 40
+          },
+          "applicant_profit_share_amount": {
+            "type": "string",
+            "example": "30000000"
+          },
+          "koaci_profit_share_percentage": {
+            "type": "number",
+            "example": 20
+          },
+          "koaci_profit_share_amount": {
+            "type": "string",
+            "example": "15000000"
+          },
+          "koaci_profit_share_beneficiary_percentage": {
+            "type": "number",
+            "example": 5
+          },
+          "koaci_profit_share_beneficiary_amount": {
+            "type": "string",
+            "example": "3750000"
+          },
+          "investor_profit_share_percentage": {
+            "type": "number",
+            "example": 40
+          },
+          "investor_profit_share_amount": {
+            "type": "string",
+            "example": "30000000"
+          },
+          "aggregate_fund_amount": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "disbursement_amount": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "disbursement_date": {
+            "type": "string",
+            "example": "2026-08-30T00:00:00.000Z"
+          },
+          "source_account_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "destination_account_number": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "beneficiary_refund_date": {
+            "type": "string",
+            "example": "2027-08-30T00:00:00.000Z"
+          },
+          "beneficiary_refund_amount": {
+            "type": "string",
+            "example": "575000000"
+          },
+          "beneficiary_repayment_source_account": {
+            "type": "string",
+            "example": "0987654321"
+          },
+          "beneficiary_repayment_destination_account": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "url_transaction_folder": {
+            "type": "string",
+            "example": "https://drive.google.com/folder/xyz"
+          },
+          "fund_disbursement_official_record": {
+            "type": "string",
+            "example": "Berita acara penyaluran dana proyek Koaci 2026-01"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-08-30T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-08-30T00:00:00.000Z"
+          },
+          "company": {
+            "xml": {
+              "name": "companyresponse"
+            },
+            "$ref": "#/components/schemas/CompanyResponse"
+          },
+          "projectDocument": {
+            "type": "array",
+            "example": [],
+            "items": {}
+          }
+        },
+        "xml": {
+          "name": "ProjectResponse"
+        }
+      },
+      "ListProjectsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectresponse"
+              },
+              "$ref": "#/components/schemas/ProjectResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectsResponse"
+        }
+      },
+      "UploadProjectDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "document_type": {
+            "type": "string",
+            "example": "laporan_keuangan"
+          },
+          "document_name": {
+            "type": "string",
+            "example": "laporan-keuangan-q1.pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "file": {
+            "type": "string",
+            "example": "binary-file-data"
+          }
+        },
+        "xml": {
+          "name": "UploadProjectDocumentRequest"
+        }
+      },
+      "UpdateProjectDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "example": "proposal"
+          },
+          "document_name": {
+            "type": "string",
+            "example": "proposal-revisi.pdf"
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectDocumentRequest"
+        }
+      },
+      "ProjectDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "example": "uuid-document-id"
+          },
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "document_type": {
+            "type": "string",
+            "example": "laporan_keuangan"
+          },
+          "document_name": {
+            "type": "string",
+            "example": "laporan-keuangan-q1.pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "object_key": {
+            "type": "string",
+            "example": "project/uuid-project-id/uuid-laporan-keuangan-q1.pdf"
+          },
+          "file_size_bytes": {
+            "type": "string",
+            "example": "1024000"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "uploaded_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "example": "2026-08-30T00:00:00.000Z"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Koaci"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@koaci.id"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectDocumentResponse"
+        }
+      },
+      "ListProjectDocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectdocumentresponse"
+              },
+              "$ref": "#/components/schemas/ProjectDocumentResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectDocumentsResponse"
+        }
+      },
+      "ProjectDocumentDownloadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "downloadUrl": {
+                "type": "string",
+                "example": "https://presigned-url-here"
+              },
+              "message": {
+                "type": "string",
+                "example": "URL download berhasil dibuat"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectDocumentDownloadUrlResponse"
         }
       }
     }

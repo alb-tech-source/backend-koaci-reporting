@@ -18,10 +18,28 @@
       "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"wrongpassword\"}')",
       "Bash(cd \"/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend\" && rm -f src/config/swagger.ts src/routes/swagger.route.ts src/config/doc/swagger-output.json)",
       "Bash(npm uninstall *)",
-      "Bash(pkill -f \"npm run dev\")"
+      "Bash(pkill -f \"npm run dev\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"TSC_EXIT=$?\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt \"http://localhost:8000/api/projects?status=open&search=proyek-test\")",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt \"http://localhost:8000/api/projects?company_id=00f83785-b4af-4d27-9c6a-5d04861bf62f\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('meta:', d['meta'], '| keys:', [p['project_key'] for p in d['data']]\\)\")",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt http://localhost:8000/api/projects/d87e53b7-76fd-4557-aac4-0488b9efbf1b)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\)['data']; print\\('key:', d['project_key'], '| status:', d['status'], '| funding:', d['funding_required'], '| company:', d['company']['company_name']\\)\")",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt http://localhost:8000/api/projects/bukan-uuid)",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt -X PUT http://localhost:8000/api/projects/d87e53b7-76fd-4557-aac4-0488b9efbf1b -H \"Content-Type: application/json\" -d '{\"status\":\"target_achieved\",\"aggregate_fund_amount\":500000000,\"disbursement_amount\":500000000,\"beneficiary_refund_amount\":575000000,\"beneficiary_refund_date\":\"2027-09-15\"}')",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\)['data']['project']; print\\('status:', d['status'], '| aggregate:', d['aggregate_fund_amount'], '| refund:', d['beneficiary_refund_amount'], '| refund_date:', d['beneficiary_refund_date']\\)\")",
+      "Bash(printf '%%PDF-1.4\\\\n1 *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt -X POST http://localhost:8000/api/project-documents -F \"project_id=d87e53b7-76fd-4557-aac4-0488b9efbf1b\" -F \"document_type=laporan_keuangan\" -F \"document_name=laporan-keuangan-q1.pdf\" -F \"storage_provider=cloudflare\" -F \"file=@/tmp/koaci-test.pdf;type=application/pdf\")",
+      "Bash(npx tsx *)",
+      "Bash(grep -v \"SSL\\\\|sslmode\\\\|libpq\\\\|trace-warnings\\\\|postgreSQL\\\\|^$\\\\|prepare for\\\\|current behavior\\\\|version\")",
+      "Bash(curl -s -b /tmp/koaci-cookies.txt -X DELETE http://localhost:8000/api/companies/00f83785-b4af-4d27-9c6a-5d04861bf62f)"
     ],
     "additionalDirectories": [
-      "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config"
+      "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config",
+      "/private/tmp"
     ]
   }
 }

@@ -15,6 +15,9 @@ const app: Express = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
+  // Origin backend sendiri (mis. Swagger UI "Try it out" dari /api-docs)
+  `http://localhost:${env.PORT}`,
+  `http://127.0.0.1:${env.PORT}`,
   env.CLIENT_URL,
   env.FRONTEND_URL,
   "https://frontend-koaci-reporting-mobile.vercel.app",
@@ -89,7 +92,7 @@ app.use(
     next: express.NextFunction,
   ) => {
     console.error(err); // penting: log error asli biar keliatan di Vercel logs
-    const status = err.status || 500;
+    const status = err.statusCode || err.status || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({
       success: false,

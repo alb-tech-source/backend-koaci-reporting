@@ -32,6 +32,15 @@ export const CANONICAL_PERMISSIONS = {
   "company_documents:update:any": "Mengubah metadata dokumen perusahaan",
   "company_documents:download:any": "Mengunduh dokumen perusahaan",
   "company_documents:delete:any": "Menghapus dokumen perusahaan",
+  "projects:create:any": "Membuat project",
+  "projects:read:any": "Membaca semua project",
+  "projects:update:any": "Mengubah project",
+  "projects:delete:any": "Menghapus project",
+  "project_documents:upload:any": "Mengunggah dokumen project",
+  "project_documents:read:any": "Membaca metadata dokumen project",
+  "project_documents:update:any": "Mengubah metadata dokumen project",
+  "project_documents:download:any": "Mengunduh dokumen project",
+  "project_documents:delete:any": "Menghapus dokumen project",
 } as const;
 
 const OWN_PERMISSIONS = [
@@ -70,6 +79,15 @@ const ADMIN_PERMISSIONS = [
   "company_documents:update:any",
   "company_documents:download:any",
   "company_documents:delete:any",
+  "projects:create:any",
+  "projects:read:any",
+  "projects:update:any",
+  "projects:delete:any",
+  "project_documents:upload:any",
+  "project_documents:read:any",
+  "project_documents:update:any",
+  "project_documents:download:any",
+  "project_documents:delete:any",
 ] as const;
 
 export const CANONICAL_ROLE_PERMISSIONS = {
@@ -85,5 +103,8 @@ export const CANONICAL_ROLE_PERMISSIONS = {
     "companies:read:any",
     "company_documents:read:any",
     "company_documents:download:any",
+    "projects:read:any",
+    "project_documents:read:any",
+    "project_documents:download:any",
   ],
 } as const;

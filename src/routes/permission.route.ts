@@ -24,7 +24,7 @@ router.get(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'List all permissions without pagination'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
   */
   authMiddleware,
   requireRole(["admin", "superadmin"]),
@@ -37,7 +37,7 @@ router.get(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'List permissions with pagination and filters'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
   */
   authMiddleware,
   requireRole(["admin", "superadmin"]),
@@ -51,7 +51,7 @@ router.get(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'Get permission by ID'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Permission ID',
       required: true,
@@ -71,7 +71,7 @@ router.post(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'Create new permission (superadmin only)'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -93,7 +93,7 @@ router.put(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'Update permission by ID (superadmin only)'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Permission ID',
       required: true,
@@ -122,7 +122,7 @@ router.delete(
   /*
     #swagger.tags = ['Permission']
     #swagger.summary = 'Delete permission by ID (superadmin only)'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['id'] = {
       description: 'Permission ID',
       required: true,

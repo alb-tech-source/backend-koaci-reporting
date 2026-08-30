@@ -25,7 +25,7 @@ router.get(
     #swagger.tags = ['Investor Document']
     #swagger.summary = 'Get list of investor documents'
     #swagger.description = 'Get all documents for a specific investor with pagination support.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['investorId'] = {
       description: 'Investor ID (UUID)',
       required: true,
@@ -69,7 +69,7 @@ router.get(
     #swagger.tags = ['Investor Document']
     #swagger.summary = 'Get document download URL'
     #swagger.description = 'Get a presigned URL for downloading a specific document. URL is valid for 1 hour.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = {
       description: 'Document ID (UUID)',
       required: true,
@@ -97,7 +97,7 @@ router.post(
     #swagger.tags = ['Investor Document']
     #swagger.summary = 'Upload investor document'
     #swagger.description = 'Upload a new document for an investor. Supports multipart/form-data for file upload.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
@@ -166,7 +166,7 @@ router.delete(
     #swagger.tags = ['Investor Document']
     #swagger.summary = 'Delete investor document'
     #swagger.description = 'Permanently delete a document from storage and database. This action cannot be undone.'
-    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['documentId'] = {
       description: 'Document ID (UUID)',
       required: true,

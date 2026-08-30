@@ -12,3 +12,5 @@ export const r2Client = new S3Client({
 
 export const R2_INVESTOR_BUCKET = env.R2_BUCKET_INVESTOR_NAME;
 export const R2_COMPANY_BUCKET = env.R2_BUCKET_COMPANY_NAME;
+// Belum ada bucket khusus project — fallback ke bucket company selama belum dikonfigurasi
+export const R2_PROJECT_BUCKET = env.R2_BUCKET_PROJECT_NAME ?? env.R2_BUCKET_COMPANY_NAME;
