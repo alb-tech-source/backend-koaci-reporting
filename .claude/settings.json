@@ -35,7 +35,8 @@
       "Bash(curl -s -b /tmp/koaci-cookies.txt -X POST http://localhost:8000/api/project-documents -F \"project_id=d87e53b7-76fd-4557-aac4-0488b9efbf1b\" -F \"document_type=laporan_keuangan\" -F \"document_name=laporan-keuangan-q1.pdf\" -F \"storage_provider=cloudflare\" -F \"file=@/tmp/koaci-test.pdf;type=application/pdf\")",
       "Bash(npx tsx *)",
       "Bash(grep -v \"SSL\\\\|sslmode\\\\|libpq\\\\|trace-warnings\\\\|postgreSQL\\\\|^$\\\\|prepare for\\\\|current behavior\\\\|version\")",
-      "Bash(curl -s -b /tmp/koaci-cookies.txt -X DELETE http://localhost:8000/api/companies/00f83785-b4af-4d27-9c6a-5d04861bf62f)"
+      "Bash(curl -s -b /tmp/koaci-cookies.txt -X DELETE http://localhost:8000/api/companies/00f83785-b4af-4d27-9c6a-5d04861bf62f)",
+      "Bash(echo \"--- grep exit: $? \\(1 = bersih\\) ---\")"
     ],
     "additionalDirectories": [
       "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config",

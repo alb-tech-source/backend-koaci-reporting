@@ -29,6 +29,8 @@ const doc = {
     { name: "Company Document", description: "Company document endpoints" },
     { name: "Project", description: "Project management endpoints" },
     { name: "Project Document", description: "Project document endpoints" },
+    { name: "Project Investment", description: "Project investment endpoints" },
+    { name: "Receipt Document", description: "Receipt document endpoints" },
   ],
 
   components: {
@@ -470,6 +472,70 @@ const doc = {
         meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
       },
       ProjectDocumentDownloadUrlResponse: {
+        success: true,
+        data: {
+          downloadUrl: "https://presigned-url-here",
+          message: "URL download berhasil dibuat",
+        },
+      },
+
+      // Project Investment Schemas
+      CreateProjectInvestmentRequest: {
+        project_id: "uuid-project-id",
+        investor_id: "uuid-investor-id",
+        amount: 5000000,
+        total_package: 10,
+        source_account_transaction: "TRX-2026-001",
+        account_reference: "REF-2026-001",
+        receipt_number: "RCP-2026-001",
+        payment_method: "transfer",
+        destination_account_number: "1234567890",
+      },
+      UpdateProjectInvestmentRequest: {
+        amount: 7500000,
+        payment_method: "cash",
+      },
+      ProjectInvestmentResponse: {
+        project_investment_id: "uuid-investment-id",
+        project_id: "uuid-project-id",
+        investor_id: "uuid-investor-id",
+        amount: "5000000",
+        total_package: 10,
+        source_account_transaction: "TRX-2026-001",
+        account_reference: "REF-2026-001",
+        receipt_number: "RCP-2026-001",
+        payment_method: "transfer",
+        destination_account_number: "1234567890",
+        createdAt: "2026-09-05T00:00:00.000Z",
+        updatedAt: "2026-09-05T00:00:00.000Z",
+        project: { $ref: "#/components/schemas/ProjectResponse" },
+        investor: { $ref: "#/components/schemas/InvestorResponse" },
+      },
+      ListProjectInvestmentsResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/ProjectInvestmentResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+
+      // Receipt Document Schemas
+      ReceiptDocumentResponse: {
+        receipt_document_id: "uuid-receipt-id",
+        project_investment_id: "uuid-investment-id",
+        receipt_name: "kwitansi-investasi.pdf",
+        storage_provider: "cloudflare",
+        object_key: "receipt/uuid-investment-id/uuid-kwitansi-investasi.pdf",
+        file_size_bytes: "1024000",
+        mime_type: "application/pdf",
+        uploaded_by: "uuid-user-id",
+        uploaded_at: "2026-09-05T00:00:00.000Z",
+        user: {
+          user_id: "uuid-user-id",
+          firstname: "Admin",
+          lastname: "Koaci",
+          email: "admin@koaci.id",
+        },
+      },
+      ReceiptDocumentDownloadUrlResponse: {
         success: true,
         data: {
           downloadUrl: "https://presigned-url-here",

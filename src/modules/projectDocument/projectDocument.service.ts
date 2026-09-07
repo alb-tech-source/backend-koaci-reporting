@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import prisma from "../../lib/prisma.js";
-import { r2Client, R2_PROJECT_BUCKET } from "../../lib/r2Client.js";
+import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
 import { ApiError } from "../../utils/apiError.js";
 import type {
   CreateProjectDocumentInput,
@@ -21,7 +21,7 @@ export const projectDocumentService = {
 
     const objectKey = `project/${input.project_id}/${randomUUID()}-${input.document_name}`;
     await r2Client.send(new PutObjectCommand({
-      Bucket: R2_PROJECT_BUCKET,
+      Bucket: R2_BUCKET,
       Key: objectKey,
       Body: input.buffer,
       ContentType: input.mime_type,
@@ -42,7 +42,7 @@ export const projectDocumentService = {
         include: includeUploader,
       });
     } catch (error) {
-      await r2Client.send(new DeleteObjectCommand({ Bucket: R2_PROJECT_BUCKET, Key: objectKey })).catch(() => undefined);
+      await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: objectKey })).catch(() => undefined);
       throw error;
     }
   },
@@ -78,7 +78,7 @@ export const projectDocumentService = {
 
   getDownloadUrl: async (documentId: string) => {
     const document = await projectDocumentService.getById(documentId);
-    const command = new GetObjectCommand({ Bucket: R2_PROJECT_BUCKET, Key: document.object_key });
+    const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: document.object_key });
     return getSignedUrl(r2Client, command, { expiresIn: 3600 });
   },
 
@@ -93,7 +93,7 @@ export const projectDocumentService = {
 
   delete: async (documentId: string) => {
     const document = await projectDocumentService.getById(documentId);
-    await r2Client.send(new DeleteObjectCommand({ Bucket: R2_PROJECT_BUCKET, Key: document.object_key }));
+    await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: document.object_key }));
     return prisma.projectDocument.delete({ where: { document_id: documentId } });
   },
 };

@@ -47,6 +47,14 @@
     {
       "name": "Project Document",
       "description": "Project document endpoints"
+    },
+    {
+      "name": "Project Investment",
+      "description": "Project investment endpoints"
+    },
+    {
+      "name": "Receipt Document",
+      "description": "Receipt document endpoints"
     }
   ],
   "paths": {
@@ -2666,6 +2674,517 @@
                     "type": "string"
                   },
                   "document_name": {
+                    "type": "string"
+                  },
+                  "storage_provider": {
+                    "type": "string",
+                    "enum": [
+                      "cloudflare",
+                      "aws",
+                      "tencent"
+                    ],
+                    "default": "cloudflare"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-investments/": {
+      "get": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "List project investments",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "open",
+                    "closed",
+                    "target_achieved",
+                    "cancelled"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "investor_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project investment list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectInvestmentsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectInvestmentsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Create project investment",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Project investment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or investor not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectInvestmentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-investments/{investmentId}": {
+      "get": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Get project investment by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "investmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project investment detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project investment not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Update project investment",
+        "description": "",
+        "parameters": [
+          {
+            "name": "investmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project investment updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Minimal satu field harus diisi untuk update"
+          },
+          "404": {
+            "description": "Project investment, project, or investor not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectInvestmentRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Delete project investment",
+        "description": "Menghapus data investasi project. Akan ditolak (409) jika masih ada receipt document terkait.",
+        "parameters": [
+          {
+            "name": "investmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project investment deleted"
+          },
+          "404": {
+            "description": "Project investment not found"
+          },
+          "409": {
+            "description": "Receipt document masih terkait dengan data investasi ini"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/investment/{investmentId}": {
+      "get": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Get receipt document by project investment ID",
+        "description": "Satu data investasi hanya memiliki satu receipt document (relasi 1-1).",
+        "parameters": [
+          {
+            "name": "investmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receipt document detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Receipt document not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/{receiptId}/download": {
+      "get": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Generate receipt document download URL",
+        "description": "",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentDownloadUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentDownloadUrlResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/{receiptId}": {
+      "get": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Get receipt document by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receipt document detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Receipt document not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Delete receipt document",
+        "description": "Menghapus file receipt dari object storage beserta record database-nya. Setelah dihapus, investment bisa menerima upload receipt baru.",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receipt document deleted"
+          },
+          "404": {
+            "description": "Receipt document not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/": {
+      "post": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Upload receipt document",
+        "description": "Mengunggah receipt untuk satu data investasi. Ditolak (409) jika investment tersebut sudah memiliki receipt — hapus receipt lama terlebih dahulu untuk mengganti.",
+        "responses": {
+          "201": {
+            "description": "Receipt document uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project investment not found"
+          },
+          "409": {
+            "description": "Receipt document untuk data investasi ini sudah ada"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "project_investment_id",
+                  "receipt_name",
+                  "file"
+                ],
+                "properties": {
+                  "project_investment_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "receipt_name": {
                     "type": "string"
                   },
                   "storage_provider": {
@@ -5312,6 +5831,266 @@
         },
         "xml": {
           "name": "ProjectDocumentDownloadUrlResponse"
+        }
+      },
+      "CreateProjectInvestmentRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "amount": {
+            "type": "number",
+            "example": 5000000
+          },
+          "total_package": {
+            "type": "number",
+            "example": 10
+          },
+          "source_account_transaction": {
+            "type": "string",
+            "example": "TRX-2026-001"
+          },
+          "account_reference": {
+            "type": "string",
+            "example": "REF-2026-001"
+          },
+          "receipt_number": {
+            "type": "string",
+            "example": "RCP-2026-001"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "transfer"
+          },
+          "destination_account_number": {
+            "type": "string",
+            "example": "1234567890"
+          }
+        },
+        "xml": {
+          "name": "CreateProjectInvestmentRequest"
+        }
+      },
+      "UpdateProjectInvestmentRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 7500000
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "cash"
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectInvestmentRequest"
+        }
+      },
+      "ProjectInvestmentResponse": {
+        "type": "object",
+        "properties": {
+          "project_investment_id": {
+            "type": "string",
+            "example": "uuid-investment-id"
+          },
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "amount": {
+            "type": "string",
+            "example": "5000000"
+          },
+          "total_package": {
+            "type": "number",
+            "example": 10
+          },
+          "source_account_transaction": {
+            "type": "string",
+            "example": "TRX-2026-001"
+          },
+          "account_reference": {
+            "type": "string",
+            "example": "REF-2026-001"
+          },
+          "receipt_number": {
+            "type": "string",
+            "example": "RCP-2026-001"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "transfer"
+          },
+          "destination_account_number": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-09-05T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-09-05T00:00:00.000Z"
+          },
+          "project": {
+            "xml": {
+              "name": "projectresponse"
+            },
+            "$ref": "#/components/schemas/ProjectResponse"
+          },
+          "investor": {
+            "xml": {
+              "name": "investorresponse"
+            },
+            "$ref": "#/components/schemas/InvestorResponse"
+          }
+        },
+        "xml": {
+          "name": "ProjectInvestmentResponse"
+        }
+      },
+      "ListProjectInvestmentsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectinvestmentresponse"
+              },
+              "$ref": "#/components/schemas/ProjectInvestmentResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectInvestmentsResponse"
+        }
+      },
+      "ReceiptDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "receipt_document_id": {
+            "type": "string",
+            "example": "uuid-receipt-id"
+          },
+          "project_investment_id": {
+            "type": "string",
+            "example": "uuid-investment-id"
+          },
+          "receipt_name": {
+            "type": "string",
+            "example": "kwitansi-investasi.pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "object_key": {
+            "type": "string",
+            "example": "receipt/uuid-investment-id/uuid-kwitansi-investasi.pdf"
+          },
+          "file_size_bytes": {
+            "type": "string",
+            "example": "1024000"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "uploaded_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "example": "2026-09-05T00:00:00.000Z"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Koaci"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@koaci.id"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ReceiptDocumentResponse"
+        }
+      },
+      "ReceiptDocumentDownloadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "downloadUrl": {
+                "type": "string",
+                "example": "https://presigned-url-here"
+              },
+              "message": {
+                "type": "string",
+                "example": "URL download berhasil dibuat"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ReceiptDocumentDownloadUrlResponse"
         }
       }
     }

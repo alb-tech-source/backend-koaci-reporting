@@ -24,6 +24,9 @@ model User {
   projectDocument            ProjectDocument[]
   investor                   Investor?
   role                       Role?
+
+  receiptDocuments           ReceiptDocument[]
+
   email_verified             Boolean           @default(false)
   email_verification_token   String?
   email_verification_expires String?
@@ -93,7 +96,13 @@ model Investor {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   user                User               @relation(fields: [user_id], references: [user_id])
+
   InvestorDocument    InvestorDocument[]
+  projectInvestment   ProjectInvestment[]
+
+  @@index(user_id)
+  @@index(status)
+  @@index(nik)
 }
 
 model InvestorDocument {
@@ -181,6 +190,7 @@ model Project {
 
   company         Company          @relation(fields: [company_id], references: [company_id])
   projectDocument ProjectDocument[]
+  projectInvestment ProjectInvestment[]
 
   @@index([company_id])
   @@index([status])
@@ -204,6 +214,52 @@ model ProjectDocument {
   @@index([project_id])
   @@index([uploaded_by])
   @@index([uploaded_at])
+}
+
+model ProjectInvestment {
+  project_investment_id       String    @id   @default(uuid())
+  project_id                  String
+  investor_id                 String
+  amount                      Decimal        @db.Decimal(18, 2)
+  total_package               Int
+  source_account_transaction  String?
+  account_reference           String?
+  receipt_number              String?
+  payment_method              PaymentMethod
+  destination_account_number  String?
+  createdAt                   DateTime    @default(now())
+  updatedAt                   DateTime    @updatedAt
+
+  project   Project     @relation(fields: [project_id], references: [project_id], onDelete: NoAction)
+  investor  Investor    @relation(fields: [investor_id], references: [investor_id], onDelete: NoAction)
+
+  receiptDocument   ReceiptDocument?
+
+  @@index(project_id)
+  @@index(investor_id)
+}
+
+model ReceiptDocument {
+  receipt_document_id     String   @id   @default(uuid())
+  project_investment_id   String          @unique
+  receipt_name            String
+  storage_provider        StorageProvider @default(cloudflare)
+  object_key              String
+  file_size_bytes         BigInt?
+  mime_type               String?
+  uploaded_by             String
+  uploaded_at             DateTime        @default(now())
+
+  projectInvestment ProjectInvestment   @relation(fields: [project_investment_id], references: [project_investment_id])
+  user    User    @relation(fields: [uploaded_by], references: [user_id])
+
+  @@index(project_investment_id)
+}
+
+
+enum PaymentMethod{
+  cash
+  transfer
 }
 
 enum CompanyType {
@@ -288,4 +344,9 @@ enum ActivityAction {
   PROJECT_DOCUMENT_UPLOAD
   PROJECT_DOCUMENT_UPDATE
   PROJECT_DOCUMENT_DELETE
+  PROJECT_INVESTMENT_CREATE
+  PROJECT_INVESTMENT_UPDATE
+  PROJECT_INVESTMENT_DELETE
+  RECEIPT_DOCUMENT_UPLOAD
+  RECEIPT_DOCUMENT_DELETE
 }

@@ -7,7 +7,7 @@ import type {
   PaginatedResult,
 } from "../../types/company.types.js";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { r2Client, R2_COMPANY_BUCKET } from "../../lib/r2Client.js";
+import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
 
 const companyInclude = {
   companyDocument: { orderBy: { uploaded_at: "desc" as const } },
@@ -67,7 +67,7 @@ export const companyService = {
     await Promise.all(
       company.companyDocument.map((document) =>
         r2Client.send(new DeleteObjectCommand({
-          Bucket: R2_COMPANY_BUCKET,
+          Bucket: R2_BUCKET,
           Key: document.object_key,
         })),
       ),
