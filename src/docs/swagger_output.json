@@ -55,6 +55,14 @@
     {
       "name": "Receipt Document",
       "description": "Receipt document endpoints"
+    },
+    {
+      "name": "Project Reporting",
+      "description": "Project reporting endpoints"
+    },
+    {
+      "name": "Project Reporting Media",
+      "description": "Project reporting media endpoints"
     }
   ],
   "paths": {
@@ -3207,6 +3215,584 @@
         }
       }
     },
+    "/api/project-reportings/": {
+      "get": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "List project reportings",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectReportingsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectReportingsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "Create project reporting",
+        "description": "Membuat laporan progress project. Field submitted_by diisi otomatis dari user yang login.",
+        "responses": {
+          "201": {
+            "description": "Project reporting created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectReportingRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-reportings/{reportingId}": {
+      "get": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "Get project reporting by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "reportingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project reporting not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "Update project reporting",
+        "description": "Mengubah laporan project. Field updated_by diisi otomatis dari user yang login.",
+        "parameters": [
+          {
+            "name": "reportingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Minimal satu field harus diisi untuk update"
+          },
+          "404": {
+            "description": "Project reporting or project not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectReportingRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "Delete project reporting",
+        "description": "Menghapus laporan project. Akan ditolak (409) jika masih ada media laporan terkait.",
+        "parameters": [
+          {
+            "name": "reportingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting deleted"
+          },
+          "404": {
+            "description": "Project reporting not found"
+          },
+          "409": {
+            "description": "Media laporan masih terkait dengan laporan ini"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/reporting/{reportingId}": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "List media by project reporting",
+        "description": "",
+        "parameters": [
+          {
+            "name": "reportingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "media_type",
+            "in": "query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "photo",
+                    "video",
+                    "document"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting media list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectReportingMediaResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectReportingMediaResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/{mediaId}/download": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Generate media download URL",
+        "description": "",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaDownloadUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaDownloadUrlResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/{mediaId}": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Get project reporting media detail",
+        "description": "",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project reporting media detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project reporting media not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Update project reporting media metadata",
+        "description": "",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Media updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectReportingMediaRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Delete project reporting media",
+        "description": "Menghapus file media dari object storage beserta record database-nya.",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Media deleted"
+          },
+          "404": {
+            "description": "Project reporting media not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/": {
+      "post": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Upload project reporting media",
+        "description": "Mengunggah media (photo/video/document) untuk laporan project. Maksimal 50MB.",
+        "responses": {
+          "201": {
+            "description": "Media uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project reporting not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "project_reporting_id",
+                  "media_type",
+                  "media_name",
+                  "file"
+                ],
+                "properties": {
+                  "project_reporting_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "media_type": {
+                    "type": "string",
+                    "enum": [
+                      "photo",
+                      "video",
+                      "document"
+                    ]
+                  },
+                  "media_name": {
+                    "type": "string"
+                  },
+                  "storage_provider": {
+                    "type": "string",
+                    "enum": [
+                      "cloudflare",
+                      "aws",
+                      "tencent"
+                    ],
+                    "default": "cloudflare"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/activity-logs/": {
       "get": {
         "tags": [
@@ -6091,6 +6677,389 @@
         },
         "xml": {
           "name": "ReceiptDocumentDownloadUrlResponse"
+        }
+      },
+      "CreateProjectReportingRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "report_date": {
+            "type": "string",
+            "example": "2026-09-07T00:00:00.000Z"
+          },
+          "estimate_progress_percentage": {
+            "type": "number",
+            "example": 45
+          },
+          "narative_summary": {
+            "type": "string",
+            "example": "Pekerjaan struktur lantai 2 telah selesai 45%. Material sudah terpasang sesuai rencana kerja."
+          },
+          "issues_blockers": {
+            "type": "string",
+            "example": "Cuaca hujan menghambat pengecoran selama 2 hari"
+          },
+          "next_week_plan": {
+            "type": "string",
+            "example": "Melanjutkan pemasangan besi beton lantai 3"
+          },
+          "fund_disbursed": {
+            "type": "number",
+            "example": 150000000
+          }
+        },
+        "xml": {
+          "name": "CreateProjectReportingRequest"
+        }
+      },
+      "UpdateProjectReportingRequest": {
+        "type": "object",
+        "properties": {
+          "estimate_progress_percentage": {
+            "type": "number",
+            "example": 60
+          },
+          "narative_summary": {
+            "type": "string",
+            "example": "Progress meningkat menjadi 60% setelah pengecoran lantai 3 selesai."
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectReportingRequest"
+        }
+      },
+      "ProjectReportingResponse": {
+        "type": "object",
+        "properties": {
+          "project_reporting_id": {
+            "type": "string",
+            "example": "uuid-reporting-id"
+          },
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "report_date": {
+            "type": "string",
+            "example": "2026-09-07T00:00:00.000Z"
+          },
+          "estimate_progress_percentage": {
+            "type": "number",
+            "example": 45
+          },
+          "narative_summary": {
+            "type": "string",
+            "example": "Pekerjaan struktur lantai 2 telah selesai 45%."
+          },
+          "issues_blockers": {
+            "type": "string",
+            "example": "Cuaca hujan menghambat pengecoran selama 2 hari"
+          },
+          "next_week_plan": {
+            "type": "string",
+            "example": "Melanjutkan pemasangan besi beton lantai 3"
+          },
+          "fund_disbursed": {
+            "type": "string",
+            "example": "150000000"
+          },
+          "submitted_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "updated_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-09-07T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-09-07T00:00:00.000Z"
+          },
+          "project": {
+            "xml": {
+              "name": "projectresponse"
+            },
+            "$ref": "#/components/schemas/ProjectResponse"
+          },
+          "submitted": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Koaci"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@koaci.id"
+              }
+            }
+          },
+          "updated": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Koaci"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@koaci.id"
+              }
+            }
+          },
+          "projectReportingMedia": {
+            "type": "array",
+            "example": [],
+            "items": {}
+          }
+        },
+        "xml": {
+          "name": "ProjectReportingResponse"
+        }
+      },
+      "ListProjectReportingsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectreportingresponse"
+              },
+              "$ref": "#/components/schemas/ProjectReportingResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectReportingsResponse"
+        }
+      },
+      "UploadProjectReportingMediaRequest": {
+        "type": "object",
+        "properties": {
+          "project_reporting_id": {
+            "type": "string",
+            "example": "uuid-reporting-id"
+          },
+          "media_type": {
+            "type": "string",
+            "example": "photo"
+          },
+          "media_name": {
+            "type": "string",
+            "example": "progress-lantai-2.jpg"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "file": {
+            "type": "string",
+            "example": "binary-file-data"
+          }
+        },
+        "xml": {
+          "name": "UploadProjectReportingMediaRequest"
+        }
+      },
+      "UpdateProjectReportingMediaRequest": {
+        "type": "object",
+        "properties": {
+          "media_type": {
+            "type": "string",
+            "example": "photo"
+          },
+          "media_name": {
+            "type": "string",
+            "example": "progress-lantai-2-revisi.jpg"
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectReportingMediaRequest"
+        }
+      },
+      "ProjectReportingMediaResponse": {
+        "type": "object",
+        "properties": {
+          "project_reporting_media_id": {
+            "type": "string",
+            "example": "uuid-media-id"
+          },
+          "project_reporting_id": {
+            "type": "string",
+            "example": "uuid-reporting-id"
+          },
+          "media_type": {
+            "type": "string",
+            "example": "photo"
+          },
+          "media_name": {
+            "type": "string",
+            "example": "progress-lantai-2.jpg"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          },
+          "object_key": {
+            "type": "string",
+            "example": "reporting/uuid-reporting-id/uuid-progress-lantai-2.jpg"
+          },
+          "file_size_bytes": {
+            "type": "string",
+            "example": "1024000"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "uploaded_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "example": "2026-09-07T00:00:00.000Z"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "example": "uuid-user-id"
+              },
+              "firstname": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "lastname": {
+                "type": "string",
+                "example": "Koaci"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@koaci.id"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectReportingMediaResponse"
+        }
+      },
+      "ListProjectReportingMediaResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectreportingmediaresponse"
+              },
+              "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectReportingMediaResponse"
+        }
+      },
+      "ProjectReportingMediaDownloadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "downloadUrl": {
+                "type": "string",
+                "example": "https://presigned-url-here"
+              },
+              "message": {
+                "type": "string",
+                "example": "URL download berhasil dibuat"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectReportingMediaDownloadUrlResponse"
         }
       }
     }

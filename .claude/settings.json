@@ -36,7 +36,10 @@
       "Bash(npx tsx *)",
       "Bash(grep -v \"SSL\\\\|sslmode\\\\|libpq\\\\|trace-warnings\\\\|postgreSQL\\\\|^$\\\\|prepare for\\\\|current behavior\\\\|version\")",
       "Bash(curl -s -b /tmp/koaci-cookies.txt -X DELETE http://localhost:8000/api/companies/00f83785-b4af-4d27-9c6a-5d04861bf62f)",
-      "Bash(echo \"--- grep exit: $? \\(1 = bersih\\) ---\")"
+      "Bash(echo \"--- grep exit: $? \\(1 = bersih\\) ---\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3 -c \"import json; p=json.load\\(open\\('node_modules/@prisma/client/package.json'\\)\\); print\\(json.dumps\\(p.get\\('exports',{}\\),indent=1\\)[:800]\\)\")",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config",

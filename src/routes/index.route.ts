@@ -8,6 +8,8 @@ import projectRoutes from "./project.route.js";
 import projectDocumentRoutes from "./projectDocument.route.js";
 import projectInvestmentRoutes from "./projectInvestment.route.js";
 import receiptDocumentRoutes from "./receiptDocument.route.js";
+import projectReportingRoutes from "./projectReporting.route.js";
+import projectReportingMediaRoutes from "./projectReportingMedia.route.js";
 import activityLogRoutes from "./activityLog.route.js";
 import permissionRoutes from "./permission.route.js";
 import type { Express } from "express";
@@ -23,6 +25,8 @@ const initRoutes = (app: Express) => {
   app.use("/api/project-documents", projectDocumentRoutes);
   app.use("/api/project-investments", projectInvestmentRoutes);
   app.use("/api/receipt-documents", receiptDocumentRoutes);
+  app.use("/api/project-reportings", projectReportingRoutes);
+  app.use("/api/project-reporting-media", projectReportingMediaRoutes);
   app.use("/api/activity-logs", activityLogRoutes);
   app.use("/api/permissions", permissionRoutes);
 };

@@ -26,6 +26,9 @@ model User {
   role                       Role?
 
   receiptDocuments           ReceiptDocument[]
+  projectReportingSubmitted  ProjectReporting[]       @relation("ProjectReportingSubmittedBy")
+  projectReportingUpdated    ProjectReporting[]       @relation("ProjectReportingUpdatedBy")
+  projectReportingMedia      ProjectReportingMedia[]
 
   email_verified             Boolean           @default(false)
   email_verification_token   String?
@@ -191,6 +194,7 @@ model Project {
   company         Company          @relation(fields: [company_id], references: [company_id])
   projectDocument ProjectDocument[]
   projectInvestment ProjectInvestment[]
+  projectReporting  ProjectReporting[]
 
   @@index([company_id])
   @@index([status])
@@ -256,6 +260,54 @@ model ReceiptDocument {
   @@index(project_investment_id)
 }
 
+model ProjectReporting {
+  project_reporting_id          String    @id   @default(uuid())
+  project_id                    String
+  report_date                   DateTime
+  estimate_progress_percentage  Float?
+  narative_summary              String  @db.Text
+  issues_blockers               String?  @db.Text
+  next_week_plan                String?  @db.Text
+  fund_disbursed                Decimal?  @db.Decimal(18, 2)
+  submitted_by                  String
+  updated_by                    String?
+  created_at                    DateTime  @default(now())
+  updated_at                    DateTime  @updatedAt
+
+  project          Project  @relation(fields: [project_id], references: [project_id])
+  submitted        User     @relation("ProjectReportingSubmittedBy", fields: [submitted_by], references: [user_id])
+  updated          User?    @relation("ProjectReportingUpdatedBy", fields: [updated_by], references: [user_id])
+  projectReportingMedia ProjectReportingMedia[]
+
+  @@index(project_id)
+  @@index(report_date)
+  @@index(submitted_by)
+  @@index(updated_by)
+}
+
+model ProjectReportingMedia {
+  project_reporting_media_id  String    @id   @default(uuid())
+  project_reporting_id        String
+  media_type                  ProjectMedia
+  media_name                  String
+  storage_provider            StorageProvider @default(cloudflare)
+  object_key                  String
+  file_size_bytes             BigInt?
+  mime_type                   String?
+  uploaded_by                 String
+  uploaded_at                 DateTime  @default(now())
+
+  projectReporting      ProjectReporting    @relation(fields: [project_reporting_id], references: [project_reporting_id])
+  user                  User                @relation(fields: [uploaded_by], references: [user_id])
+
+  @@index(project_reporting_id)
+}
+
+enum ProjectMedia {
+  photo
+  video
+  document
+}
 
 enum PaymentMethod{
   cash
@@ -349,4 +401,10 @@ enum ActivityAction {
   PROJECT_INVESTMENT_DELETE
   RECEIPT_DOCUMENT_UPLOAD
   RECEIPT_DOCUMENT_DELETE
+  PROJECT_REPORTING_CREATE
+  PROJECT_REPORTING_UPDATE
+  PROJECT_REPORTING_DELETE
+  PROJECT_REPORTING_MEDIA_UPLOAD
+  PROJECT_REPORTING_MEDIA_UPDATE
+  PROJECT_REPORTING_MEDIA_DELETE
 }

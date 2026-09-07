@@ -31,6 +31,8 @@ const doc = {
     { name: "Project Document", description: "Project document endpoints" },
     { name: "Project Investment", description: "Project investment endpoints" },
     { name: "Receipt Document", description: "Receipt document endpoints" },
+    { name: "Project Reporting", description: "Project reporting endpoints" },
+    { name: "Project Reporting Media", description: "Project reporting media endpoints" },
   ],
 
   components: {
@@ -536,6 +538,97 @@ const doc = {
         },
       },
       ReceiptDocumentDownloadUrlResponse: {
+        success: true,
+        data: {
+          downloadUrl: "https://presigned-url-here",
+          message: "URL download berhasil dibuat",
+        },
+      },
+
+      // Project Reporting Schemas
+      CreateProjectReportingRequest: {
+        project_id: "uuid-project-id",
+        report_date: "2026-09-07T00:00:00.000Z",
+        estimate_progress_percentage: 45,
+        narative_summary: "Pekerjaan struktur lantai 2 telah selesai 45%. Material sudah terpasang sesuai rencana kerja.",
+        issues_blockers: "Cuaca hujan menghambat pengecoran selama 2 hari",
+        next_week_plan: "Melanjutkan pemasangan besi beton lantai 3",
+        fund_disbursed: 150000000,
+      },
+      UpdateProjectReportingRequest: {
+        estimate_progress_percentage: 60,
+        narative_summary: "Progress meningkat menjadi 60% setelah pengecoran lantai 3 selesai.",
+      },
+      ProjectReportingResponse: {
+        project_reporting_id: "uuid-reporting-id",
+        project_id: "uuid-project-id",
+        report_date: "2026-09-07T00:00:00.000Z",
+        estimate_progress_percentage: 45,
+        narative_summary: "Pekerjaan struktur lantai 2 telah selesai 45%.",
+        issues_blockers: "Cuaca hujan menghambat pengecoran selama 2 hari",
+        next_week_plan: "Melanjutkan pemasangan besi beton lantai 3",
+        fund_disbursed: "150000000",
+        submitted_by: "uuid-user-id",
+        updated_by: "uuid-user-id",
+        created_at: "2026-09-07T00:00:00.000Z",
+        updated_at: "2026-09-07T00:00:00.000Z",
+        project: { $ref: "#/components/schemas/ProjectResponse" },
+        submitted: {
+          user_id: "uuid-user-id",
+          firstname: "Admin",
+          lastname: "Koaci",
+          email: "admin@koaci.id",
+        },
+        updated: {
+          user_id: "uuid-user-id",
+          firstname: "Admin",
+          lastname: "Koaci",
+          email: "admin@koaci.id",
+        },
+        projectReportingMedia: [],
+      },
+      ListProjectReportingsResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/ProjectReportingResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+
+      // Project Reporting Media Schemas
+      UploadProjectReportingMediaRequest: {
+        project_reporting_id: "uuid-reporting-id",
+        media_type: "photo",
+        media_name: "progress-lantai-2.jpg",
+        storage_provider: "cloudflare",
+        file: "binary-file-data",
+      },
+      UpdateProjectReportingMediaRequest: {
+        media_type: "photo",
+        media_name: "progress-lantai-2-revisi.jpg",
+      },
+      ProjectReportingMediaResponse: {
+        project_reporting_media_id: "uuid-media-id",
+        project_reporting_id: "uuid-reporting-id",
+        media_type: "photo",
+        media_name: "progress-lantai-2.jpg",
+        storage_provider: "cloudflare",
+        object_key: "reporting/uuid-reporting-id/uuid-progress-lantai-2.jpg",
+        file_size_bytes: "1024000",
+        mime_type: "image/jpeg",
+        uploaded_by: "uuid-user-id",
+        uploaded_at: "2026-09-07T00:00:00.000Z",
+        user: {
+          user_id: "uuid-user-id",
+          firstname: "Admin",
+          lastname: "Koaci",
+          email: "admin@koaci.id",
+        },
+      },
+      ListProjectReportingMediaResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/ProjectReportingMediaResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+      ProjectReportingMediaDownloadUrlResponse: {
         success: true,
         data: {
           downloadUrl: "https://presigned-url-here",

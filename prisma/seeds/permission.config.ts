@@ -49,6 +49,15 @@ export const CANONICAL_PERMISSIONS = {
   "receipt_documents:read:any": "Membaca metadata receipt document",
   "receipt_documents:download:any": "Mengunduh receipt document",
   "receipt_documents:delete:any": "Menghapus receipt document",
+  "project_reportings:create:any": "Membuat laporan project",
+  "project_reportings:read:any": "Membaca semua laporan project",
+  "project_reportings:update:any": "Mengubah laporan project",
+  "project_reportings:delete:any": "Menghapus laporan project",
+  "project_reporting_media:upload:any": "Mengunggah media laporan project",
+  "project_reporting_media:read:any": "Membaca metadata media laporan project",
+  "project_reporting_media:update:any": "Mengubah metadata media laporan project",
+  "project_reporting_media:download:any": "Mengunduh media laporan project",
+  "project_reporting_media:delete:any": "Menghapus media laporan project",
 } as const;
 
 const OWN_PERMISSIONS = [
@@ -104,6 +113,15 @@ const ADMIN_PERMISSIONS = [
   "receipt_documents:read:any",
   "receipt_documents:download:any",
   "receipt_documents:delete:any",
+  "project_reportings:create:any",
+  "project_reportings:read:any",
+  "project_reportings:update:any",
+  "project_reportings:delete:any",
+  "project_reporting_media:upload:any",
+  "project_reporting_media:read:any",
+  "project_reporting_media:update:any",
+  "project_reporting_media:download:any",
+  "project_reporting_media:delete:any",
 ] as const;
 
 export const CANONICAL_ROLE_PERMISSIONS = {
@@ -125,5 +143,8 @@ export const CANONICAL_ROLE_PERMISSIONS = {
     "project_investments:read:any",
     "receipt_documents:read:any",
     "receipt_documents:download:any",
+    "project_reportings:read:any",
+    "project_reporting_media:read:any",
+    "project_reporting_media:download:any",
   ],
 } as const;
