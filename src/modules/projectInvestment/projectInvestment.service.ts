@@ -72,7 +72,14 @@ export const projectInvestmentService = {
   getById: async (investmentId: string) => {
     const investment = await prisma.projectInvestment.findUnique({
       where: { project_investment_id: investmentId },
-      include: { project: true, investor: true },
+      include: {
+        project: true,
+        investor: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
     if (!investment) throw new ApiError(404, "Data investasi tidak ditemukan");
     return investment;
