@@ -4,6 +4,7 @@ import prisma from "../../src/lib/prisma.ts";
 import {
   CANONICAL_PERMISSIONS,
   CANONICAL_ROLE_PERMISSIONS,
+  PERMISSION_DEFAULT_ROLES,
 } from "./permission.config.ts";
 /**
  * Seeder untuk User, Role, Permission, dan RolePermission
@@ -63,114 +64,6 @@ const SAMPLE_USERS = [
   },
 ];
 
-// Available permissions
-const PERMISSIONS = {
-  // User Management
-  "users:read": "Membaca data user",
-  "users:create": "Membuat user baru",
-  "users:update": "Mengupdate data user",
-  "users:delete": "Menghapus user",
-  "users:manage_roles": "Mengelola role user",
-
-  // Investor Management
-  "investors:read": "Membaca data investor",
-  "investors:read_all": "Membaca semua data investor",
-  "investors:create": "Membuat investor baru",
-  "investors:update": "Mengupdate data investor",
-  "investors:update_status": "Mengupdate status investor",
-  "investors:delete": "Menghapus investor",
-  "investors:read_own": "Membaca data diri sendiri (sebagai investor)",
-
-  // Investor Documents
-  "investors:documents:read": "Membaca dokumen investor semua",
-  "investors:documents:read_own": "Membaca dokumen sendiri",
-  "investors:documents:upload": "Upload dokumen investor",
-  "investors:documents:delete": "Menghapus dokumen investor semua",
-  "investors:documents:delete_own": "Menghapus dokumen sendiri",
-
-  // Role Management
-  "roles:read": "Membaca data role",
-  "roles:manage": "Mengelola role dan permissions",
-};
-
-/**
- * Mapping role dengan permissions mereka
- *
- * Permission Matrix:
- * - user: User biasa tanpa permission spesifik
- * - investor: Hanya bisa manage profil & dokumen sendiri
- * - admin: Bisa manage users & investors, TIDAK BISA delete BOD & Superadmin
- * - superadmin: Hampir full access, TIDAK BISA delete BOD
- * - bod: READ ONLY - semua akses pembacaan tanpa write operations
- */
-const ROLE_PERMISSIONS = {
-  // user: User biasa - minimal permissions
-  user: [],
-
-  // investor: Investor - bisa baca dan update diri sendiri
-  investor: [
-    "investors:read_own",
-    "investors:documents:read_own",
-    "investors:documents:upload",
-    "investors:documents:delete_own",
-  ],
-
-  // admin: Admin - manage users dan investors
-  // BISA: Create/update users, Create/update/delete investors & admin, Full access investor documents
-  // TIDAK BISA: Delete BOD & Superadmin
-  admin: [
-    "users:read",
-    "users:create",
-    "users:update",
-    // Note: users:delete excluded - tidak bisa delete user (terutama BOD & Superadmin)
-    "investors:read",
-    "investors:read_all",
-    "investors:create",
-    "investors:update",
-    "investors:update_status",
-    "investors:delete",
-    "investors:documents:read",
-    "investors:documents:upload",
-    "investors:documents:delete",
-    "roles:read",
-  ],
-
-  // superadmin: Super Admin - hampir full access
-  // BISA: Create/update semua users, delete admin & user biasa, manage roles, Full access investor documents
-  // TIDAK BISA: Delete BOD
-  superadmin: [
-    "users:read",
-    "users:create",
-    "users:update",
-    "users:delete", // Bisa delete admin & user biasa, BOD harus di-protect di service level
-    "users:manage_roles",
-    "investors:read",
-    "investors:read_all",
-    "investors:create",
-    "investors:update",
-    "investors:update_status",
-    "investors:delete",
-    "investors:documents:read",
-    "investors:documents:upload",
-    "investors:documents:delete",
-    "roles:read",
-    "roles:manage",
-  ],
-
-  // bod: Board of Directors - READ ONLY
-  // BISA: Semua operasi pembacaan
-  // TIDAK BISA: Create, update, delete apapun
-  bod: [
-    // Read permissions - semua data bisa dibaca
-    "users:read",
-    "investors:read",
-    "investors:read_all",
-    "investors:documents:read",
-    "roles:read",
-    // Note: Tidak ada create, update, atau delete permissions
-  ],
-};
-
 async function seedUsersAndPermissions() {
   console.log("🌱 Starting User, Role & Permission seeding...");
 
@@ -182,9 +75,19 @@ async function seedUsersAndPermissions() {
     await prisma.permission.createMany({
       data: permissionEntries.map(([key]) => ({
         permission_key: key,
+        default_of_role: PERMISSION_DEFAULT_ROLES[key] ?? [],
       })),
       skipDuplicates: true,
     });
+
+    // Backfill default_of_role untuk permission yang sudah ada sebelumnya
+    // (createMany + skipDuplicates tidak meng-update row yang sudah ada)
+    for (const [key] of permissionEntries) {
+      await prisma.permission.update({
+        where: { permission_key: key },
+        data: { default_of_role: PERMISSION_DEFAULT_ROLES[key] ?? [] },
+      });
+    }
 
     const allPermissions = await prisma.permission.findMany();
     console.log(`✅ Created ${allPermissions.length} permissions`);

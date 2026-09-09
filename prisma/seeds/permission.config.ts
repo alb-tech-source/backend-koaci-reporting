@@ -17,6 +17,8 @@ export const CANONICAL_PERMISSIONS = {
   "investors:update:own": "Mengubah profil investor sendiri",
   "investors:delete:any": "Menghapus semua investor",
   "investors:delete:own": "Menghapus profil investor sendiri",
+  "investor_documents:read:any": "Membaca semua dokumen investor",
+  "investor_documents:read:own": "Membaca dokumen investor sendiri",
   "investor_documents:upload:any": "Mengunggah dokumen untuk semua investor",
   "investor_documents:upload:own": "Mengunggah dokumen investor sendiri",
   "investor_documents:download:any": "Mengunduh semua dokumen investor",
@@ -60,91 +62,87 @@ export const CANONICAL_PERMISSIONS = {
   "project_reporting_media:delete:any": "Menghapus media laporan project",
 } as const;
 
-const OWN_PERMISSIONS = [
+export const ROLE_NAMES = [
+  "superadmin",
+  "admin",
+  "bod",
+  "investor",
+  "user",
+] as const;
+export type RoleName = (typeof ROLE_NAMES)[number];
+
+const ALL_PERMISSION_KEYS = Object.keys(CANONICAL_PERMISSIONS);
+
+// Board of Directors - read only semua data
+const BOD_PERMISSIONS = [
+  "companies:read:any",
+  "company_documents:read:any",
+  "company_documents:download:any",
+  "investors:read:any",
+  "investor_documents:read:any",
+  "investor_documents:download:any",
+  "projects:read:any",
+  "project_documents:read:any",
+  "project_documents:download:any",
+  "users:read:any",
+  "users:update:own",
+  "roles:read:any",
+  "project_investments:read:any",
+  "receipt_documents:read:any",
+  "receipt_documents:download:any",
+  "project_reportings:read:any",
+  "project_reporting_media:read:any",
+  "project_reporting_media:download:any",
+] as const;
+
+// Investor - mengelola profil & dokumen sendiri, read data publik
+const INVESTOR_PERMISSIONS = [
   "users:read:own",
   "users:update:own",
-  "users:delete:own",
   "roles:read:own",
   "investors:create:own",
   "investors:read:own",
   "investors:update:own",
-  "investors:delete:own",
-  "investor_documents:upload:own",
+  "investor_documents:read:own",
   "investor_documents:download:own",
+  "investor_documents:upload:own",
   "investor_documents:delete:own",
-] as const;
-
-const ADMIN_PERMISSIONS = [
-  "users:create:any",
-  "users:read:any",
-  "users:update:any",
-  "users:delete:any",
-  "roles:read:any",
-  "investors:create:any",
-  "investors:read:any",
-  "investors:update:any",
-  "investors:delete:any",
-  "investor_documents:upload:any",
-  "investor_documents:download:any",
-  "investor_documents:delete:any",
-  "companies:create:any",
   "companies:read:any",
-  "companies:update:any",
-  "companies:delete:any",
-  "company_documents:upload:any",
   "company_documents:read:any",
-  "company_documents:update:any",
   "company_documents:download:any",
-  "company_documents:delete:any",
-  "projects:create:any",
   "projects:read:any",
-  "projects:update:any",
-  "projects:delete:any",
-  "project_documents:upload:any",
   "project_documents:read:any",
-  "project_documents:update:any",
   "project_documents:download:any",
-  "project_documents:delete:any",
-  "project_investments:create:any",
   "project_investments:read:any",
-  "project_investments:update:any",
-  "project_investments:delete:any",
-  "receipt_documents:upload:any",
   "receipt_documents:read:any",
   "receipt_documents:download:any",
-  "receipt_documents:delete:any",
-  "project_reportings:create:any",
   "project_reportings:read:any",
-  "project_reportings:update:any",
-  "project_reportings:delete:any",
-  "project_reporting_media:upload:any",
   "project_reporting_media:read:any",
-  "project_reporting_media:update:any",
   "project_reporting_media:download:any",
-  "project_reporting_media:delete:any",
 ] as const;
 
+// User biasa - hanya mengelola akun sendiri
+const USER_PERMISSIONS = ["users:read:own", "users:update:own"] as const;
+
 export const CANONICAL_ROLE_PERMISSIONS = {
-  user: OWN_PERMISSIONS,
-  investor: OWN_PERMISSIONS,
-  admin: [...ADMIN_PERMISSIONS, "roles:update:any"],
-  superadmin: [...ADMIN_PERMISSIONS, "roles:update:any"],
-  bod: [
-    "users:read:any",
-    "roles:read:any",
-    "investors:read:any",
-    "investor_documents:download:any",
-    "companies:read:any",
-    "company_documents:read:any",
-    "company_documents:download:any",
-    "projects:read:any",
-    "project_documents:read:any",
-    "project_documents:download:any",
-    "project_investments:read:any",
-    "receipt_documents:read:any",
-    "receipt_documents:download:any",
-    "project_reportings:read:any",
-    "project_reporting_media:read:any",
-    "project_reporting_media:download:any",
-  ],
+  superadmin: ALL_PERMISSION_KEYS,
+  admin: ALL_PERMISSION_KEYS,
+  bod: BOD_PERMISSIONS,
+  investor: INVESTOR_PERMISSIONS,
+  user: USER_PERMISSIONS,
 } as const;
+
+/**
+ * Inversi dari CANONICAL_ROLE_PERMISSIONS:
+ * permission_key -> daftar role yang memiliki permission tersebut secara default.
+ * Dipakai seeder untuk mengisi kolom Permission.default_of_role.
+ */
+export const PERMISSION_DEFAULT_ROLES: Record<string, RoleName[]> =
+  Object.fromEntries(
+    ALL_PERMISSION_KEYS.map((key) => [
+      key,
+      ROLE_NAMES.filter((role) =>
+        (CANONICAL_ROLE_PERMISSIONS[role] as readonly string[]).includes(key),
+      ),
+    ]),
+  );
