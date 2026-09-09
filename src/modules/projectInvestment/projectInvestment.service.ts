@@ -54,7 +54,12 @@ export const projectInvestmentService = {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: "desc" },
-        include: { project: true, investor: true },
+        include: {
+          project: true,
+          investor: {
+            include: { user: true },
+          },
+        },
       }),
     ]);
 
@@ -73,10 +78,7 @@ export const projectInvestmentService = {
     return investment;
   },
 
-  update: async (
-    investmentId: string,
-    input: updateProjectInvestmentInput,
-  ) => {
+  update: async (investmentId: string, input: updateProjectInvestmentInput) => {
     await projectInvestmentService.getById(investmentId);
 
     if (input.project_id) {
