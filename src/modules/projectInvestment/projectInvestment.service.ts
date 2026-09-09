@@ -55,7 +55,11 @@ export const projectInvestmentService = {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: {
-          project: true,
+          project: {
+            include: {
+              company: true,
+            },
+          },
           investor: {
             include: { user: true },
           },
@@ -73,7 +77,11 @@ export const projectInvestmentService = {
     const investment = await prisma.projectInvestment.findUnique({
       where: { project_investment_id: investmentId },
       include: {
-        project: true,
+        project: {
+          include: {
+            company: true,
+          },
+        },
         investor: {
           include: {
             user: true,
