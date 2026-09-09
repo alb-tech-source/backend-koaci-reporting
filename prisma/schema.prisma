@@ -65,6 +65,8 @@ model ActivityLog {
 model Permission {
   permission_id   String           @id @default(uuid())
   permission_key  String           @unique
+  default_of_role String[]
+
   rolePermissions RolePermission[]
 }
 
@@ -117,6 +119,7 @@ model InvestorDocument {
   file_size_bytes  BigInt?
   mime_type        String?
   uploaded_at      DateTime        @default(now())
+
   investor         Investor        @relation(fields: [investor_id], references: [investor_id])
 }
 
@@ -153,6 +156,7 @@ model CompanyDocument {
   mime_type        String?
   uploaded_by      String
   uploaded_at      DateTime        @default(now())
+  is_shared        Boolean         @default(false)
 
   company Company @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
   user    User    @relation(fields: [uploaded_by], references: [user_id])
@@ -211,6 +215,7 @@ model ProjectDocument {
   mime_type        String?
   uploaded_by      String
   uploaded_at      DateTime        @default(now())
+  is_shared        Boolean         @default(false)
 
   project Project @relation(fields: [project_id], references: [project_id], onDelete: Cascade)
   user    User    @relation(fields: [uploaded_by], references: [user_id])
