@@ -25,7 +25,7 @@ export const projectInvestmentService = {
     try {
       return await prisma.projectInvestment.create({
         data: input,
-        include: { project: true, investor: true },
+        include: { project: true, investor: true, receiptDocument: true },
       });
     } catch (error: any) {
       if (error?.code === "P2002")
@@ -63,6 +63,7 @@ export const projectInvestmentService = {
           investor: {
             include: { user: true },
           },
+          receiptDocument: true,
         },
       }),
     ]);
@@ -87,6 +88,7 @@ export const projectInvestmentService = {
             user: true,
           },
         },
+        receiptDocument: true,
       },
     });
     if (!investment) throw new ApiError(404, "Data investasi tidak ditemukan");
@@ -113,7 +115,7 @@ export const projectInvestmentService = {
     return prisma.projectInvestment.update({
       where: { project_investment_id: investmentId },
       data: input,
-      include: { project: true, investor: true },
+      include: { project: true, investor: true, receiptDocument: true },
     });
   },
 
@@ -165,6 +167,7 @@ export const projectInvestmentService = {
             user: true,
           },
         },
+        receiptDocument: true,
       },
     });
     if (!investment) throw new ApiError(404, "Data investasi tidak ditemukan");
