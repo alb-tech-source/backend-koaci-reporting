@@ -13,6 +13,7 @@ export function toSafePermission(permission: any): SafePermission {
   return {
     permission_id: permission.permission_id,
     permission_key: permission.permission_key,
+    default_of_role: permission.default_of_role ?? [],
   };
 }
 

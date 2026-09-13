@@ -39,7 +39,7 @@ model Role {
   role_id         String           @id @default(uuid())
   user_id         String           @unique
   role_name       RoleName
-  user            User             @relation(fields: [user_id], references: [user_id])
+  user            User             @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   rolePermissions RolePermission[]
 }
 
@@ -73,8 +73,8 @@ model Permission {
 model RolePermission {
   role_id       String
   permission_id String
-  permission    Permission @relation(fields: [permission_id], references: [permission_id])
-  role          Role       @relation(fields: [role_id], references: [role_id])
+  permission    Permission @relation(fields: [permission_id], references: [permission_id], onDelete: Cascade)
+  role          Role       @relation(fields: [role_id], references: [role_id], onDelete: Cascade)
 
   @@id([role_id, permission_id])
 }
@@ -195,7 +195,7 @@ model Project {
   createdAt                                  DateTime       @default(now())
   updatedAt                                  DateTime       @updatedAt
 
-  company         Company          @relation(fields: [company_id], references: [company_id])
+  company         Company          @relation(fields: [company_id], references: [company_id], onDelete: NoAction)
   projectDocument ProjectDocument[]
   projectInvestment ProjectInvestment[]
   projectReporting  ProjectReporting[]
@@ -279,9 +279,9 @@ model ProjectReporting {
   created_at                    DateTime  @default(now())
   updated_at                    DateTime  @updatedAt
 
-  project          Project  @relation(fields: [project_id], references: [project_id])
-  submitted        User     @relation("ProjectReportingSubmittedBy", fields: [submitted_by], references: [user_id])
-  updated          User?    @relation("ProjectReportingUpdatedBy", fields: [updated_by], references: [user_id])
+  project          Project  @relation(fields: [project_id], references: [project_id], onDelete: NoAction)
+  submitted        User     @relation("ProjectReportingSubmittedBy", fields: [submitted_by], references: [user_id], onDelete: NoAction)
+  updated          User?    @relation("ProjectReportingUpdatedBy", fields: [updated_by], references: [user_id], onDelete: NoAction)
   projectReportingMedia ProjectReportingMedia[]
 
   @@index(project_id)

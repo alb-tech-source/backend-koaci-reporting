@@ -12,6 +12,7 @@ export type ListPermissionQuery = z.infer<typeof listPermissionQuerySchema>;
 export interface SafePermission {
   permission_id: string;
   permission_key: string;
+  default_of_role: string[];
 }
 
 export interface PermissionWithRoles extends SafePermission {
