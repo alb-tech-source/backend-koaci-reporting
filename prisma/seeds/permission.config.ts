@@ -45,20 +45,29 @@ export const CANONICAL_PERMISSIONS = {
   "project_documents:delete:any": "Menghapus dokumen project",
   "project_investments:create:any": "Membuat data investasi project",
   "project_investments:read:any": "Membaca semua data investasi project",
+  "project_investments:read:own": "Membaca data investasi sendiri",
   "project_investments:update:any": "Mengubah data investasi project",
   "project_investments:delete:any": "Menghapus data investasi project",
   "receipt_documents:upload:any": "Mengunggah receipt document",
   "receipt_documents:read:any": "Membaca metadata receipt document",
+  "receipt_documents:read:own": "Membaca metada receipt sendiri",
   "receipt_documents:download:any": "Mengunduh receipt document",
+  "receipt_documents:download:own": "Menguncuh receipt document milik sendiri",
   "receipt_documents:delete:any": "Menghapus receipt document",
   "project_reportings:create:any": "Membuat laporan project",
   "project_reportings:read:any": "Membaca semua laporan project",
+  "project_reportings:read:own": "Membaca laporan project yang terjalin",
   "project_reportings:update:any": "Mengubah laporan project",
   "project_reportings:delete:any": "Menghapus laporan project",
   "project_reporting_media:upload:any": "Mengunggah media laporan project",
   "project_reporting_media:read:any": "Membaca metadata media laporan project",
-  "project_reporting_media:update:any": "Mengubah metadata media laporan project",
+  "project_reporting_media:read:own":
+    "Membaca metadata media laporan project terjalin",
+  "project_reporting_media:update:any":
+    "Mengubah metadata media laporan project",
   "project_reporting_media:download:any": "Mengunduh media laporan project",
+  "project_reporting_media:download:own":
+    "Mengunduh media laporan project yang terjalin",
   "project_reporting_media:delete:any": "Menghapus media laporan project",
 } as const;
 
@@ -107,18 +116,18 @@ const INVESTOR_PERMISSIONS = [
   "investor_documents:download:own",
   "investor_documents:upload:own",
   "investor_documents:delete:own",
+  "project_investments:read:own", // tambahan
+  "receipt_documents:read:own", // tambahan
+  "receipt_documents:download:own", // tambahan
+  "project_reportings:read:own",
+  "project_reporting_media:read:own",
+  "project_reporting_media:download:own",
   "companies:read:any",
   "company_documents:read:any",
   "company_documents:download:any",
   "projects:read:any",
   "project_documents:read:any",
   "project_documents:download:any",
-  "project_investments:read:any",
-  "receipt_documents:read:any",
-  "receipt_documents:download:any",
-  "project_reportings:read:any",
-  "project_reporting_media:read:any",
-  "project_reporting_media:download:any",
 ] as const;
 
 // User biasa - hanya mengelola akun sendiri

@@ -1,5 +1,4 @@
 import {
-  PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
@@ -7,7 +6,19 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
 import prisma from "../../lib/prisma.js";
 import { randomUUID } from "crypto";
+import {
+  MAX_DOCUMENT_SIZE_BYTES,
+  UPLOAD_URL_EXPIRY_SECONDS,
+  assertAllowedFileSize,
+  assertAllowedMimeType,
+  assertObjectKeyForResource,
+  buildObjectKey,
+  documentMimeTypes,
+  presignPutObject,
+  verifyUploadedObject,
+} from "../../lib/r2Presign.js";
 import type {
+  PresignInvestorDocumentInput,
   InputInvestorDocumentInput,
   UpdateInvestorDocumentInput,
   GetInvestorDocumentInput,
@@ -25,6 +36,31 @@ const documentAccessWhere = (access: AccessContext) =>
     : {};
 
 export const investorDocumentService = {
+  presignInvestorDocument: async (
+    input: PresignInvestorDocumentInput,
+    access: AccessContext,
+  ) => {
+    const investor = await prisma.investor.findFirst({
+      where: {
+        investor_id: input.investor_id,
+        ...(access.scope === "own" ? { user_id: access.userId } : {}),
+      },
+      select: { investor_id: true },
+    });
+
+    if (!investor) {
+      throw new ApiError(404, "Investor tidak ditemukan");
+    }
+
+    assertAllowedMimeType(input.mime_type, documentMimeTypes);
+    assertAllowedFileSize(input.file_size_bytes, MAX_DOCUMENT_SIZE_BYTES);
+
+    const objectKey = buildObjectKey("investor", input.investor_id, input.file_name);
+    const uploadUrl = await presignPutObject(objectKey, input.mime_type, UPLOAD_URL_EXPIRY_SECONDS);
+    return { uploadUrl, objectKey, expiresIn: UPLOAD_URL_EXPIRY_SECONDS };
+  },
+
+  // Konfirmasi setelah client PUT langsung ke R2 — buat record DB dari hasil verifikasi storage
   uploadInvestorDocument: async (
     input: InputInvestorDocumentInput,
     access: AccessContext,
@@ -41,16 +77,13 @@ export const investorDocumentService = {
       throw new ApiError(404, "Investor tidak ditemukan");
     }
 
-    const objectKey = `investor/${input.investor_id}/${randomUUID()}-${input.document_name}`;
-
-    await r2Client.send(
-      new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: objectKey,
-        Body: input.buffer,
-        ContentType: input.mime_type,
-      }),
-    );
+    assertObjectKeyForResource(input.object_key, "investor", input.investor_id);
+    assertAllowedMimeType(input.mime_type, documentMimeTypes);
+    const verified = await verifyUploadedObject({
+      objectKey: input.object_key,
+      expectedMimeType: input.mime_type,
+      maxSizeBytes: MAX_DOCUMENT_SIZE_BYTES,
+    });
 
     return prisma.investorDocument.create({
       data: {
@@ -58,9 +91,9 @@ export const investorDocumentService = {
         document_id: randomUUID(),
         document_name: input.document_name,
         storage_provider: input.storage_provider,
-        object_key: objectKey,
-        file_size_bytes: BigInt(input.buffer.length),
-        mime_type: input.mime_type,
+        object_key: input.object_key,
+        file_size_bytes: BigInt(verified.fileSizeBytes),
+        mime_type: verified.mimeType,
       },
     });
   },

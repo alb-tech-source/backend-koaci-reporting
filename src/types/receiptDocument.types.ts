@@ -1,10 +1,15 @@
 import { z } from "zod";
-import { createReceiptDocumentBodySchema } from "../modules/receiptDocument/receiptDocument.validation.js";
+import {
+  createReceiptDocumentBodySchema,
+  presignReceiptDocumentSchema,
+} from "../modules/receiptDocument/receiptDocument.validation.js";
+
+export type PresignReceiptDocumentInput = z.infer<
+  typeof presignReceiptDocumentSchema
+>;
 
 export type CreateReceiptDocumentInput = z.infer<
   typeof createReceiptDocumentBodySchema
 > & {
-  buffer: Buffer;
-  mime_type: string;
   uploaded_by: string;
 };

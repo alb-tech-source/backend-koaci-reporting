@@ -9,12 +9,12 @@ import {
   validateParams,
 } from "../middleware/validate.middleware.js";
 import {
+  presignInvestorDocumentSchema,
   createInvestorDocumentSchema,
   getInvestorDocumentSchema,
   deleteInvestorDocumentSchema,
   investorIdParamSchema,
 } from "../modules/investorDocument/investorDocument.validation.js";
-import { upload } from "../middleware/upload.middleware.js";
 
 const router = Router();
 
@@ -90,52 +90,35 @@ router.get(
   investorDocumentController.getDownloadUrl,
 );
 
-// Upload new investor document
+// Presign upload URL for direct-to-R2 upload
+router.post(
+  "/presign",
+  /*
+    #swagger.tags = ['Investor Document']
+    #swagger.summary = 'Presign upload URL untuk dokumen investor'
+    #swagger.description = 'Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/PresignInvestorDocumentRequest' } } } }
+    #swagger.responses[200] = { description: 'Presigned upload URL', schema: { $ref: '#/components/schemas/PresignUploadResponse' } }
+    #swagger.responses[404] = { description: 'Investor tidak ditemukan' }
+    #swagger.responses[413] = { description: 'Ukuran file melebihi batas maksimal 100MB' }
+    #swagger.responses[415] = { description: 'Tipe file tidak diizinkan' }
+  */
+  authMiddleware,
+  authorize("investor_documents", "upload"),
+  validate(presignInvestorDocumentSchema),
+  investorDocumentController.presign,
+);
+
+// Confirm upload — create DB record after direct PUT to R2
 router.post(
   "/",
   /*
     #swagger.tags = ['Investor Document']
-    #swagger.summary = 'Upload investor document'
-    #swagger.description = 'Upload a new document for an investor. Supports multipart/form-data for file upload.'
+    #swagger.summary = 'Konfirmasi upload dokumen investor'
+    #swagger.description = 'Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.'
     #swagger.security = [{ "cookieAuth": [] }]
-    #swagger.requestBody = {
-      required: true,
-      content: {
-        "multipart/form-data": {
-          schema: {
-            type: 'object',
-            required: ['investor_id', 'document_name', 'file'],
-            properties: {
-              investor_id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Investor ID'
-              },
-              document_name: {
-                type: 'string',
-                description: 'Document name (e.g., KTP.pdf)'
-              },
-              storage_provider: {
-                type: 'string',
-                enum: ['cloudflare', 'aws', 'tencent'],
-                default: 'cloudflare',
-                description: 'Storage provider'
-              },
-              file: {
-                type: 'string',
-                format: 'binary',
-                description: 'File to upload'
-              }
-            }
-          },
-          encoding: {
-            file: {
-              contentType: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-            }
-          }
-        }
-      }
-    }
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/ConfirmInvestorDocumentRequest' } } } }
     #swagger.responses[201] = {
       description: 'Document uploaded successfully',
       schema: {
@@ -152,10 +135,13 @@ router.post(
         message: 'Dokumen investor berhasil diunggah'
       }
     }
+    #swagger.responses[400] = { description: 'object_key tidak valid atau mime_type tidak sesuai' }
+    #swagger.responses[404] = { description: 'Investor tidak ditemukan atau file belum diunggah ke storage' }
+    #swagger.responses[413] = { description: 'Ukuran file aktual melebihi batas maksimal 100MB' }
   */
   authMiddleware,
   authorize("investor_documents", "upload"),
-  upload.single("file"),
+  validate(createInvestorDocumentSchema),
   investorDocumentController.upload,
 );
 

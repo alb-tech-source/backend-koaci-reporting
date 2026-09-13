@@ -1325,13 +1325,63 @@
         ]
       }
     },
+    "/api/investor-documents/presign": {
+      "post": {
+        "tags": [
+          "Investor Document"
+        ],
+        "summary": "Presign upload URL untuk dokumen investor",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit.",
+        "responses": {
+          "200": {
+            "description": "Presigned upload URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Investor tidak ditemukan"
+          },
+          "413": {
+            "description": "Ukuran file melebihi batas maksimal 100MB"
+          },
+          "415": {
+            "description": "Tipe file tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignInvestorDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/investor-documents/": {
       "post": {
         "tags": [
           "Investor Document"
         ],
-        "summary": "Upload investor document",
-        "description": "Upload a new document for an investor. Supports multipart/form-data for file upload.",
+        "summary": "Konfirmasi upload dokumen investor",
+        "description": "Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.",
         "responses": {
           "201": {
             "description": "Document uploaded successfully",
@@ -1439,6 +1489,15 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "object_key tidak valid atau mime_type tidak sesuai"
+          },
+          "404": {
+            "description": "Investor tidak ditemukan atau file belum diunggah ke storage"
+          },
+          "413": {
+            "description": "Ukuran file aktual melebihi batas maksimal 100MB"
           }
         },
         "security": [
@@ -1449,51 +1508,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "investor_id",
-                  "document_name",
-                  "file"
-                ],
-                "properties": {
-                  "investor_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "Investor ID"
-                  },
-                  "document_name": {
-                    "type": "string",
-                    "description": "Document name (e.g., KTP.pdf)"
-                  },
-                  "storage_provider": {
-                    "type": "string",
-                    "enum": [
-                      "cloudflare",
-                      "aws",
-                      "tencent"
-                    ],
-                    "default": "cloudflare",
-                    "description": "Storage provider"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "File to upload"
-                  }
-                }
-              },
-              "encoding": {
-                "file": {
-                  "contentType": [
-                    "application/pdf",
-                    "image/jpeg",
-                    "image/png",
-                    "application/msword",
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  ]
-                }
+                "$ref": "#/components/schemas/ConfirmInvestorDocumentRequest"
               }
             }
           }
@@ -2062,13 +2079,63 @@
         ]
       }
     },
+    "/api/company-documents/presign": {
+      "post": {
+        "tags": [
+          "Company Document"
+        ],
+        "summary": "Presign upload URL untuk company document",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit.",
+        "responses": {
+          "200": {
+            "description": "Presigned upload URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Company not found"
+          },
+          "413": {
+            "description": "Ukuran file melebihi batas maksimal 100MB"
+          },
+          "415": {
+            "description": "Tipe file tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignCompanyDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/company-documents/": {
       "post": {
         "tags": [
           "Company Document"
         ],
-        "summary": "Upload company document",
-        "description": "",
+        "summary": "Konfirmasi upload company document",
+        "description": "Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.",
         "responses": {
           "201": {
             "description": "Document uploaded",
@@ -2084,6 +2151,15 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "object_key tidak valid atau mime_type tidak sesuai"
+          },
+          "404": {
+            "description": "Company not found atau file belum diunggah ke storage"
+          },
+          "413": {
+            "description": "Ukuran file aktual melebihi batas maksimal 100MB"
           }
         },
         "security": [
@@ -2094,39 +2170,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "company_id",
-                  "document_name",
-                  "file"
-                ],
-                "properties": {
-                  "company_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "document_type": {
-                    "type": "string"
-                  },
-                  "document_name": {
-                    "type": "string"
-                  },
-                  "storage_provider": {
-                    "type": "string",
-                    "enum": [
-                      "cloudflare",
-                      "aws",
-                      "tencent"
-                    ],
-                    "default": "cloudflare"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/ConfirmCompanyDocumentRequest"
               }
             }
           }
@@ -2630,13 +2676,63 @@
         ]
       }
     },
+    "/api/project-documents/presign": {
+      "post": {
+        "tags": [
+          "Project Document"
+        ],
+        "summary": "Presign upload URL untuk project document",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit.",
+        "responses": {
+          "200": {
+            "description": "Presigned upload URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "413": {
+            "description": "Ukuran file melebihi batas maksimal 100MB"
+          },
+          "415": {
+            "description": "Tipe file tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignProjectDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/project-documents/": {
       "post": {
         "tags": [
           "Project Document"
         ],
-        "summary": "Upload project document",
-        "description": "",
+        "summary": "Konfirmasi upload project document",
+        "description": "Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.",
         "responses": {
           "201": {
             "description": "Document uploaded",
@@ -2653,8 +2749,14 @@
               }
             }
           },
+          "400": {
+            "description": "object_key tidak valid atau mime_type tidak sesuai"
+          },
           "404": {
-            "description": "Project not found"
+            "description": "Project not found atau file belum diunggah ke storage"
+          },
+          "413": {
+            "description": "Ukuran file aktual melebihi batas maksimal 100MB"
           }
         },
         "security": [
@@ -2665,39 +2767,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "project_id",
-                  "document_name",
-                  "file"
-                ],
-                "properties": {
-                  "project_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "document_type": {
-                    "type": "string"
-                  },
-                  "document_name": {
-                    "type": "string"
-                  },
-                  "storage_provider": {
-                    "type": "string",
-                    "enum": [
-                      "cloudflare",
-                      "aws",
-                      "tencent"
-                    ],
-                    "default": "cloudflare"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/ConfirmProjectDocumentRequest"
               }
             }
           }
@@ -2978,6 +3050,40 @@
         ]
       }
     },
+    "/api/project-investments/own/investments": {
+      "get": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Get project investment by user id special for investor",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Project investment detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInvestmentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project investment not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/receipt-documents/investment/{investmentId}": {
       "get": {
         "tags": [
@@ -3014,6 +3120,109 @@
           },
           "404": {
             "description": "Receipt document not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/own": {
+      "get": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Get receipt documents milik sendiri (login sebagai investor)",
+        "description": "Mengambil semua receipt document dari project investment milik investor yang sedang login.",
+        "responses": {
+          "200": {
+            "description": "Daftar receipt document milik user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ReceiptDocumentResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Investor tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/receipt-documents/own/{receiptId}/download": {
+      "get": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Generate download URL receipt document milik sendiri",
+        "description": "Membuat presigned URL untuk receipt document milik investor yang sedang login. Ditolak (404) jika receipt bukan milik user.",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentDownloadUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDocumentDownloadUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Receipt document tidak ditemukan atau bukan milik Anda"
           }
         },
         "security": [
@@ -3141,13 +3350,66 @@
         ]
       }
     },
+    "/api/receipt-documents/presign": {
+      "post": {
+        "tags": [
+          "Receipt Document"
+        ],
+        "summary": "Presign upload URL untuk receipt document",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit. Ditolak (409) jika investment sudah memiliki receipt.",
+        "responses": {
+          "200": {
+            "description": "Presigned upload URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project investment not found"
+          },
+          "409": {
+            "description": "Receipt document untuk data investasi ini sudah ada"
+          },
+          "413": {
+            "description": "Ukuran file melebihi batas maksimal 100MB"
+          },
+          "415": {
+            "description": "Tipe file tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignReceiptDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/receipt-documents/": {
       "post": {
         "tags": [
           "Receipt Document"
         ],
-        "summary": "Upload receipt document",
-        "description": "Mengunggah receipt untuk satu data investasi. Ditolak (409) jika investment tersebut sudah memiliki receipt — hapus receipt lama terlebih dahulu untuk mengganti.",
+        "summary": "Konfirmasi upload receipt document",
+        "description": "Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage. Ditolak (409) jika investment sudah memiliki receipt.",
         "responses": {
           "201": {
             "description": "Receipt document uploaded",
@@ -3164,11 +3426,17 @@
               }
             }
           },
+          "400": {
+            "description": "object_key tidak valid atau mime_type tidak sesuai"
+          },
           "404": {
-            "description": "Project investment not found"
+            "description": "Project investment not found atau file belum diunggah ke storage"
           },
           "409": {
             "description": "Receipt document untuk data investasi ini sudah ada"
+          },
+          "413": {
+            "description": "Ukuran file aktual melebihi batas maksimal 100MB"
           }
         },
         "security": [
@@ -3179,36 +3447,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "project_investment_id",
-                  "receipt_name",
-                  "file"
-                ],
-                "properties": {
-                  "project_investment_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "receipt_name": {
-                    "type": "string"
-                  },
-                  "storage_provider": {
-                    "type": "string",
-                    "enum": [
-                      "cloudflare",
-                      "aws",
-                      "tencent"
-                    ],
-                    "default": "cloudflare"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/ConfirmReceiptDocumentRequest"
               }
             }
           }
@@ -3319,6 +3560,64 @@
             }
           }
         }
+      }
+    },
+    "/api/project-reportings/own": {
+      "get": {
+        "tags": [
+          "Project Reporting"
+        ],
+        "summary": "Get project reportings milik sendiri (login sebagai investor)",
+        "description": "Mengambil semua laporan dari project yang diinvestasi oleh investor yang sedang login.",
+        "responses": {
+          "200": {
+            "description": "Daftar laporan project yang terjalin dengan investor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ProjectReportingResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ProjectReportingResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Investor tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       }
     },
     "/api/project-reportings/{reportingId}": {
@@ -3545,6 +3844,109 @@
         ]
       }
     },
+    "/api/project-reporting-media/own": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Get project reporting media milik sendiri (login sebagai investor)",
+        "description": "Mengambil semua media dari laporan project yang diinvestasi oleh investor yang sedang login.",
+        "responses": {
+          "200": {
+            "description": "Daftar media laporan project yang terjalin dengan investor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "$ref": "#/components/schemas/ProjectReportingMediaResponse"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Investor tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/own/{mediaId}/download": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Generate media download URL milik sendiri",
+        "description": "Membuat presigned URL untuk media laporan dari project yang diinvestasi investor yang sedang login. Ditolak (404) jika media bukan milik project yang terjalin.",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaDownloadUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaDownloadUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media tidak ditemukan atau bukan milik project yang Anda ikuti"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/project-reporting-media/{mediaId}/download": {
       "get": {
         "tags": [
@@ -3713,13 +4115,63 @@
         ]
       }
     },
+    "/api/project-reporting-media/presign": {
+      "post": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Presign upload URL untuk media laporan project",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit.",
+        "responses": {
+          "200": {
+            "description": "Presigned upload URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignUploadResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project reporting not found"
+          },
+          "413": {
+            "description": "Ukuran file melebihi batas maksimal 300MB"
+          },
+          "415": {
+            "description": "Tipe file tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignProjectReportingMediaRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/project-reporting-media/": {
       "post": {
         "tags": [
           "Project Reporting Media"
         ],
-        "summary": "Upload project reporting media",
-        "description": "Mengunggah media (photo/video/document) untuk laporan project. Maksimal 50MB.",
+        "summary": "Konfirmasi upload media laporan project",
+        "description": "Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.",
         "responses": {
           "201": {
             "description": "Media uploaded",
@@ -3736,8 +4188,14 @@
               }
             }
           },
+          "400": {
+            "description": "object_key tidak valid atau mime_type tidak sesuai"
+          },
           "404": {
-            "description": "Project reporting not found"
+            "description": "Project reporting not found atau file belum diunggah ke storage"
+          },
+          "413": {
+            "description": "Ukuran file aktual melebihi batas maksimal 300MB"
           }
         },
         "security": [
@@ -3748,45 +4206,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "project_reporting_id",
-                  "media_type",
-                  "media_name",
-                  "file"
-                ],
-                "properties": {
-                  "project_reporting_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "media_type": {
-                    "type": "string",
-                    "enum": [
-                      "photo",
-                      "video",
-                      "document"
-                    ]
-                  },
-                  "media_name": {
-                    "type": "string"
-                  },
-                  "storage_provider": {
-                    "type": "string",
-                    "enum": [
-                      "cloudflare",
-                      "aws",
-                      "tencent"
-                    ],
-                    "default": "cloudflare"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/ConfirmProjectReportingMediaRequest"
               }
             }
           }
@@ -5410,7 +5832,64 @@
           "name": "InvestorResponse"
         }
       },
-      "UploadInvestorDocumentRequest": {
+      "PresignUploadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "uploadUrl": {
+                "type": "string",
+                "example": "https://presigned-put-url-here"
+              },
+              "objectKey": {
+                "type": "string",
+                "example": "company/uuid-company-id/uuid-akta-pendirian.pdf"
+              },
+              "expiresIn": {
+                "type": "number",
+                "example": 900
+              },
+              "message": {
+                "type": "string",
+                "example": "URL upload berhasil dibuat"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "PresignUploadResponse"
+        }
+      },
+      "PresignInvestorDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "KTP.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 1024000
+          }
+        },
+        "xml": {
+          "name": "PresignInvestorDocumentRequest"
+        }
+      },
+      "ConfirmInvestorDocumentRequest": {
         "type": "object",
         "properties": {
           "investor_id": {
@@ -5421,17 +5900,21 @@
             "type": "string",
             "example": "KTP.pdf"
           },
+          "object_key": {
+            "type": "string",
+            "example": "investor/uuid-investor-id/uuid-KTP.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
           "storage_provider": {
             "type": "string",
             "example": "cloudflare"
-          },
-          "file": {
-            "type": "string",
-            "example": "binary-file-data"
           }
         },
         "xml": {
-          "name": "UploadInvestorDocumentRequest"
+          "name": "ConfirmInvestorDocumentRequest"
         }
       },
       "InvestorDocumentResponse": {
@@ -5770,7 +6253,31 @@
           "name": "ListCompaniesResponse"
         }
       },
-      "UploadCompanyDocumentRequest": {
+      "PresignCompanyDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "example": "uuid-company-id"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "akta-pendirian.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 1024000
+          }
+        },
+        "xml": {
+          "name": "PresignCompanyDocumentRequest"
+        }
+      },
+      "ConfirmCompanyDocumentRequest": {
         "type": "object",
         "properties": {
           "company_id": {
@@ -5785,17 +6292,21 @@
             "type": "string",
             "example": "akta-pendirian.pdf"
           },
+          "object_key": {
+            "type": "string",
+            "example": "company/uuid-company-id/uuid-akta-pendirian.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
           "storage_provider": {
             "type": "string",
             "example": "cloudflare"
-          },
-          "file": {
-            "type": "string",
-            "example": "binary-file-data"
           }
         },
         "xml": {
-          "name": "UploadCompanyDocumentRequest"
+          "name": "ConfirmCompanyDocumentRequest"
         }
       },
       "UpdateCompanyDocumentRequest": {
@@ -6239,7 +6750,31 @@
           "name": "ListProjectsResponse"
         }
       },
-      "UploadProjectDocumentRequest": {
+      "PresignProjectDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "laporan-keuangan-q1.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 1024000
+          }
+        },
+        "xml": {
+          "name": "PresignProjectDocumentRequest"
+        }
+      },
+      "ConfirmProjectDocumentRequest": {
         "type": "object",
         "properties": {
           "project_id": {
@@ -6254,17 +6789,21 @@
             "type": "string",
             "example": "laporan-keuangan-q1.pdf"
           },
+          "object_key": {
+            "type": "string",
+            "example": "project/uuid-project-id/uuid-laporan-keuangan-q1.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
           "storage_provider": {
             "type": "string",
             "example": "cloudflare"
-          },
-          "file": {
-            "type": "string",
-            "example": "binary-file-data"
           }
         },
         "xml": {
-          "name": "UploadProjectDocumentRequest"
+          "name": "ConfirmProjectDocumentRequest"
         }
       },
       "UpdateProjectDocumentRequest": {
@@ -6589,6 +7128,58 @@
           "name": "ListProjectInvestmentsResponse"
         }
       },
+      "PresignReceiptDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "project_investment_id": {
+            "type": "string",
+            "example": "uuid-investment-id"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "kwitansi-investasi.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 1024000
+          }
+        },
+        "xml": {
+          "name": "PresignReceiptDocumentRequest"
+        }
+      },
+      "ConfirmReceiptDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "project_investment_id": {
+            "type": "string",
+            "example": "uuid-investment-id"
+          },
+          "receipt_name": {
+            "type": "string",
+            "example": "kwitansi-investasi.pdf"
+          },
+          "object_key": {
+            "type": "string",
+            "example": "receipt/uuid-investment-id/uuid-kwitansi-investasi.pdf"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "storage_provider": {
+            "type": "string",
+            "example": "cloudflare"
+          }
+        },
+        "xml": {
+          "name": "ConfirmReceiptDocumentRequest"
+        }
+      },
       "ReceiptDocumentResponse": {
         "type": "object",
         "properties": {
@@ -6882,7 +7473,31 @@
           "name": "ListProjectReportingsResponse"
         }
       },
-      "UploadProjectReportingMediaRequest": {
+      "PresignProjectReportingMediaRequest": {
+        "type": "object",
+        "properties": {
+          "project_reporting_id": {
+            "type": "string",
+            "example": "uuid-reporting-id"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "progress-lantai-2.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "file_size_bytes": {
+            "type": "number",
+            "example": 2048000
+          }
+        },
+        "xml": {
+          "name": "PresignProjectReportingMediaRequest"
+        }
+      },
+      "ConfirmProjectReportingMediaRequest": {
         "type": "object",
         "properties": {
           "project_reporting_id": {
@@ -6897,17 +7512,21 @@
             "type": "string",
             "example": "progress-lantai-2.jpg"
           },
+          "object_key": {
+            "type": "string",
+            "example": "reporting/uuid-reporting-id/uuid-progress-lantai-2.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
           "storage_provider": {
             "type": "string",
             "example": "cloudflare"
-          },
-          "file": {
-            "type": "string",
-            "example": "binary-file-data"
           }
         },
         "xml": {
-          "name": "UploadProjectReportingMediaRequest"
+          "name": "ConfirmProjectReportingMediaRequest"
         }
       },
       "UpdateProjectReportingMediaRequest": {

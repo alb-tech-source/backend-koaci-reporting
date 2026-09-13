@@ -1,12 +1,16 @@
 import { z } from "zod";
 import {
   createInvestorDocumentSchema,
+  presignInvestorDocumentSchema,
   getInvestorDocumentSchema,
   updateInvestorDocumentSchema,
   deleteInvestorDocumentSchema,
   getListInvestorDocumentsSchema,
 } from "../modules/investorDocument/investorDocument.validation.js";
 
+export type PresignInvestorDocumentInput = z.infer<
+  typeof presignInvestorDocumentSchema
+>;
 export type InputInvestorDocumentInput = z.infer<
   typeof createInvestorDocumentSchema
 >;

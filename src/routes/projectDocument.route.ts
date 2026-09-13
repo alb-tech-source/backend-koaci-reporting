@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { projectDocumentController } from "../modules/projectDocument/projectDocument.controller.js";
 import { authMiddleware, authorize } from "../middleware/auth.middleware.js";
-import { upload } from "../middleware/upload.middleware.js";
 import { validate, validateParams, validateQuery } from "../middleware/validate.middleware.js";
 import {
+  presignProjectDocumentSchema,
   createProjectDocumentBodySchema,
   updateProjectDocumentSchema,
   listProjectDocumentQuerySchema,
@@ -58,17 +58,37 @@ router.get(
 );
 
 router.post(
+  "/presign",
+  /*
+    #swagger.tags = ['Project Document']
+    #swagger.summary = 'Presign upload URL untuk project document'
+    #swagger.description = 'Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 100MB, kedaluwarsa 15 menit.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/PresignProjectDocumentRequest' } } } }
+    #swagger.responses[200] = { description: 'Presigned upload URL', schema: { $ref: '#/components/schemas/PresignUploadResponse' } }
+    #swagger.responses[404] = { description: 'Project not found' }
+    #swagger.responses[413] = { description: 'Ukuran file melebihi batas maksimal 100MB' }
+    #swagger.responses[415] = { description: 'Tipe file tidak diizinkan' }
+  */
+  authMiddleware, authorize("project_documents", "upload", ["any"]),
+  validate(presignProjectDocumentSchema), projectDocumentController.presign,
+);
+
+router.post(
   "/",
   /*
     #swagger.tags = ['Project Document']
-    #swagger.summary = 'Upload project document'
+    #swagger.summary = 'Konfirmasi upload project document'
+    #swagger.description = 'Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.'
     #swagger.security = [{ "cookieAuth": [] }]
-    #swagger.requestBody = { required: true, content: { "multipart/form-data": { schema: { type: 'object', required: ['project_id', 'document_name', 'file'], properties: { project_id: { type: 'string', format: 'uuid' }, document_type: { type: 'string' }, document_name: { type: 'string' }, storage_provider: { type: 'string', enum: ['cloudflare', 'aws', 'tencent'], default: 'cloudflare' }, file: { type: 'string', format: 'binary' } } } } } }
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/ConfirmProjectDocumentRequest' } } } }
     #swagger.responses[201] = { description: 'Document uploaded', schema: { $ref: '#/components/schemas/ProjectDocumentResponse' } }
-    #swagger.responses[404] = { description: 'Project not found' }
+    #swagger.responses[400] = { description: 'object_key tidak valid atau mime_type tidak sesuai' }
+    #swagger.responses[404] = { description: 'Project not found atau file belum diunggah ke storage' }
+    #swagger.responses[413] = { description: 'Ukuran file aktual melebihi batas maksimal 100MB' }
   */
   authMiddleware, authorize("project_documents", "upload", ["any"]),
-  upload.single("file"), validate(createProjectDocumentBodySchema), projectDocumentController.upload,
+  validate(createProjectDocumentBodySchema), projectDocumentController.upload,
 );
 
 router.put(

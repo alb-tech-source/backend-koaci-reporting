@@ -74,7 +74,7 @@ export const projectInvestmentService = {
   },
 
   getById: async (investmentId: string) => {
-    const investment = await prisma.projectInvestment.findUnique({
+    const investment = await prisma.projectInvestment.findFirst({
       where: { project_investment_id: investmentId },
       include: {
         project: {
@@ -133,6 +133,41 @@ export const projectInvestmentService = {
       throw error;
     }
 
+    return investment;
+  },
+
+  getByUser: async (user_id: string) => {
+    const investor = await prisma.investor.findUnique({
+      where: {
+        user_id: user_id,
+      },
+      select: {
+        investor_id: true,
+      },
+    });
+
+    if (!investor)
+      throw new ApiError(
+        404,
+        `Investor dengan user_id ${user_id} tidak ditemukan.`,
+      );
+
+    const investment = await prisma.projectInvestment.findMany({
+      where: { investor_id: investor?.investor_id },
+      include: {
+        project: {
+          include: {
+            company: true,
+          },
+        },
+        investor: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    if (!investment) throw new ApiError(404, "Data investasi tidak ditemukan");
     return investment;
   },
 };

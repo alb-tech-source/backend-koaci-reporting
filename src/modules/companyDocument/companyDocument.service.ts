@@ -1,10 +1,21 @@
-import { randomUUID } from "crypto";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import prisma from "../../lib/prisma.js";
 import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
 import { ApiError } from "../../utils/apiError.js";
+import {
+  MAX_DOCUMENT_SIZE_BYTES,
+  UPLOAD_URL_EXPIRY_SECONDS,
+  assertAllowedFileSize,
+  assertAllowedMimeType,
+  assertObjectKeyForResource,
+  buildObjectKey,
+  documentMimeTypes,
+  presignPutObject,
+  verifyUploadedObject,
+} from "../../lib/r2Presign.js";
 import type {
+  PresignCompanyDocumentInput,
   CreateCompanyDocumentInput,
   UpdateCompanyDocumentInput,
   ListCompanyDocumentQuery,
@@ -15,17 +26,30 @@ const includeUploader = {
 };
 
 export const companyDocumentService = {
+  presign: async (input: PresignCompanyDocumentInput) => {
+    const company = await prisma.company.findUnique({ where: { company_id: input.company_id } });
+    if (!company) throw new ApiError(404, "Perusahaan tidak ditemukan");
+
+    assertAllowedMimeType(input.mime_type, documentMimeTypes);
+    assertAllowedFileSize(input.file_size_bytes, MAX_DOCUMENT_SIZE_BYTES);
+
+    const objectKey = buildObjectKey("company", input.company_id, input.file_name);
+    const uploadUrl = await presignPutObject(objectKey, input.mime_type, UPLOAD_URL_EXPIRY_SECONDS);
+    return { uploadUrl, objectKey, expiresIn: UPLOAD_URL_EXPIRY_SECONDS };
+  },
+
+  // Konfirmasi setelah client PUT langsung ke R2 — buat record DB dari hasil verifikasi storage
   upload: async (input: CreateCompanyDocumentInput) => {
     const company = await prisma.company.findUnique({ where: { company_id: input.company_id } });
     if (!company) throw new ApiError(404, "Perusahaan tidak ditemukan");
 
-    const objectKey = `company/${input.company_id}/${randomUUID()}-${input.document_name}`;
-    await r2Client.send(new PutObjectCommand({
-      Bucket: R2_BUCKET,
-      Key: objectKey,
-      Body: input.buffer,
-      ContentType: input.mime_type,
-    }));
+    assertObjectKeyForResource(input.object_key, "company", input.company_id);
+    assertAllowedMimeType(input.mime_type, documentMimeTypes);
+    const verified = await verifyUploadedObject({
+      objectKey: input.object_key,
+      expectedMimeType: input.mime_type,
+      maxSizeBytes: MAX_DOCUMENT_SIZE_BYTES,
+    });
 
     try {
       return await prisma.companyDocument.create({
@@ -34,15 +58,15 @@ export const companyDocumentService = {
           document_type: input.document_type,
           document_name: input.document_name,
           storage_provider: input.storage_provider,
-          object_key: objectKey,
-          file_size_bytes: BigInt(input.buffer.length),
-          mime_type: input.mime_type,
+          object_key: input.object_key,
+          file_size_bytes: BigInt(verified.fileSizeBytes),
+          mime_type: verified.mimeType,
           uploaded_by: input.uploaded_by,
         },
         include: includeUploader,
       });
     } catch (error) {
-      await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: objectKey })).catch(() => undefined);
+      await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: input.object_key })).catch(() => undefined);
       throw error;
     }
   },

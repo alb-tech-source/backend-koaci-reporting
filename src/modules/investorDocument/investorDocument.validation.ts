@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const presignInvestorDocumentSchema = z.object({
+  investor_id: z.string().uuid("Format investor_id tidak valid."),
+  file_name: z.string().trim().min(1).max(150),
+  mime_type: z.string().trim().min(1).max(100),
+  file_size_bytes: z.number().int().positive(),
+});
+
 export const createInvestorDocumentSchema = z.object({
   investor_id: z.string().uuid("Format investor_id tidak valid."),
   document_name: z
@@ -10,8 +17,8 @@ export const createInvestorDocumentSchema = z.object({
     .enum(["cloudflare", "aws", "tencent"], {
       message: "Penyedia penyimpanan harus cloudflare, aws, atau tencent.",
     })
-    .optional(),
-  buffer: z.instanceof(Buffer, { message: "File harus berupa Buffer." }),
+    .default("cloudflare"),
+  object_key: z.string().trim().min(1).max(512),
   mime_type: z
     .string()
     .min(1, "Mime type wajib diisi.")
@@ -28,14 +35,6 @@ export const updateInvestorDocumentSchema = z.object({
     .enum(["cloudflare", "aws", "tencent"], {
       message: "Penyedia penyimpanan harus cloudflare, aws, atau tencent.",
     })
-    .optional(),
-  buffer: z
-    .instanceof(Buffer, { message: "File harus berupa Buffer." })
-    .optional(),
-  mime_type: z
-    .string()
-    .min(1, "Mime type wajib diisi.")
-    .max(100, "Mime type maksimal 100 karakter.")
     .optional(),
 });
 

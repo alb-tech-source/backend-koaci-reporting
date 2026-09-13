@@ -24,12 +24,14 @@ const log = (
   }).catch((error) => console.error("Failed to log project reporting media activity:", error));
 
 export const projectReportingMediaController = {
+  presign: asyncHandler(async (req: Request, res: Response) => {
+    const result = await projectReportingMediaService.presign(req.body);
+    return ApiResponse(res, 200, { ...result, message: "URL upload berhasil dibuat" });
+  }),
+
   upload: asyncHandler(async (req: Request, res: Response) => {
-    if (!req.file?.buffer) return ApiResponse(res, 400, { message: "File wajib diunggah" });
     const media = await projectReportingMediaService.upload({
       ...req.body,
-      buffer: req.file.buffer,
-      mime_type: req.file.mimetype,
       uploaded_by: req.authUser!.userId,
     });
     await log(req, "PROJECT_REPORTING_MEDIA_UPLOAD", media);
@@ -51,6 +53,24 @@ export const projectReportingMediaController = {
   download: asyncHandler(async (req: Request, res: Response) =>
     ApiResponse(res, 200, {
       downloadUrl: await projectReportingMediaService.getDownloadUrl(req.params.mediaId as string),
+      message: "URL download berhasil dibuat",
+    }),
+  ),
+
+  getByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(
+      res,
+      200,
+      await projectReportingMediaService.getByUser(req.authUser!.userId),
+    ),
+  ),
+
+  downloadByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(res, 200, {
+      downloadUrl: await projectReportingMediaService.getDownloadUrlByUser(
+        req.authUser!.userId,
+        req.params.mediaId as string,
+      ),
       message: "URL download berhasil dibuat",
     }),
   ),

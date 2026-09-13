@@ -28,6 +28,20 @@ router.get(
 );
 
 router.get(
+  "/own",
+  /*
+    #swagger.tags = ['Project Reporting']
+    #swagger.summary = 'Get project reportings milik sendiri (login sebagai investor)'
+    #swagger.description = 'Mengambil semua laporan dari project yang diinvestasi oleh investor yang sedang login.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.responses[200] = { description: 'Daftar laporan project yang terjalin dengan investor', schema: { type: 'array', items: { $ref: '#/components/schemas/ProjectReportingResponse' } } }
+    #swagger.responses[404] = { description: 'Investor tidak ditemukan' }
+  */
+  authMiddleware, authorize("project_reportings", "read", ["own"]),
+  projectReportingController.getByUser,
+);
+
+router.get(
   "/:reportingId",
   /*
     #swagger.tags = ['Project Reporting']

@@ -28,6 +28,10 @@ export const projectInvestmentIdParamSchema = z.object({
   investmentId: z.uuid("Format investment_id tidak valid"),
 });
 
+export const projectInvestmentUserIdParamSchema = z.object({
+  user_id: z.uuid("Format user_id tidak valid"),
+});
+
 export const listProjectInvestmentQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(10),

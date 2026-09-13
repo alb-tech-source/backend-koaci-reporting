@@ -17,12 +17,14 @@ const log = (req: Request, action: "PROJECT_DOCUMENT_UPLOAD" | "PROJECT_DOCUMENT
   }).catch((error) => console.error("Failed to log project document activity:", error));
 
 export const projectDocumentController = {
+  presign: asyncHandler(async (req: Request, res: Response) => {
+    const result = await projectDocumentService.presign(req.body);
+    return ApiResponse(res, 200, { ...result, message: "URL upload berhasil dibuat" });
+  }),
+
   upload: asyncHandler(async (req: Request, res: Response) => {
-    if (!req.file?.buffer) return ApiResponse(res, 400, { message: "File wajib diunggah" });
     const document = await projectDocumentService.upload({
       ...req.body,
-      buffer: req.file.buffer,
-      mime_type: req.file.mimetype,
       uploaded_by: req.authUser!.userId,
     });
     await log(req, "PROJECT_DOCUMENT_UPLOAD", document);

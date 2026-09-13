@@ -24,12 +24,14 @@ const log = (
   }).catch((error) => console.error("Failed to log receipt document activity:", error));
 
 export const receiptDocumentController = {
+  presign: asyncHandler(async (req: Request, res: Response) => {
+    const result = await receiptDocumentService.presign(req.body);
+    return ApiResponse(res, 200, { ...result, message: "URL upload berhasil dibuat" });
+  }),
+
   upload: asyncHandler(async (req: Request, res: Response) => {
-    if (!req.file?.buffer) return ApiResponse(res, 400, { message: "File wajib diunggah" });
     const document = await receiptDocumentService.upload({
       ...req.body,
-      buffer: req.file.buffer,
-      mime_type: req.file.mimetype,
       uploaded_by: req.authUser!.userId,
     });
     await log(req, "RECEIPT_DOCUMENT_UPLOAD", document);
@@ -51,6 +53,24 @@ export const receiptDocumentController = {
   download: asyncHandler(async (req: Request, res: Response) =>
     ApiResponse(res, 200, {
       downloadUrl: await receiptDocumentService.getDownloadUrl(req.params.receiptId as string),
+      message: "URL download berhasil dibuat",
+    }),
+  ),
+
+  getByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(
+      res,
+      200,
+      await receiptDocumentService.getByUser(req.authUser!.userId),
+    ),
+  ),
+
+  downloadByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(res, 200, {
+      downloadUrl: await receiptDocumentService.getDownloadUrlByUser(
+        req.authUser!.userId,
+        req.params.receiptId as string,
+      ),
       message: "URL download berhasil dibuat",
     }),
   ),

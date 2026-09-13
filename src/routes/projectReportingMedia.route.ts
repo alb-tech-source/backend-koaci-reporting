@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { projectReportingMediaController } from "../modules/projectReportingMedia/projectReportingMedia.controller.js";
 import { authMiddleware, authorize } from "../middleware/auth.middleware.js";
-import { uploadMedia } from "../middleware/upload.middleware.js";
 import { validate, validateParams, validateQuery } from "../middleware/validate.middleware.js";
 import {
+  presignProjectReportingMediaSchema,
   createProjectReportingMediaBodySchema,
   updateProjectReportingMediaSchema,
   listProjectReportingMediaQuerySchema,
@@ -29,6 +29,35 @@ router.get(
   authMiddleware, authorize("project_reporting_media", "read", ["any"]),
   validateParams(projectReportingMediaReportingIdParamSchema), validateQuery(listProjectReportingMediaQuerySchema),
   projectReportingMediaController.listByReporting,
+);
+
+router.get(
+  "/own",
+  /*
+    #swagger.tags = ['Project Reporting Media']
+    #swagger.summary = 'Get project reporting media milik sendiri (login sebagai investor)'
+    #swagger.description = 'Mengambil semua media dari laporan project yang diinvestasi oleh investor yang sedang login.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.responses[200] = { description: 'Daftar media laporan project yang terjalin dengan investor', schema: { type: 'array', items: { $ref: '#/components/schemas/ProjectReportingMediaResponse' } } }
+    #swagger.responses[404] = { description: 'Investor tidak ditemukan' }
+  */
+  authMiddleware, authorize("project_reporting_media", "read", ["own"]),
+  projectReportingMediaController.getByUser,
+);
+
+router.get(
+  "/own/:mediaId/download",
+  /*
+    #swagger.tags = ['Project Reporting Media']
+    #swagger.summary = 'Generate media download URL milik sendiri'
+    #swagger.description = 'Membuat presigned URL untuk media laporan dari project yang diinvestasi investor yang sedang login. Ditolak (404) jika media bukan milik project yang terjalin.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.parameters['mediaId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
+    #swagger.responses[200] = { description: 'Presigned download URL', schema: { $ref: '#/components/schemas/ProjectReportingMediaDownloadUrlResponse' } }
+    #swagger.responses[404] = { description: 'Media tidak ditemukan atau bukan milik project yang Anda ikuti' }
+  */
+  authMiddleware, authorize("project_reporting_media", "download", ["own"]),
+  validateParams(projectReportingMediaIdParamSchema), projectReportingMediaController.downloadByUser,
 );
 
 router.get(
@@ -59,18 +88,37 @@ router.get(
 );
 
 router.post(
+  "/presign",
+  /*
+    #swagger.tags = ['Project Reporting Media']
+    #swagger.summary = 'Presign upload URL untuk media laporan project'
+    #swagger.description = 'Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/PresignProjectReportingMediaRequest' } } } }
+    #swagger.responses[200] = { description: 'Presigned upload URL', schema: { $ref: '#/components/schemas/PresignUploadResponse' } }
+    #swagger.responses[404] = { description: 'Project reporting not found' }
+    #swagger.responses[413] = { description: 'Ukuran file melebihi batas maksimal 300MB' }
+    #swagger.responses[415] = { description: 'Tipe file tidak diizinkan' }
+  */
+  authMiddleware, authorize("project_reporting_media", "upload", ["any"]),
+  validate(presignProjectReportingMediaSchema), projectReportingMediaController.presign,
+);
+
+router.post(
   "/",
   /*
     #swagger.tags = ['Project Reporting Media']
-    #swagger.summary = 'Upload project reporting media'
-    #swagger.description = 'Mengunggah media (photo/video/document) untuk laporan project. Maksimal 50MB.'
+    #swagger.summary = 'Konfirmasi upload media laporan project'
+    #swagger.description = 'Langkah 2 alur upload direct ke R2: setelah PUT ke uploadUrl berhasil, kirim body ini untuk membuat record DB. Ukuran & tipe file diverifikasi ulang dari storage.'
     #swagger.security = [{ "cookieAuth": [] }]
-    #swagger.requestBody = { required: true, content: { "multipart/form-data": { schema: { type: 'object', required: ['project_reporting_id', 'media_type', 'media_name', 'file'], properties: { project_reporting_id: { type: 'string', format: 'uuid' }, media_type: { type: 'string', enum: ['photo', 'video', 'document'] }, media_name: { type: 'string' }, storage_provider: { type: 'string', enum: ['cloudflare', 'aws', 'tencent'], default: 'cloudflare' }, file: { type: 'string', format: 'binary' } } } } } }
+    #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/ConfirmProjectReportingMediaRequest' } } } }
     #swagger.responses[201] = { description: 'Media uploaded', schema: { $ref: '#/components/schemas/ProjectReportingMediaResponse' } }
-    #swagger.responses[404] = { description: 'Project reporting not found' }
+    #swagger.responses[400] = { description: 'object_key tidak valid atau mime_type tidak sesuai' }
+    #swagger.responses[404] = { description: 'Project reporting not found atau file belum diunggah ke storage' }
+    #swagger.responses[413] = { description: 'Ukuran file aktual melebihi batas maksimal 300MB' }
   */
   authMiddleware, authorize("project_reporting_media", "upload", ["any"]),
-  uploadMedia.single("file"), validate(createProjectReportingMediaBodySchema), projectReportingMediaController.upload,
+  validate(createProjectReportingMediaBodySchema), projectReportingMediaController.upload,
 );
 
 router.put(

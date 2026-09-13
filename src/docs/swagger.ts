@@ -233,12 +233,30 @@ const doc = {
         ],
       },
 
+      // Shared Upload Presign Schemas
+      PresignUploadResponse: {
+        success: true,
+        data: {
+          uploadUrl: "https://presigned-put-url-here",
+          objectKey: "company/uuid-company-id/uuid-akta-pendirian.pdf",
+          expiresIn: 900,
+          message: "URL upload berhasil dibuat",
+        },
+      },
+
       // Investor Document Schemas
-      UploadInvestorDocumentRequest: {
+      PresignInvestorDocumentRequest: {
+        investor_id: "uuid-investor-id",
+        file_name: "KTP.pdf",
+        mime_type: "application/pdf",
+        file_size_bytes: 1024000,
+      },
+      ConfirmInvestorDocumentRequest: {
         investor_id: "uuid-investor-id",
         document_name: "KTP.pdf",
+        object_key: "investor/uuid-investor-id/uuid-KTP.pdf",
+        mime_type: "application/pdf",
         storage_provider: "cloudflare",
-        file: "binary-file-data",
       },
 
       InvestorDocumentResponse: {
@@ -328,12 +346,19 @@ const doc = {
       },
 
       // Company Document Schemas
-      UploadCompanyDocumentRequest: {
+      PresignCompanyDocumentRequest: {
+        company_id: "uuid-company-id",
+        file_name: "akta-pendirian.pdf",
+        mime_type: "application/pdf",
+        file_size_bytes: 1024000,
+      },
+      ConfirmCompanyDocumentRequest: {
         company_id: "uuid-company-id",
         document_type: "Akta Pendirian",
         document_name: "akta-pendirian.pdf",
+        object_key: "company/uuid-company-id/uuid-akta-pendirian.pdf",
+        mime_type: "application/pdf",
         storage_provider: "cloudflare",
-        file: "binary-file-data",
       },
       UpdateCompanyDocumentRequest: {
         document_type: "Akta Perubahan",
@@ -439,12 +464,19 @@ const doc = {
       },
 
       // Project Document Schemas
-      UploadProjectDocumentRequest: {
+      PresignProjectDocumentRequest: {
+        project_id: "uuid-project-id",
+        file_name: "laporan-keuangan-q1.pdf",
+        mime_type: "application/pdf",
+        file_size_bytes: 1024000,
+      },
+      ConfirmProjectDocumentRequest: {
         project_id: "uuid-project-id",
         document_type: "laporan_keuangan",
         document_name: "laporan-keuangan-q1.pdf",
+        object_key: "project/uuid-project-id/uuid-laporan-keuangan-q1.pdf",
+        mime_type: "application/pdf",
         storage_provider: "cloudflare",
-        file: "binary-file-data",
       },
       UpdateProjectDocumentRequest: {
         document_type: "proposal",
@@ -520,6 +552,19 @@ const doc = {
       },
 
       // Receipt Document Schemas
+      PresignReceiptDocumentRequest: {
+        project_investment_id: "uuid-investment-id",
+        file_name: "kwitansi-investasi.pdf",
+        mime_type: "application/pdf",
+        file_size_bytes: 1024000,
+      },
+      ConfirmReceiptDocumentRequest: {
+        project_investment_id: "uuid-investment-id",
+        receipt_name: "kwitansi-investasi.pdf",
+        object_key: "receipt/uuid-investment-id/uuid-kwitansi-investasi.pdf",
+        mime_type: "application/pdf",
+        storage_provider: "cloudflare",
+      },
       ReceiptDocumentResponse: {
         receipt_document_id: "uuid-receipt-id",
         project_investment_id: "uuid-investment-id",
@@ -594,12 +639,19 @@ const doc = {
       },
 
       // Project Reporting Media Schemas
-      UploadProjectReportingMediaRequest: {
+      PresignProjectReportingMediaRequest: {
+        project_reporting_id: "uuid-reporting-id",
+        file_name: "progress-lantai-2.jpg",
+        mime_type: "image/jpeg",
+        file_size_bytes: 2048000,
+      },
+      ConfirmProjectReportingMediaRequest: {
         project_reporting_id: "uuid-reporting-id",
         media_type: "photo",
         media_name: "progress-lantai-2.jpg",
+        object_key: "reporting/uuid-reporting-id/uuid-progress-lantai-2.jpg",
+        mime_type: "image/jpeg",
         storage_provider: "cloudflare",
-        file: "binary-file-data",
       },
       UpdateProjectReportingMediaRequest: {
         media_type: "photo",

@@ -17,12 +17,14 @@ const log = (req: Request, action: "COMPANY_DOCUMENT_UPLOAD" | "COMPANY_DOCUMENT
   }).catch((error) => console.error("Failed to log company document activity:", error));
 
 export const companyDocumentController = {
+  presign: asyncHandler(async (req: Request, res: Response) => {
+    const result = await companyDocumentService.presign(req.body);
+    return ApiResponse(res, 200, { ...result, message: "URL upload berhasil dibuat" });
+  }),
+
   upload: asyncHandler(async (req: Request, res: Response) => {
-    if (!req.file?.buffer) return ApiResponse(res, 400, { message: "File wajib diunggah" });
     const document = await companyDocumentService.upload({
       ...req.body,
-      buffer: req.file.buffer,
-      mime_type: req.file.mimetype,
       uploaded_by: req.authUser!.userId,
     });
     await log(req, "COMPANY_DOCUMENT_UPLOAD", document);

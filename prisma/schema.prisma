@@ -120,7 +120,7 @@ model InvestorDocument {
   mime_type        String?
   uploaded_at      DateTime        @default(now())
 
-  investor         Investor        @relation(fields: [investor_id], references: [investor_id])
+  investor         Investor        @relation(fields: [investor_id], references: [investor_id],  onDelete: Cascade)
 }
 
 model Company {
@@ -159,7 +159,7 @@ model CompanyDocument {
   is_shared        Boolean         @default(false)
 
   company Company @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
-  user    User    @relation(fields: [uploaded_by], references: [user_id])
+  user    User    @relation(fields: [uploaded_by], references: [user_id],  onDelete: NoAction)
 
   @@index([company_id])
   @@index([uploaded_by])
@@ -218,7 +218,7 @@ model ProjectDocument {
   is_shared        Boolean         @default(false)
 
   project Project @relation(fields: [project_id], references: [project_id], onDelete: Cascade)
-  user    User    @relation(fields: [uploaded_by], references: [user_id])
+  user    User    @relation(fields: [uploaded_by], references: [user_id],  onDelete: NoAction)
 
   @@index([project_id])
   @@index([uploaded_by])
@@ -259,8 +259,8 @@ model ReceiptDocument {
   uploaded_by             String
   uploaded_at             DateTime        @default(now())
 
-  projectInvestment ProjectInvestment   @relation(fields: [project_investment_id], references: [project_investment_id])
-  user    User    @relation(fields: [uploaded_by], references: [user_id])
+  projectInvestment ProjectInvestment   @relation(fields: [project_investment_id], references: [project_investment_id], onDelete: Cascade)
+  user    User    @relation(fields: [uploaded_by], references: [user_id],  onDelete: NoAction)
 
   @@index(project_investment_id)
 }
@@ -302,8 +302,8 @@ model ProjectReportingMedia {
   uploaded_by                 String
   uploaded_at                 DateTime  @default(now())
 
-  projectReporting      ProjectReporting    @relation(fields: [project_reporting_id], references: [project_reporting_id])
-  user                  User                @relation(fields: [uploaded_by], references: [user_id])
+  projectReporting      ProjectReporting    @relation(fields: [project_reporting_id], references: [project_reporting_id], onDelete: Cascade)
+  user                  User                @relation(fields: [uploaded_by], references: [user_id], onDelete: NoAction)
 
   @@index(project_reporting_id)
 }

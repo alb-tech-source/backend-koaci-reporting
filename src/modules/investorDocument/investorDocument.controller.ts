@@ -5,25 +5,17 @@ import { ApiResponse } from "../../utils/apiResponse.js";
 import { activityLogService } from "../activityLog/activityLog.service.js";
 
 export const investorDocumentController = {
+  presign: asyncHandler(async (req: Request, res: Response) => {
+    const result = await investorDocumentService.presignInvestorDocument(
+      req.body,
+      req.access!,
+    );
+    return ApiResponse(res, 200, { ...result, message: "URL upload berhasil dibuat" });
+  }),
+
   upload: asyncHandler(async (req: Request, res: Response) => {
-    // Parse form data from req.body
-    if (!req.file || !req.file.buffer) {
-      return ApiResponse(res, 400, {
-        message: "File wajib diunggah",
-      });
-    }
-
-    const input = {
-      investor_id: req.body.investor_id as string,
-      document_name: req.body.document_name as string,
-      storage_provider:
-        (req.body.storage_provider as "cloudflare" | "aws" | "tencent") || "cloudflare",
-      buffer: req.file.buffer,
-      mime_type: req.file.mimetype,
-    };
-
     const document = await investorDocumentService.uploadInvestorDocument(
-      input,
+      req.body,
       req.access!,
     );
 

@@ -57,6 +57,14 @@ export const projectReportingController = {
     ),
   ),
 
+  getByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(
+      res,
+      200,
+      await projectReportingService.getByUser(req.authUser!.userId),
+    ),
+  ),
+
   update: asyncHandler(async (req: Request, res: Response) => {
     const reporting = await projectReportingService.update(
       req.params.reportingId as string,

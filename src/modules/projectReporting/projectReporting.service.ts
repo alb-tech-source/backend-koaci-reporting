@@ -69,6 +69,34 @@ export const projectReportingService = {
     return reporting;
   },
 
+  // Laporan dari project yang diinvestasi oleh investor yang sedang login
+  getByUser: async (user_id: string) => {
+    const investor = await prisma.investor.findUnique({
+      where: {
+        user_id: user_id,
+      },
+      select: {
+        investor_id: true,
+      },
+    });
+
+    if (!investor)
+      throw new ApiError(
+        404,
+        `Investor dengan user_id ${user_id} tidak ditemukan.`,
+      );
+
+    return prisma.projectReporting.findMany({
+      where: {
+        project: {
+          projectInvestment: { some: { investor_id: investor.investor_id } },
+        },
+      },
+      include: includeRelations,
+      orderBy: { report_date: "desc" },
+    });
+  },
+
   update: async (
     reportingId: string,
     input: UpdateProjectReportingInput,

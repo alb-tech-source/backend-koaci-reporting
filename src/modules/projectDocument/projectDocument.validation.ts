@@ -1,9 +1,18 @@
 import { z } from "zod";
 
+export const presignProjectDocumentSchema = z.object({
+  project_id: z.uuid("Format project_id tidak valid"),
+  file_name: z.string().trim().min(1).max(150),
+  mime_type: z.string().trim().min(1).max(100),
+  file_size_bytes: z.number().int().positive(),
+});
+
 export const createProjectDocumentBodySchema = z.object({
   project_id: z.uuid("Format project_id tidak valid"),
   document_type: z.string().trim().min(2).max(100).optional(),
   document_name: z.string().trim().min(2).max(150),
+  object_key: z.string().trim().min(1).max(512),
+  mime_type: z.string().trim().min(1).max(100),
   storage_provider: z.enum(["cloudflare", "aws", "tencent"]).default("cloudflare"),
 });
 

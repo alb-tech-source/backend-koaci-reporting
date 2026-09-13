@@ -1,15 +1,18 @@
 import { z } from "zod";
 import {
   createProjectReportingMediaBodySchema,
+  presignProjectReportingMediaSchema,
   updateProjectReportingMediaSchema,
   listProjectReportingMediaQuerySchema,
 } from "../modules/projectReportingMedia/projectReportingMedia.validation.js";
 
+export type PresignProjectReportingMediaInput = z.infer<
+  typeof presignProjectReportingMediaSchema
+>;
+
 export type CreateProjectReportingMediaInput = z.infer<
   typeof createProjectReportingMediaBodySchema
 > & {
-  buffer: Buffer;
-  mime_type: string;
   uploaded_by: string;
 };
 

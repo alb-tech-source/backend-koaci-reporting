@@ -12,23 +12,25 @@ const log = (
     | "PROJECT_INVESTMENT_DELETE",
   investment: any,
 ) =>
-  activityLogService.logActivity({
-    userId: req.authUser!.userId,
-    action,
-    entityType: "ProjectInvestment",
-    entityId: investment.project_investment_id,
-    description: `${action}: investasi ${investment.project_investment_id} oleh ${req.authUser!.email}`,
-    metadata: {
-      investmentId: investment.project_investment_id,
-      projectId: investment.project_id,
-      investorId: investment.investor_id,
-      changes: req.body,
-    },
-    ipAddress: req.ip || req.socket.remoteAddress,
-    userAgent: req.get("user-agent"),
-  }).catch((error) =>
-    console.error("Failed to log project investment activity:", error),
-  );
+  activityLogService
+    .logActivity({
+      userId: req.authUser!.userId,
+      action,
+      entityType: "ProjectInvestment",
+      entityId: investment.project_investment_id,
+      description: `${action}: investasi ${investment.project_investment_id} oleh ${req.authUser!.email}`,
+      metadata: {
+        investmentId: investment.project_investment_id,
+        projectId: investment.project_id,
+        investorId: investment.investor_id,
+        changes: req.body,
+      },
+      ipAddress: req.ip || req.socket.remoteAddress,
+      userAgent: req.get("user-agent"),
+    })
+    .catch((error) =>
+      console.error("Failed to log project investment activity:", error),
+    );
 
 export const projectInvestmentController = {
   create: asyncHandler(async (req: Request, res: Response) => {
@@ -54,6 +56,14 @@ export const projectInvestmentController = {
       await projectInvestmentService.getById(req.params.investmentId as string),
     ),
   ),
+
+  getByUser: asyncHandler(async (req: Request, res: Response) => {
+    ApiResponse(
+      res,
+      200,
+      await projectInvestmentService.getByUser(req.authUser!.userId),
+    );
+  }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
     const projectInvestment = await projectInvestmentService.update(
