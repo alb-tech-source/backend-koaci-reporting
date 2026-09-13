@@ -4,6 +4,7 @@ import {
   authMiddleware,
   authorize,
   authorizeRoleMutation,
+  authorizeProtectedRoleTarget,
 } from "../middleware/auth.middleware.js";
 import {
   validate,
@@ -88,6 +89,7 @@ router.post(
   authMiddleware,
   authorize("users", "create", ["any"]),
   authorizeRoleMutation,
+  authorizeProtectedRoleTarget,
   validate(createUserSchema),
   userController.create,
 );
@@ -153,6 +155,7 @@ router.put(
   authorize("users", "update"),
   authorizeRoleMutation,
   validateParams(userIdParamSchema),
+  authorizeProtectedRoleTarget,
   validate(updateUserSchema),
   userController.update,
 );
@@ -181,6 +184,7 @@ router.patch(
   authMiddleware,
   authorize("users", "update", ["any"]),
   validateParams(userIdParamSchema),
+  authorizeProtectedRoleTarget,
   userController.changeActivation,
 );
 
@@ -200,6 +204,7 @@ router.post(
   authMiddleware,
   authorize("users", "update", ["any"]),
   validateParams(userIdParamSchema),
+  authorizeProtectedRoleTarget,
   userController.resetPassword,
 );
 
@@ -234,6 +239,7 @@ router.delete(
   authMiddleware,
   authorize("users", "delete"),
   validateParams(userIdParamSchema),
+  authorizeProtectedRoleTarget,
   userController.remove,
 );
 

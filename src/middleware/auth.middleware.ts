@@ -176,6 +176,70 @@ export const authorizeRoleMutation = async (
   }
 };
 
+/**
+ * Middleware pembatas mutasi user dengan role dilindungi (superadmin/bod).
+ * Rule:
+ * - Membuat user dengan role superadmin / elevasi role ke superadmin hanya oleh superadmin
+ * - Mengubah user dengan role superadmin hanya oleh superadmin
+ * - Menghapus user dengan role superadmin/bod hanya oleh superadmin
+ *
+ * Catatan: admin & superadmin memiliki set permission yang sama (lihat seeder),
+ * sehingga pembeda hak mutasi role dilindungi adalah role actor di JWT, bukan permission.
+ */
+export const authorizeProtectedRoleTarget = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (!req.authUser) {
+      throw new ApiError(401, "User tidak terautentikasi");
+    }
+
+    if (req.authUser.role === "superadmin") return next();
+
+    // Create user atau elevasi role user menjadi superadmin
+    if (req.body?.role_name === "superadmin") {
+      throw new ApiError(
+        403,
+        "Hanya superadmin yang dapat membuat user dengan role superadmin atau mengubah role user menjadi superadmin",
+      );
+    }
+
+    // Mutasi user target (update/delete/activate/reset-password)
+    const targetId = req.params?.id as string | undefined;
+    if (targetId) {
+      const prisma = await import("../lib/prisma.js").then((m) => m.default);
+      const target = await prisma.user.findUnique({
+        where: { user_id: targetId },
+        select: { role: { select: { role_name: true } } },
+      });
+
+      // User tidak ditemukan / belum punya role: lanjut, 404 ditangani service
+      if (!target?.role) return next();
+
+      const targetRole = target.role.role_name;
+      const isDelete = req.method === "DELETE";
+      const isProtected = isDelete
+        ? targetRole === "superadmin" || targetRole === "bod"
+        : targetRole === "superadmin";
+
+      if (isProtected) {
+        throw new ApiError(
+          403,
+          `Hanya superadmin yang dapat ${
+            isDelete ? "menghapus" : "mengubah"
+          } user dengan role ${targetRole}`,
+        );
+      }
+    }
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
 /** @deprecated Gunakan authorize(resource, action). */
 export const adminRequirePermission = (
   requiredPermissions: string[],
