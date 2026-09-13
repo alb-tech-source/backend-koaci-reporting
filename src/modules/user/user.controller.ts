@@ -41,34 +41,19 @@ export const userController = {
   }),
 
   list: asyncHandler(async (req: Request, res: Response) => {
-    const parseValue = (v: any) => {
-      if (v === "true") return true;
-      if (v === "false") return false;
-      if (v === "" || v === null || v === undefined) return v;
-      // numeric (ints and floats)
-      if (!Number.isNaN(Number(v)) && v !== null && v !== "") return Number(v);
-      return v;
-    };
+    // validatedQuery (added by validation middleware) is already coerced by zod:
+    // page/limit are numbers, is_active is boolean
+    const query = (req as any).validatedQuery as ListUserQuery;
 
-    const parseQuery = (q: Record<string, any>): ListUserQuery => {
-      const out: Record<string, any> = {};
-      for (const [key, value] of Object.entries(q)) {
-        if (Array.isArray(value)) out[key] = value.map(parseValue);
-        else out[key] = parseValue(value);
-      }
-      return out as ListUserQuery;
-    };
-
-    // validatedQuery is added by validation middleware; cast to any to avoid TS error
-    const query = parseQuery(
-      (req as any).validatedQuery as Record<string, any>,
-    );
     const result = await userService.listUsers(query, req.access!);
     return ApiResponse(res, 200, result.data, result.meta);
   }),
 
   getById: asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.getUserById(req.params.id as string, req.access!);
+    const user = await userService.getUserById(
+      req.params.id as string,
+      req.access!,
+    );
     return ApiResponse(res, 200, user);
   }),
 

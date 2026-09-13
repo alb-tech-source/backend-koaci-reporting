@@ -276,21 +276,30 @@ export const authController = {
         throw new ApiError(404, "User tidak ditemukan");
       }
 
-      // Extract permissions
-      const permissions =
-        user.role?.rolePermissions?.map(
-          (rp: any) => rp.permission.permission_key,
-        ) ?? [];
+      const userPermissions = user?.role?.rolePermissions.map(
+        (permissions) => permissions.permission.permission_key,
+      );
 
-      const toSafeUser = (await import("../user/user.service.js")).toSafeUser;
+      const userReturn = {
+        user_id: user?.user_id,
+        createdAt: user?.createdAt,
+        email: user?.email,
+        firstname: user?.firstname,
+        is_active: user?.is_active,
+        last_login_at: user?.last_login_at,
+        lastname: user?.lastname,
+        role: {
+          role_name: user?.role?.role_name,
+          permissions: userPermissions,
+        },
+        updatedAt: user?.updatedAt,
+      };
 
       res.status(200).json({
         success: true,
         message: "User profile berhasil diambil",
         data: {
-          user: toSafeUser(user),
-          role: user.role?.role_name ?? null,
-          permissions: permissions,
+          user: userReturn,
         },
       });
     } catch (error) {

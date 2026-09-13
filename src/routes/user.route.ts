@@ -25,6 +25,10 @@ router.get(
     #swagger.tags = ['User']
     #swagger.summary = 'List all users with pagination and filters'
     #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.parameters['page'] = { in: 'query', type: 'integer', default: 1 }
+    #swagger.parameters['limit'] = { in: 'query', type: 'integer', default: 10, maximum: 100 }
+    #swagger.parameters['search'] = { in: 'query', type: 'string', description: 'Search by firstname, lastname, or email' }
+    #swagger.parameters['is_active'] = { in: 'query', type: 'string', enum: ['true', 'false'], description: 'Filter by activation status' }
   */
   authMiddleware,
   authorize("users", "read"),

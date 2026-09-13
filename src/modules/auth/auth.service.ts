@@ -200,7 +200,7 @@ export const authService = {
     if (user.googleId) {
       throw new ApiError(
         403,
-        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth.",
       );
     }
 
@@ -250,7 +250,7 @@ export const authService = {
     if (user.googleId) {
       throw new ApiError(
         403,
-        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth."
+        "User yang login melalui Google tidak dapat mereset password. Silakan login menggunakan Google OAuth.",
       );
     }
 
