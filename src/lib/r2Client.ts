@@ -8,6 +8,10 @@ export const r2Client = new S3Client({
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
   },
+  // Nonaktifkan checksum bawaan SDK: tanpa ini presigned URL menyertakan
+  // x-amz-checksum-crc32 dari konten kosong, dan PUT dari browser ditolak BadDigest.
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 // Semua kategori dokumen disimpan dalam satu bucket, dibedakan lewat prefix folder pada object key:

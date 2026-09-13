@@ -233,15 +233,18 @@ Semua endpoint butuh cookie auth (`cookieAuth`) dan permission `upload` modul te
 
 | Kondisi | Kapan | Bentuk |
 |---|---|---|
-| `403 SignatureDoesNotMatch` | PUT ke R2 dengan Content-Type ≠ presign | XML dari R2 (bukan JSON backend) |
 | `415` | Presign: tipe file di luar whitelist | JSON backend |
 | `413` | Presign: klaim size > limit, **atau** confirm: ukuran aktual > limit | JSON backend |
 | `404` "File belum ditemukan di storage..." | Confirm sebelum PUT berhasil | JSON backend |
 | `400` "object_key tidak valid..." | Confirm dengan key milik resource lain | JSON backend |
-| `400` "mime_type tidak sesuai..." | Content-Type aktual di storage ≠ klaim | JSON backend |
+| `400` "mime_type tidak sesuai..." | Content-Type aktual di storage ≠ klaim (diverifikasi via HeadObject saat confirm) | JSON backend |
 | `409` | Receipt: investment sudah punya receipt | JSON backend |
 | `401`/`403` izin | Presign/confirm tanpa permission upload | JSON backend |
 | PUT gagal jaringan/CORS | Browser memblokir karena CORS R2 belum diset | Error `TypeError: Failed to fetch` |
+
+> **Catatan Content-Type**: kirim `Content-Type` yang sama dengan `mime_type` saat
+> presign di request PUT — jika berbeda, upload tetap berhasil di R2 tetapi akan
+> ditolak dengan 400 saat confirm karena mismatch tipe file.
 
 **Strategi retry yang aman:**
 
