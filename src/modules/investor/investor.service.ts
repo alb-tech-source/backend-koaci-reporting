@@ -55,7 +55,7 @@ export const investorService = {
     const effectiveInput = {
       ...input,
       user_id: access.scope === "own" ? access.userId : input.user_id,
-      status: access.scope === "own" ? "inactive" as const : input.status,
+      status: access.scope === "own" ? ("inactive" as const) : input.status,
     };
     // Check if user exists
     const user = await prisma.user.findUnique({
