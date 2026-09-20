@@ -37,7 +37,7 @@ export interface SafeInvestor {
     email: string;
     is_active: boolean;
   };
-  InvestorDocument?: Array<{
+  investorDocument?: Array<{
     document_id: string;
     document_name: string;
     storage_provider: "cloudflare" | "tencent" | "aws";
@@ -46,6 +46,20 @@ export interface SafeInvestor {
     mime_type: string | null;
     uploaded_at: Date;
   }>;
+  investments: {
+    project_investment_id: string;
+    project_id: string;
+    investor_id: string;
+    amount: number;
+    total_package: number;
+    source_account_transaction: string;
+    account_reference: string;
+    receipt_number: string;
+    payment_method: string;
+    destination_account_number: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
 }
 
 export interface PaginatedResult<T> {

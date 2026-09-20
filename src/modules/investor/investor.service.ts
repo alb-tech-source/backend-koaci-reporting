@@ -43,7 +43,8 @@ export function toSafeInvestor(investor: any): SafeInvestor {
           is_active: investor.user.is_active,
         }
       : undefined,
-    InvestorDocument: investor.InvestorDocument,
+    investorDocument: investor.InvestorDocument,
+    investments: investor.projectInvestment,
   };
 }
 
@@ -157,6 +158,7 @@ export const investorService = {
               is_active: true,
             },
           },
+          projectInvestment: true,
           InvestorDocument: true,
         },
       }),

@@ -19,7 +19,7 @@ const allowedOrigins = [
   `http://localhost:${env.PORT}`,
   `http://127.0.0.1:${env.PORT}`,
   env.CLIENT_URL,
-  env.FRONTEND_URL,
+  env.FRONTEND_ADMIN_URL,
   "https://frontend-koaci-reporting-mobile.vercel.app",
   "https://frontend-koaci-reporting-web.vercel.app",
   "https://backend-koaci-reporting.vercel.app",

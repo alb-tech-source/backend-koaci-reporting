@@ -16,7 +16,7 @@ const envSchema = zod.object({
   SMTP_USER: zod.string(),
   SMTP_PORT: zod.string(),
   SMTP_PASS: zod.string(),
-  FRONTEND_URL: zod.string(),
+  FRONTEND_ADMIN_URL: zod.string(),
   NODE_ENV: zod.string(),
   VERCEL_URL: zod.string().optional(),
   R2_ACCOUNT_ID: zod.string(),

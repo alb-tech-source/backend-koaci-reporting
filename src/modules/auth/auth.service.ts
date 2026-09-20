@@ -213,7 +213,7 @@ export const authService = {
     });
 
     // TODO: kirim email/Lark notif berisi link reset dengan resetToken
-    const resetLink = `${env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const resetLink = `${env.FRONTEND_ADMIN_URL}/reset-password?token=${resetToken}`;
 
     await transporter.sendMail({
       from: `"Koaci Reporting App" <${env.SMTP_USER}>`,
@@ -280,7 +280,7 @@ export const authService = {
       email: user.email,
     });
 
-    const verifyUrl = `${env.FRONTEND_URL}/auth/send-verify-email?token=${verificationToken}`;
+    const verifyUrl = `${env.FRONTEND_ADMIN_URL}/auth/send-verify-email?token=${verificationToken}`;
 
     await transporter.sendMail({
       from: `"Koaci Reporting App" <${env.SMTP_USER}>`,
