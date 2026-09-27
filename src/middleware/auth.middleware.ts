@@ -19,7 +19,9 @@ export type AccessResource =
   | "project_investments"
   | "receipt_documents"
   | "project_reportings"
-  | "project_reporting_media";
+  | "project_reporting_media"
+  | "project_settlements"
+  | "investor_settlements";
 
 export interface AccessContext {
   resource: AccessResource;

@@ -442,15 +442,24 @@ export const userService = {
       throw new ApiError(404, "User tidak ditemukan");
     }
 
-    await prisma.$transaction([
-      prisma.rolePermission.deleteMany({
-        where: { role_id: existingUser.role?.role_id || "" },
-      }),
-      prisma.role.deleteMany({
-        where: { user_id: userId },
-      }),
-      prisma.user.delete({ where: { user_id: userId } }),
-    ]);
+    try {
+      await prisma.$transaction([
+        prisma.rolePermission.deleteMany({
+          where: { role_id: existingUser.role?.role_id || "" },
+        }),
+        prisma.role.deleteMany({
+          where: { user_id: userId },
+        }),
+        prisma.user.delete({ where: { user_id: userId } }),
+      ]);
+    } catch (error: any) {
+      if (error?.code === "P2003")
+        throw new ApiError(
+          409,
+          "User masih memiliki data terkait (profil investor, dokumen, laporan, atau settlement). Nonaktifkan user sebagai gantinya",
+        );
+      throw error;
+    }
   },
 
   resetPasswordUser: async (

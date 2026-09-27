@@ -63,6 +63,14 @@
     {
       "name": "Project Reporting Media",
       "description": "Project reporting media endpoints"
+    },
+    {
+      "name": "Project Settlement",
+      "description": "Project settlement (bagi hasil) endpoints"
+    },
+    {
+      "name": "Investor Settlement",
+      "description": "Investor settlement endpoints (read-only)"
     }
   ],
   "paths": {
@@ -100,6 +108,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "429": {
+            "description": "Terlalu banyak percobaan login gagal (5 per IP+email / 20 per IP dalam 15 menit)"
           }
         },
         "requestBody": {
@@ -3947,7 +3958,7 @@
           "Project Reporting Media"
         ],
         "summary": "Generate media download URL milik sendiri",
-        "description": "Membuat presigned URL untuk media laporan dari project yang diinvestasi investor yang sedang login. Ditolak (404) jika media bukan milik project yang terjalin.",
+        "description": "Presigned URL unduhan (attachment, berlaku 1 jam) untuk media laporan dari project yang diinvestasi investor yang sedang login. Browser selalu menyimpan file; untuk memutar/menampilkan gunakan /own/{mediaId}/stream. Ditolak (404) jika media bukan milik project yang terjalin.",
         "parameters": [
           {
             "name": "mediaId",
@@ -3986,13 +3997,103 @@
         ]
       }
     },
+    "/api/project-reporting-media/own/{mediaId}/stream": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Generate media stream URL milik sendiri",
+        "description": "Presigned URL inline (berlaku 4 jam) untuk diputar/ditampilkan langsung, mis. <video src>. Mendukung Range request (seek). Ditolak (404) jika media bukan milik project yang terjalin.",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned stream URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaStreamUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaStreamUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media tidak ditemukan atau bukan milik project yang Anda ikuti"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-reporting-media/{mediaId}/stream": {
+      "get": {
+        "tags": [
+          "Project Reporting Media"
+        ],
+        "summary": "Generate media stream URL",
+        "description": "Presigned URL inline (berlaku 4 jam) untuk diputar/ditampilkan langsung, mis. <video src>. Mendukung Range request (seek).",
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned stream URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaStreamUrlResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReportingMediaStreamUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project reporting media not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/project-reporting-media/{mediaId}/download": {
       "get": {
         "tags": [
           "Project Reporting Media"
         ],
         "summary": "Generate media download URL",
-        "description": "",
+        "description": "Presigned URL unduhan (attachment, berlaku 1 jam). Browser selalu menyimpan file dengan nama media_name; untuk memutar/menampilkan gunakan /{mediaId}/stream.",
         "parameters": [
           {
             "name": "mediaId",
@@ -4160,7 +4261,7 @@
           "Project Reporting Media"
         ],
         "summary": "Presign upload URL untuk media laporan project",
-        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit.",
+        "description": "Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit. Video hanya mp4 (video/mp4), webm (video/webm), dan mkv (video/x-matroska atau video/matroska).",
         "responses": {
           "200": {
             "description": "Presigned upload URL",
@@ -5142,6 +5243,518 @@
         "responses": {
           "default": {
             "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-settlements/preview": {
+      "post": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Preview perhitungan settlement (tidak disimpan)",
+        "description": "Menghitung seluruh field settlement project & investor dari input admin tanpa menyimpan ke database. Body sama dengan create. Gunakan untuk live preview di form.",
+        "responses": {
+          "200": {
+            "description": "Hasil perhitungan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSettlementPreviewResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSettlementPreviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input tidak valid / persentase tidak berjumlah 100 / investor tidak berinvestasi pada project"
+          },
+          "404": {
+            "description": "Project tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectSettlementRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-settlements/": {
+      "get": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "List project settlements",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Cari berdasarkan project_key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "review",
+                    "approved",
+                    "rejected"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project settlement list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectSettlementsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectSettlementsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Create project settlement",
+        "description": "Menyimpan settlement project beserta seluruh investor settlement dalam satu transaksi. Principal investor diambil dari ProjectInvestment; field hasil hitung diisi backend. Status awal: review.",
+        "responses": {
+          "201": {
+            "description": "Settlement dibuat"
+          },
+          "400": {
+            "description": "Input tidak valid / persentase tidak berjumlah 100 / investor tidak berinvestasi pada project"
+          },
+          "404": {
+            "description": "Project tidak ditemukan"
+          },
+          "409": {
+            "description": "Project sudah memiliki settlement"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectSettlementRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-settlements/{settlementId}": {
+      "get": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Get project settlement by ID (termasuk investor settlements)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project settlement detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSettlementResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSettlementResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Settlement tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Update project settlement",
+        "description": "Hanya untuk status review/rejected. Seluruh field dihitung ulang (termasuk principal terbaru dari ProjectInvestment) dan status kembali ke review. Jika `investors` dikirim, daftar tersebut menggantikan seluruh kompensasi; investor yang tidak dicantumkan dianggap compensation_pct = 0.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settlement diperbarui"
+          },
+          "400": {
+            "description": "Input tidak valid / persentase tidak berjumlah 100"
+          },
+          "404": {
+            "description": "Settlement tidak ditemukan"
+          },
+          "409": {
+            "description": "Settlement sudah disetujui"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectSettlementRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Delete project settlement",
+        "description": "Hanya untuk status review/rejected. Investor settlement terkait ikut terhapus.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settlement dihapus"
+          },
+          "404": {
+            "description": "Settlement tidak ditemukan"
+          },
+          "409": {
+            "description": "Settlement sudah disetujui"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-settlements/{settlementId}/approve": {
+      "patch": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Approve project settlement",
+        "description": "Hanya bod/superadmin. Status review -> approved; seluruh investor settlement ikut approved. Settlement yang sudah approved terkunci.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settlement disetujui"
+          },
+          "404": {
+            "description": "Settlement tidak ditemukan"
+          },
+          "409": {
+            "description": "Settlement tidak berstatus review"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-settlements/{settlementId}/reject": {
+      "patch": {
+        "tags": [
+          "Project Settlement"
+        ],
+        "summary": "Reject project settlement",
+        "description": "Hanya bod/superadmin. Status review -> rejected; seluruh investor settlement ikut rejected. Admin dapat mengedit lalu settlement kembali ke review.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settlement ditolak"
+          },
+          "404": {
+            "description": "Settlement tidak ditemukan"
+          },
+          "409": {
+            "description": "Settlement tidak berstatus review"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investor-settlements/": {
+      "get": {
+        "tags": [
+          "Investor Settlement"
+        ],
+        "summary": "List investor settlements",
+        "description": "Admin/bod/superadmin melihat semua. Investor hanya melihat settlement miliknya yang sudah approved, dengan ringkasan settlement project.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "pending",
+                    "approved",
+                    "rejected"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "project_settlement_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "investor_id",
+            "in": "query",
+            "format": "uuid",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Investor settlement list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInvestorSettlementsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInvestorSettlementsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/investor-settlements/{investorSettlementId}": {
+      "get": {
+        "tags": [
+          "Investor Settlement"
+        ],
+        "summary": "Get investor settlement by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "investorSettlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Investor settlement detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorSettlementResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestorSettlementResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Settlement investor tidak ditemukan"
           }
         },
         "security": [
@@ -7167,6 +7780,529 @@
           "name": "ListProjectInvestmentsResponse"
         }
       },
+      "CreateProjectSettlementRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "profit_model": {
+            "type": "string",
+            "example": "jual beli"
+          },
+          "total_capital": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "sales_amount": {
+            "type": "string",
+            "example": "650000000"
+          },
+          "other_cost": {
+            "type": "string",
+            "example": "10000000"
+          },
+          "other_cost_description": {
+            "type": "string",
+            "example": "Biaya logistik"
+          },
+          "applicant_share_pct": {
+            "type": "string",
+            "example": "60"
+          },
+          "koaci_share_pct": {
+            "type": "string",
+            "example": "40"
+          },
+          "koaci_portion_pct": {
+            "type": "string",
+            "example": "30"
+          },
+          "investor_portion_pct": {
+            "type": "string",
+            "example": "70"
+          },
+          "investors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "investor_id": {
+                  "type": "string",
+                  "example": "uuid-investor-id"
+                },
+                "compensation_pct": {
+                  "type": "string",
+                  "example": "2"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "CreateProjectSettlementRequest"
+        }
+      },
+      "UpdateProjectSettlementRequest": {
+        "type": "object",
+        "properties": {
+          "sales_amount": {
+            "type": "string",
+            "example": "700000000"
+          },
+          "investors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "investor_id": {
+                  "type": "string",
+                  "example": "uuid-investor-id"
+                },
+                "compensation_pct": {
+                  "type": "string",
+                  "example": "1.5"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "UpdateProjectSettlementRequest"
+        }
+      },
+      "InvestorSettlementCalc": {
+        "type": "object",
+        "properties": {
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "principal_amount": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "modal_portion_pct": {
+            "type": "string",
+            "example": "100"
+          },
+          "profit_share_amount": {
+            "type": "string",
+            "example": "39200000"
+          },
+          "compensation_pct": {
+            "type": "string",
+            "example": "2"
+          },
+          "compensation_amount": {
+            "type": "string",
+            "example": "10000000"
+          },
+          "total_profit": {
+            "type": "string",
+            "example": "49200000"
+          }
+        },
+        "xml": {
+          "name": "InvestorSettlementCalc"
+        }
+      },
+      "SettlementWarning": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "CAPITAL_MISMATCH"
+          },
+          "message": {
+            "type": "string",
+            "example": "total_capital (500000000.00) berbeda dengan total investasi investor (450000000.00)"
+          }
+        },
+        "xml": {
+          "name": "SettlementWarning"
+        }
+      },
+      "ProjectSettlementPreviewResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "projectSettlement": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "string",
+                    "example": "uuid-project-id"
+                  },
+                  "profit_model": {
+                    "type": "string",
+                    "example": "jual beli"
+                  },
+                  "total_capital": {
+                    "type": "string",
+                    "example": "500000000"
+                  },
+                  "sales_amount": {
+                    "type": "string",
+                    "example": "650000000"
+                  },
+                  "other_cost": {
+                    "type": "string",
+                    "example": "10000000"
+                  },
+                  "other_cost_description": {
+                    "type": "string",
+                    "example": "Biaya logistik"
+                  },
+                  "applicant_share_pct": {
+                    "type": "string",
+                    "example": "60"
+                  },
+                  "koaci_share_pct": {
+                    "type": "string",
+                    "example": "40"
+                  },
+                  "koaci_portion_pct": {
+                    "type": "string",
+                    "example": "30"
+                  },
+                  "investor_portion_pct": {
+                    "type": "string",
+                    "example": "70"
+                  },
+                  "gross_margin": {
+                    "type": "string",
+                    "example": "150000000"
+                  },
+                  "net_profit_margin": {
+                    "type": "string",
+                    "example": "140000000"
+                  },
+                  "applicant_share_amount": {
+                    "type": "string",
+                    "example": "84000000"
+                  },
+                  "koaci_share_amount": {
+                    "type": "string",
+                    "example": "56000000"
+                  },
+                  "investor_portion_amount": {
+                    "type": "string",
+                    "example": "39200000"
+                  },
+                  "koaci_portion_amount": {
+                    "type": "string",
+                    "example": "16800000"
+                  },
+                  "compensation_total": {
+                    "type": "string",
+                    "example": "10000000"
+                  },
+                  "koaci_final_profit": {
+                    "type": "string",
+                    "example": "6800000"
+                  }
+                }
+              },
+              "investorSettlements": {
+                "type": "array",
+                "items": {
+                  "xml": {
+                    "name": "investorsettlementcalc"
+                  },
+                  "$ref": "#/components/schemas/InvestorSettlementCalc"
+                }
+              },
+              "warnings": {
+                "type": "array",
+                "items": {
+                  "xml": {
+                    "name": "settlementwarning"
+                  },
+                  "$ref": "#/components/schemas/SettlementWarning"
+                }
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectSettlementPreviewResponse"
+        }
+      },
+      "ProjectSettlementResponse": {
+        "type": "object",
+        "properties": {
+          "project_settlement_id": {
+            "type": "string",
+            "example": "uuid-settlement-id"
+          },
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "profit_model": {
+            "type": "string",
+            "example": "jual beli"
+          },
+          "total_capital": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "sales_amount": {
+            "type": "string",
+            "example": "650000000"
+          },
+          "gross_margin": {
+            "type": "string",
+            "example": "150000000"
+          },
+          "other_cost": {
+            "type": "string",
+            "example": "10000000"
+          },
+          "other_cost_description": {
+            "type": "string",
+            "example": "Biaya logistik"
+          },
+          "net_profit_margin": {
+            "type": "string",
+            "example": "140000000"
+          },
+          "applicant_share_pct": {
+            "type": "string",
+            "example": "60"
+          },
+          "applicant_share_amount": {
+            "type": "string",
+            "example": "84000000"
+          },
+          "koaci_share_pct": {
+            "type": "string",
+            "example": "40"
+          },
+          "koaci_share_amount": {
+            "type": "string",
+            "example": "56000000"
+          },
+          "koaci_portion_pct": {
+            "type": "string",
+            "example": "30"
+          },
+          "koaci_portion_amount": {
+            "type": "string",
+            "example": "16800000"
+          },
+          "investor_portion_pct": {
+            "type": "string",
+            "example": "70"
+          },
+          "investor_portion_amount": {
+            "type": "string",
+            "example": "39200000"
+          },
+          "compensation_total": {
+            "type": "string",
+            "example": "10000000"
+          },
+          "koaci_final_profit": {
+            "type": "string",
+            "example": "6800000"
+          },
+          "status": {
+            "type": "string",
+            "example": "review"
+          },
+          "created_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "approved_by": {},
+          "created_at": {
+            "type": "string",
+            "example": "2026-09-27T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-09-27T00:00:00.000Z"
+          },
+          "project": {
+            "xml": {
+              "name": "projectresponse"
+            },
+            "$ref": "#/components/schemas/ProjectResponse"
+          },
+          "investorSettlement": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "investorsettlementresponse"
+              },
+              "$ref": "#/components/schemas/InvestorSettlementResponse"
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectSettlementResponse"
+        }
+      },
+      "ListProjectSettlementsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "projectsettlementresponse"
+              },
+              "$ref": "#/components/schemas/ProjectSettlementResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListProjectSettlementsResponse"
+        }
+      },
+      "InvestorSettlementResponse": {
+        "type": "object",
+        "properties": {
+          "investor_settlement_id": {
+            "type": "string",
+            "example": "uuid-investor-settlement-id"
+          },
+          "project_settlement_id": {
+            "type": "string",
+            "example": "uuid-settlement-id"
+          },
+          "investor_id": {
+            "type": "string",
+            "example": "uuid-investor-id"
+          },
+          "principal_amount": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "modal_portion_pct": {
+            "type": "string",
+            "example": "100"
+          },
+          "profit_share_amount": {
+            "type": "string",
+            "example": "39200000"
+          },
+          "compensation_pct": {
+            "type": "string",
+            "example": "2"
+          },
+          "compensation_amount": {
+            "type": "string",
+            "example": "10000000"
+          },
+          "total_profit": {
+            "type": "string",
+            "example": "49200000"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "created_by": {
+            "type": "string",
+            "example": "uuid-user-id"
+          },
+          "approved_by": {},
+          "created_at": {
+            "type": "string",
+            "example": "2026-09-27T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-09-27T00:00:00.000Z"
+          },
+          "investor": {
+            "xml": {
+              "name": "investorresponse"
+            },
+            "$ref": "#/components/schemas/InvestorResponse"
+          }
+        },
+        "xml": {
+          "name": "InvestorSettlementResponse"
+        }
+      },
+      "ListInvestorSettlementsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "investorsettlementresponse"
+              },
+              "$ref": "#/components/schemas/InvestorSettlementResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListInvestorSettlementsResponse"
+        }
+      },
       "PresignReceiptDocumentRequest": {
         "type": "object",
         "properties": {
@@ -7693,6 +8829,39 @@
         },
         "xml": {
           "name": "ListProjectReportingMediaResponse"
+        }
+      },
+      "ProjectReportingMediaStreamUrlResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "streamUrl": {
+                "type": "string",
+                "example": "https://presigned-inline-url-here"
+              },
+              "mediaType": {
+                "type": "string",
+                "example": "video"
+              },
+              "mimeType": {
+                "type": "string",
+                "example": "video/mp4"
+              },
+              "expiresIn": {
+                "type": "number",
+                "example": 14400
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ProjectReportingMediaStreamUrlResponse"
         }
       },
       "ProjectReportingMediaDownloadUrlResponse": {

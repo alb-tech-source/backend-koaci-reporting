@@ -39,7 +39,9 @@
       "Bash(echo \"--- grep exit: $? \\(1 = bersih\\) ---\")",
       "Bash(echo \"exit: $?\")",
       "Bash(python3 -c \"import json; p=json.load\\(open\\('node_modules/@prisma/client/package.json'\\)\\); print\\(json.dumps\\(p.get\\('exports',{}\\),indent=1\\)[:800]\\)\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Read(//private/tmp/prisma-test/**)",
+      "Bash(npx --prefix \"/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend\" prisma validate --schema schema.prisma)"
     ],
     "additionalDirectories": [
       "/Users/user/My Drive/Dev Projects/ALB Tech/Koaci Reporting App/Backend/src/config",

@@ -141,7 +141,7 @@ export const investorDocumentService = {
         total,
         page: 1,
         limit: documents.length,
-        totalPages: Math.ceil(total / documents.length),
+        totalPages: total > 0 ? 1 : 0,
       },
     };
   },

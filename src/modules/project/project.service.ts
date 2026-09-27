@@ -1,7 +1,6 @@
 import prisma from "../../lib/prisma.js";
 import { ApiError } from "../../utils/apiError.js";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
+import { deleteObjectsBestEffort } from "../../lib/r2Client.js";
 import type {
   CreateProjectInput,
   UpdateProjectInput,
@@ -74,15 +73,23 @@ export const projectService = {
 
   delete: async (projectId: string) => {
     const project = await projectService.getById(projectId);
-    await Promise.all(
-      project.projectDocument.map((document) =>
-        r2Client.send(new DeleteObjectCommand({
-          Bucket: R2_BUCKET,
-          Key: document.object_key,
-        })),
-      ),
+
+    // Hapus record DB dulu (ProjectDocument ikut ter-cascade), baru file R2,
+    // agar file tidak hilang bila penghapusan ditolak FK.
+    try {
+      await prisma.project.delete({ where: { project_id: projectId } });
+    } catch (error: any) {
+      if (error?.code === "P2003")
+        throw new ApiError(
+          409,
+          "Project masih memiliki data investasi, laporan, atau settlement. Hapus data tersebut terlebih dahulu",
+        );
+      throw error;
+    }
+
+    await deleteObjectsBestEffort(
+      project.projectDocument.map((document) => document.object_key),
     );
-    await prisma.project.delete({ where: { project_id: projectId } });
     return project;
   },
 };

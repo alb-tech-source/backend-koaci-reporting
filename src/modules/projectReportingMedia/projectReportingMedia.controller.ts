@@ -57,6 +57,14 @@ export const projectReportingMediaController = {
     }),
   ),
 
+  stream: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(
+      res,
+      200,
+      await projectReportingMediaService.getStreamUrl(req.params.mediaId as string),
+    ),
+  ),
+
   getByUser: asyncHandler(async (req: Request, res: Response) =>
     ApiResponse(
       res,
@@ -73,6 +81,17 @@ export const projectReportingMediaController = {
       ),
       message: "URL download berhasil dibuat",
     }),
+  ),
+
+  streamByUser: asyncHandler(async (req: Request, res: Response) =>
+    ApiResponse(
+      res,
+      200,
+      await projectReportingMediaService.getStreamUrlByUser(
+        req.authUser!.userId,
+        req.params.mediaId as string,
+      ),
+    ),
   ),
 
   update: asyncHandler(async (req: Request, res: Response) => {

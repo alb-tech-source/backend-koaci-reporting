@@ -8,6 +8,11 @@ import {
 import prisma from "../../lib/prisma.js";
 import { ApiError } from "../../utils/apiError.js";
 
+// Jangan pernah include `user: true` — model User berisi hash password & token.
+const safeUserSelect = {
+  select: { user_id: true, firstname: true, lastname: true, email: true },
+} as const;
+
 export const projectInvestmentService = {
   create: async (input: createProjectInvestmentInput) => {
     const project = await prisma.project.findUnique({
@@ -61,7 +66,7 @@ export const projectInvestmentService = {
             },
           },
           investor: {
-            include: { user: true },
+            include: { user: safeUserSelect },
           },
           receiptDocument: true,
         },
@@ -85,7 +90,7 @@ export const projectInvestmentService = {
         },
         investor: {
           include: {
-            user: true,
+            user: safeUserSelect,
           },
         },
         receiptDocument: true,
@@ -164,7 +169,7 @@ export const projectInvestmentService = {
         },
         investor: {
           include: {
-            user: true,
+            user: safeUserSelect,
           },
         },
         receiptDocument: true,

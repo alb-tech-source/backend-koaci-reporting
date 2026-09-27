@@ -13,6 +13,7 @@
 - [Detail Endpoint per Modul](#detail-endpoint-per-modul)
 - [Penanganan Error](#penanganan-error)
 - [Prasyarat CORS R2](#prasyarat-cors-r2)
+- [Streaming & Download Media Laporan](#streaming--download-media-laporan)
 
 ---
 
@@ -227,7 +228,11 @@ Semua endpoint butuh cookie auth (`cookieAuth`) dan permission `upload` modul te
 | Modul | Maksimal | Masa berlaku URL | Tipe file |
 |---|---|---|---|
 | 4 modul dokumen | 100 MB | 15 menit | PDF, JPEG, PNG, DOC, DOCX |
-| Reporting media | 300 MB | 30 menit | + MP4, MOV, AVI, WebM |
+| Reporting media | 300 MB | 30 menit | + video MP4, WebM, MKV |
+
+> Video MOV dan AVI **tidak lagi diterima** (415) karena tidak bisa diputar di sebagian besar browser.
+> Untuk MKV, `file.type` kadang kosong di beberapa OS. Isi `mime_type` berdasarkan ekstensi:
+> `.mp4` → `video/mp4`, `.webm` → `video/webm`, `.mkv` → `video/x-matroska`.
 
 ## Penanganan Error
 
@@ -274,3 +279,104 @@ Atur di dashboard Cloudflare: **R2 → bucket → Settings → CORS policy**:
 Sesuaikan `AllowedOrigins` dengan domain frontend. Tanpa ini, PUT dari browser gagal
 dengan `TypeError: Failed to fetch` (curl/Postman tidak terpengaruh — CORS hanya
 berlaku di browser).
+
+---
+
+## Streaming & Download Media Laporan
+
+Media laporan project (`/api/project-reporting-media`) punya dua jenis URL:
+
+| Endpoint | Scope | Kegunaan | Masa berlaku |
+|---|---|---|---|
+| `GET /:mediaId/stream` | admin/bod | Putar/tampilkan langsung (inline) | 4 jam |
+| `GET /own/:mediaId/stream` | investor | Putar/tampilkan langsung (inline) | 4 jam |
+| `GET /:mediaId/download` | admin/bod | Unduh file (attachment + nama file) | 1 jam |
+| `GET /own/:mediaId/download` | investor | Unduh file (attachment + nama file) | 1 jam |
+
+Response stream:
+
+```json
+{
+  "success": true,
+  "data": {
+    "streamUrl": "https://<account>.r2.cloudflarestorage.com/...",
+    "mediaType": "video",
+    "mimeType": "video/mp4",
+    "expiresIn": 14400
+  }
+}
+```
+
+- **Stream (inline):** pakai `streamUrl` langsung di `<video src>`, `<img src>`, atau untuk membuka PDF di tab baru. R2 mendukung Range request, jadi video diputar sambil dimuat dan bisa di-seek tanpa mengunduh seluruh file. File diambil langsung dari R2, tidak lewat backend.
+- **Download (attachment):** browser selalu menyimpan file dengan nama `media_name` beserta ekstensinya, bukan membuka player.
+
+> **Perubahan perilaku:** URL dari `/download` sekarang selalu memicu unduhan. Jika sebelumnya
+> frontend memakai URL download untuk menampilkan gambar, memutar video, atau membuka PDF di tab,
+> ganti dengan URL dari `/stream`. `<img src>` masih berfungsi dengan URL download, tetapi
+> sebaiknya konsisten memakai `/stream`.
+
+### Cek format sebelum memutar
+
+Tidak semua browser bisa memutar semua format. **MKV tidak didukung Safari/iOS**, dan
+dukungannya di browser lain tidak konsisten. Cek dulu dengan `canPlayType`, lalu tampilkan
+tombol download sebagai fallback:
+
+```tsx
+function MediaVideo({ mediaId, own }: { mediaId: string; own: boolean }) {
+  const [src, setSrc] = useState<{ url: string; mimeType: string } | null>(null);
+  const [unplayable, setUnplayable] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const resumeAt = useRef(0);
+
+  const base = `/api/project-reporting-media/${own ? "own/" : ""}${mediaId}`;
+
+  const loadStream = useCallback(async () => {
+    const res = await fetch(`${base}/stream`, { credentials: "include" });
+    const { data } = await res.json();
+    const canPlay = document.createElement("video").canPlayType(data.mimeType) !== "";
+    setUnplayable(!canPlay);
+    setSrc({ url: data.streamUrl, mimeType: data.mimeType });
+  }, [base]);
+
+  useEffect(() => { loadStream(); }, [loadStream]);
+
+  // URL kedaluwarsa (403 dari R2) saat video lama di-pause → minta URL baru & lanjutkan.
+  const handleError = () => {
+    resumeAt.current = videoRef.current?.currentTime ?? 0;
+    loadStream();
+  };
+
+  if (unplayable) return <DownloadButton href={`${base}/download`} note="Format ini tidak bisa diputar di browser Anda" />;
+  if (!src) return <Spinner />;
+
+  return (
+    <video
+      ref={videoRef}
+      src={src.url}
+      controls
+      preload="metadata"
+      playsInline
+      onLoadedMetadata={(e) => { if (resumeAt.current) e.currentTarget.currentTime = resumeAt.current; }}
+      onError={handleError}
+    />
+  );
+}
+```
+
+Catatan:
+- `preload="metadata"` hanya memuat durasi dan frame awal, sehingga daftar berisi banyak video tetap ringan. Jangan pakai `preload="auto"` di halaman list.
+- `playsInline` diperlukan agar video di iOS tidak otomatis masuk mode fullscreen.
+- Batasi percobaan ulang pada `onError` (misalnya maksimal 2 kali), agar file yang memang rusak tidak memicu loop.
+- `<video src>` biasa **tidak** membutuhkan CORS. CORS baru dibutuhkan jika memakai `crossOrigin`,
+  `fetch()` ke `streamUrl`, hls.js, atau mengambil thumbnail lewat `<canvas>`. Untuk kebutuhan itu,
+  tambahkan aturan GET di CORS R2:
+
+```json
+{
+  "AllowedOrigins": ["https://app.andadomain.com", "http://localhost:3000"],
+  "AllowedMethods": ["GET", "HEAD"],
+  "AllowedHeaders": ["range"],
+  "ExposeHeaders": ["Content-Range", "Accept-Ranges", "Content-Length", "ETag"],
+  "MaxAgeSeconds": 3600
+}
+```

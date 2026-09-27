@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
@@ -18,20 +19,29 @@ export const documentMimeTypes = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
-// Allowed MIME types for project reporting media (photo, video, document)
-export const mediaMimeTypes = [
-  ...documentMimeTypes,
+// Video yang diizinkan untuk media laporan. MOV/AVI sengaja tidak diizinkan
+// karena tidak dapat diputar di sebagian besar browser.
+// Catatan: MKV tidak didukung Safari/iOS — frontend wajib punya fallback download.
+export const videoMimeTypes = [
   "video/mp4",
-  "video/quicktime",
-  "video/x-msvideo",
   "video/webm",
+  "video/x-matroska", // MIME yang dilaporkan browser untuk .mkv
+  "video/matroska", // MIME resmi IANA untuk .mkv
 ];
+
+// Allowed MIME types for project reporting media (photo, video, document)
+export const mediaMimeTypes = [...documentMimeTypes, ...videoMimeTypes];
 
 export const MAX_DOCUMENT_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 export const MAX_MEDIA_SIZE_BYTES = 300 * 1024 * 1024; // 300MB
 
 export const UPLOAD_URL_EXPIRY_SECONDS = 900; // 15 menit
 export const MEDIA_UPLOAD_URL_EXPIRY_SECONDS = 1800; // 30 menit (video besar)
+
+export const DOWNLOAD_URL_EXPIRY_SECONDS = 3600; // 1 jam
+// Lebih panjang dari download: player melakukan Range request selama video diputar,
+// dan request setelah URL kedaluwarsa akan ditolak R2 (403).
+export const STREAM_URL_EXPIRY_SECONDS = 4 * 3600; // 4 jam
 
 export interface PresignUploadResult {
   uploadUrl: string;
@@ -153,4 +163,44 @@ export const verifyUploadedObject = async (input: {
     fileSizeBytes,
     mimeType: head.ContentType || input.expectedMimeType,
   };
+};
+
+/**
+ * Header Content-Disposition (RFC 6266) dengan fallback ASCII dan nama UTF-8.
+ * - inline: browser menampilkan / memutar file (video, gambar, PDF)
+ * - attachment: browser mengunduh file dengan nama `fileName`
+ */
+export const buildContentDisposition = (
+  disposition: "inline" | "attachment",
+  fileName: string,
+): string => {
+  const asciiName = fileName.replace(/[^\x20-\x7E]|["\\]/g, "_");
+  return `${disposition}; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+};
+
+/**
+ * Presign GET URL. R2 mendukung HTTP Range request pada URL ini, sehingga
+ * `<video src>` bisa memutar & seek tanpa mengunduh seluruh file.
+ */
+export const presignGetObject = async (
+  objectKey: string,
+  options: {
+    disposition: "inline" | "attachment";
+    fileName: string;
+    contentType?: string | null;
+    expiresInSeconds: number;
+  },
+): Promise<string> => {
+  const command = new GetObjectCommand({
+    Bucket: R2_BUCKET,
+    Key: objectKey,
+    ResponseContentDisposition: buildContentDisposition(
+      options.disposition,
+      options.fileName,
+    ),
+    ...(options.contentType && { ResponseContentType: options.contentType }),
+  });
+  return getSignedUrl(r2Client, command, {
+    expiresIn: options.expiresInSeconds,
+  });
 };

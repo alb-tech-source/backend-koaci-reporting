@@ -12,6 +12,8 @@ import projectReportingRoutes from "./projectReporting.route.js";
 import projectReportingMediaRoutes from "./projectReportingMedia.route.js";
 import activityLogRoutes from "./activityLog.route.js";
 import permissionRoutes from "./permission.route.js";
+import projectSettlementRoutes from "./projectSettlement.route.js";
+import investorSettlementRoutes from "./investorSettlement.route.js";
 import type { Express } from "express";
 
 const initRoutes = (app: Express) => {
@@ -29,6 +31,8 @@ const initRoutes = (app: Express) => {
   app.use("/api/project-reporting-media", projectReportingMediaRoutes);
   app.use("/api/activity-logs", activityLogRoutes);
   app.use("/api/permissions", permissionRoutes);
+  app.use("/api/project-settlements", projectSettlementRoutes);
+  app.use("/api/investor-settlements", investorSettlementRoutes);
 };
 
 export default initRoutes;

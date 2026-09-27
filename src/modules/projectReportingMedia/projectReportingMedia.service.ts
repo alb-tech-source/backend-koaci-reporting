@@ -1,9 +1,11 @@
-import { DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import path from "path";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import prisma from "../../lib/prisma.js";
 import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
 import { ApiError } from "../../utils/apiError.js";
 import {
+  DOWNLOAD_URL_EXPIRY_SECONDS,
+  STREAM_URL_EXPIRY_SECONDS,
   MAX_MEDIA_SIZE_BYTES,
   MEDIA_UPLOAD_URL_EXPIRY_SECONDS,
   assertAllowedFileSize,
@@ -11,6 +13,7 @@ import {
   assertObjectKeyForResource,
   buildObjectKey,
   mediaMimeTypes,
+  presignGetObject,
   presignPutObject,
   verifyUploadedObject,
 } from "../../lib/r2Presign.js";
@@ -23,6 +26,81 @@ import type {
 
 const includeUploader = {
   user: { select: { user_id: true, firstname: true, lastname: true, email: true } },
+};
+
+type SignableMedia = {
+  object_key: string;
+  media_name: string;
+  media_type: string;
+  mime_type: string | null;
+};
+
+const signableSelect = {
+  object_key: true,
+  media_name: true,
+  media_type: true,
+  mime_type: true,
+} as const;
+
+/** Nama file unduhan: media_name + ekstensi asli dari object_key bila belum ada. */
+const downloadFileName = (media: SignableMedia) => {
+  const ext = path.extname(media.object_key);
+  return ext && !media.media_name.toLowerCase().endsWith(ext.toLowerCase())
+    ? `${media.media_name}${ext}`
+    : media.media_name;
+};
+
+/** URL unduhan: memaksa browser menyimpan file (attachment). */
+const signDownloadUrl = (media: SignableMedia) =>
+  presignGetObject(media.object_key, {
+    disposition: "attachment",
+    fileName: downloadFileName(media),
+    expiresInSeconds: DOWNLOAD_URL_EXPIRY_SECONDS,
+  });
+
+/**
+ * URL stream: ditampilkan/diputar langsung di browser (inline) — untuk `<video>`,
+ * `<img>`, atau membuka PDF di tab. R2 melayani Range request sehingga video
+ * bisa diputar & di-seek tanpa mengunduh seluruh file.
+ */
+const signStreamUrl = async (media: SignableMedia) => ({
+  streamUrl: await presignGetObject(media.object_key, {
+    disposition: "inline",
+    fileName: downloadFileName(media),
+    contentType: media.mime_type,
+    expiresInSeconds: STREAM_URL_EXPIRY_SECONDS,
+  }),
+  mediaType: media.media_type,
+  mimeType: media.mime_type,
+  expiresIn: STREAM_URL_EXPIRY_SECONDS,
+});
+
+/** Media dari laporan project yang diinvestasi oleh investor yang sedang login. */
+const findOwnedMedia = async (user_id: string, mediaId: string) => {
+  const investor = await prisma.investor.findUnique({
+    where: { user_id },
+    select: { investor_id: true },
+  });
+  if (!investor)
+    throw new ApiError(404, `Investor dengan user_id ${user_id} tidak ditemukan.`);
+
+  const media = await prisma.projectReportingMedia.findFirst({
+    where: {
+      project_reporting_media_id: mediaId,
+      projectReporting: {
+        project: {
+          projectInvestment: { some: { investor_id: investor.investor_id } },
+        },
+      },
+    },
+    select: signableSelect,
+  });
+  if (!media)
+    throw new ApiError(
+      404,
+      "Media laporan project tidak ditemukan atau bukan milik project yang Anda ikuti.",
+    );
+  return media;
 };
 
 export const projectReportingMediaService = {
@@ -106,11 +184,11 @@ export const projectReportingMediaService = {
     return media;
   },
 
-  getDownloadUrl: async (mediaId: string) => {
-    const media = await projectReportingMediaService.getById(mediaId);
-    const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: media.object_key });
-    return getSignedUrl(r2Client, command, { expiresIn: 3600 });
-  },
+  getDownloadUrl: async (mediaId: string) =>
+    signDownloadUrl(await projectReportingMediaService.getById(mediaId)),
+
+  getStreamUrl: async (mediaId: string) =>
+    signStreamUrl(await projectReportingMediaService.getById(mediaId)),
 
   // Media dari laporan project yang diinvestasi oleh investor yang sedang login
   getByUser: async (user_id: string) => {
@@ -149,45 +227,11 @@ export const projectReportingMediaService = {
     });
   },
 
-  getDownloadUrlByUser: async (user_id: string, mediaId: string) => {
-    const investor = await prisma.investor.findUnique({
-      where: {
-        user_id: user_id,
-      },
-      select: {
-        investor_id: true,
-      },
-    });
+  getDownloadUrlByUser: async (user_id: string, mediaId: string) =>
+    signDownloadUrl(await findOwnedMedia(user_id, mediaId)),
 
-    if (!investor)
-      throw new ApiError(
-        404,
-        `Investor dengan user_id ${user_id} tidak ditemukan.`,
-      );
-
-    const media = await prisma.projectReportingMedia.findFirst({
-      where: {
-        project_reporting_media_id: mediaId,
-        projectReporting: {
-          project: {
-            projectInvestment: { some: { investor_id: investor.investor_id } },
-          },
-        },
-      },
-      select: {
-        object_key: true,
-      },
-    });
-
-    if (!media)
-      throw new ApiError(
-        404,
-        "Media laporan project tidak ditemukan atau bukan milik project yang Anda ikuti.",
-      );
-
-    const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: media.object_key });
-    return getSignedUrl(r2Client, command, { expiresIn: 3600 });
-  },
+  getStreamUrlByUser: async (user_id: string, mediaId: string) =>
+    signStreamUrl(await findOwnedMedia(user_id, mediaId)),
 
   update: async (mediaId: string, input: UpdateProjectReportingMediaInput) => {
     await projectReportingMediaService.getById(mediaId);

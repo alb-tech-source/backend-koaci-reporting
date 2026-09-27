@@ -6,8 +6,7 @@ import type {
   ListCompanyQuery,
   PaginatedResult,
 } from "../../types/company.types.js";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { r2Client, R2_BUCKET } from "../../lib/r2Client.js";
+import { deleteObjectsBestEffort } from "../../lib/r2Client.js";
 
 const companyInclude = {
   companyDocument: { orderBy: { uploaded_at: "desc" as const } },
@@ -64,14 +63,22 @@ export const companyService = {
 
   delete: async (companyId: string) => {
     const company = await companyService.getById(companyId);
-    await Promise.all(
-      company.companyDocument.map((document) =>
-        r2Client.send(new DeleteObjectCommand({
-          Bucket: R2_BUCKET,
-          Key: document.object_key,
-        })),
-      ),
+
+    // Hapus record DB dulu (CompanyDocument ikut ter-cascade), baru file R2,
+    // agar file tidak hilang bila penghapusan ditolak FK.
+    try {
+      await prisma.company.delete({ where: { company_id: companyId } });
+    } catch (error: any) {
+      if (error?.code === "P2003")
+        throw new ApiError(
+          409,
+          "Perusahaan masih memiliki project. Hapus project terlebih dahulu",
+        );
+      throw error;
+    }
+
+    await deleteObjectsBestEffort(
+      company.companyDocument.map((document) => document.object_key),
     );
-    await prisma.company.delete({ where: { company_id: companyId } });
   },
 };

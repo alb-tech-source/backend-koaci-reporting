@@ -1,4 +1,4 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env } from "../config/env.js";
 
 export const r2Client = new S3Client({
@@ -20,3 +20,18 @@ export const r2Client = new S3Client({
 // - project document   -> project/{project_id}/...
 // - receipt document   -> receipt/{project_investment_id}/...
 export const R2_BUCKET = env.R2_BUCKET;
+
+/**
+ * Hapus beberapa object R2 setelah record DB-nya berhasil dihapus.
+ * Kegagalan hanya di-log: file yatim di storage lebih aman daripada
+ * record DB yang menunjuk ke file yang sudah hilang.
+ */
+export async function deleteObjectsBestEffort(keys: string[]): Promise<void> {
+  const results = await Promise.allSettled(
+    keys.map((Key) => r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key }))),
+  );
+  results.forEach((result, index) => {
+    if (result.status === "rejected")
+      console.error(`[R2] Gagal menghapus object ${keys[index]}:`, result.reason);
+  });
+}

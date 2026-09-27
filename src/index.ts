@@ -8,8 +8,14 @@ import docs from "./docs/route.js";
 import passport from "./config/passport.js";
 import session from "express-session";
 import cookieParser from "cookie-parser";
+import { errorMiddleware } from "./middleware/error.middleware.js";
 
 const app: Express = express();
+
+// Di Vercel request melewati proxy; tanpa ini req.ip adalah IP proxy sehingga
+// rate limit akan memblokir semua user sekaligus. Lokal tidak dipercaya agar
+// header X-Forwarded-For tidak bisa dipalsukan.
+app.set("trust proxy", env.NODE_ENV === "production" ? 1 : false);
 
 // Get allowed origins from environment variables with fallback
 const allowedOrigins = [
@@ -84,22 +90,7 @@ routes(app);
 // api-docs
 docs(app);
 
-app.use(
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-  ) => {
-    console.error(err); // penting: log error asli biar keliatan di Vercel logs
-    const status = err.statusCode || err.status || 500;
-    const message = err.message || "Internal Server Error";
-    res.status(status).json({
-      success: false,
-      message,
-    });
-  },
-);
+app.use(errorMiddleware);
 
 if (env.NODE_ENV !== "production") {
   const port = env.PORT;

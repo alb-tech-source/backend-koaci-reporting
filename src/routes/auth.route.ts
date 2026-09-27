@@ -3,6 +3,7 @@ import passport from "passport";
 import { authController } from "../modules/auth/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
+import { loginRateLimiter } from "../middleware/rateLimit.middleware.js";
 import {
   registerSchema,
   loginSchema,
@@ -45,7 +46,9 @@ router.post(
         }
       }
     }
+    #swagger.responses[429] = { description: 'Terlalu banyak percobaan login gagal (5 per IP+email / 20 per IP dalam 15 menit)' }
   */
+  ...loginRateLimiter,
   validate(loginSchema),
   authController.login,
 );

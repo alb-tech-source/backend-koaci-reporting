@@ -69,6 +69,13 @@ export const CANONICAL_PERMISSIONS = {
   "project_reporting_media:download:own":
     "Mengunduh media laporan project yang terjalin",
   "project_reporting_media:delete:any": "Menghapus media laporan project",
+  "project_settlements:create:any": "Membuat & preview settlement project",
+  "project_settlements:read:any": "Membaca semua settlement project",
+  "project_settlements:update:any": "Mengubah settlement project (status review/rejected)",
+  "project_settlements:delete:any": "Menghapus settlement project (status review/rejected)",
+  "project_settlements:approve:any": "Menyetujui / menolak settlement project",
+  "investor_settlements:read:any": "Membaca semua settlement investor",
+  "investor_settlements:read:own": "Membaca settlement investor sendiri yang sudah disetujui",
 } as const;
 
 export const ROLE_NAMES = [
@@ -81,6 +88,12 @@ export const ROLE_NAMES = [
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 const ALL_PERMISSION_KEYS = Object.keys(CANONICAL_PERMISSIONS);
+
+// Approval settlement hanya untuk bod & superadmin (admin yang membuat settlement).
+const APPROVAL_PERMISSION_KEYS = ["project_settlements:approve:any"];
+const ADMIN_PERMISSION_KEYS = ALL_PERMISSION_KEYS.filter(
+  (key) => !APPROVAL_PERMISSION_KEYS.includes(key),
+);
 
 // Board of Directors - read only semua data
 const BOD_PERMISSIONS = [
@@ -102,6 +115,9 @@ const BOD_PERMISSIONS = [
   "project_reportings:read:any",
   "project_reporting_media:read:any",
   "project_reporting_media:download:any",
+  "project_settlements:read:any",
+  "project_settlements:approve:any",
+  "investor_settlements:read:any",
 ] as const;
 
 // Investor - mengelola profil & dokumen sendiri, read data publik
@@ -122,6 +138,7 @@ const INVESTOR_PERMISSIONS = [
   "project_reportings:read:own",
   "project_reporting_media:read:own",
   "project_reporting_media:download:own",
+  "investor_settlements:read:own",
   "companies:read:any",
   "company_documents:read:any",
   "company_documents:download:any",
@@ -135,7 +152,7 @@ const USER_PERMISSIONS = ["users:read:own", "users:update:own"] as const;
 
 export const CANONICAL_ROLE_PERMISSIONS = {
   superadmin: ALL_PERMISSION_KEYS,
-  admin: ALL_PERMISSION_KEYS,
+  admin: ADMIN_PERMISSION_KEYS,
   bod: BOD_PERMISSIONS,
   investor: INVESTOR_PERMISSIONS,
   user: USER_PERMISSIONS,

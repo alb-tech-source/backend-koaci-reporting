@@ -50,7 +50,7 @@ router.get(
   /*
     #swagger.tags = ['Project Reporting Media']
     #swagger.summary = 'Generate media download URL milik sendiri'
-    #swagger.description = 'Membuat presigned URL untuk media laporan dari project yang diinvestasi investor yang sedang login. Ditolak (404) jika media bukan milik project yang terjalin.'
+    #swagger.description = 'Presigned URL unduhan (attachment, berlaku 1 jam) untuk media laporan dari project yang diinvestasi investor yang sedang login. Browser selalu menyimpan file; untuk memutar/menampilkan gunakan /own/{mediaId}/stream. Ditolak (404) jika media bukan milik project yang terjalin.'
     #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['mediaId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Presigned download URL', schema: { $ref: '#/components/schemas/ProjectReportingMediaDownloadUrlResponse' } }
@@ -61,10 +61,41 @@ router.get(
 );
 
 router.get(
+  "/own/:mediaId/stream",
+  /*
+    #swagger.tags = ['Project Reporting Media']
+    #swagger.summary = 'Generate media stream URL milik sendiri'
+    #swagger.description = 'Presigned URL inline (berlaku 4 jam) untuk diputar/ditampilkan langsung, mis. <video src>. Mendukung Range request (seek). Ditolak (404) jika media bukan milik project yang terjalin.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.parameters['mediaId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
+    #swagger.responses[200] = { description: 'Presigned stream URL', schema: { $ref: '#/components/schemas/ProjectReportingMediaStreamUrlResponse' } }
+    #swagger.responses[404] = { description: 'Media tidak ditemukan atau bukan milik project yang Anda ikuti' }
+  */
+  authMiddleware, authorize("project_reporting_media", "download", ["own"]),
+  validateParams(projectReportingMediaIdParamSchema), projectReportingMediaController.streamByUser,
+);
+
+router.get(
+  "/:mediaId/stream",
+  /*
+    #swagger.tags = ['Project Reporting Media']
+    #swagger.summary = 'Generate media stream URL'
+    #swagger.description = 'Presigned URL inline (berlaku 4 jam) untuk diputar/ditampilkan langsung, mis. <video src>. Mendukung Range request (seek).'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.parameters['mediaId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
+    #swagger.responses[200] = { description: 'Presigned stream URL', schema: { $ref: '#/components/schemas/ProjectReportingMediaStreamUrlResponse' } }
+    #swagger.responses[404] = { description: 'Project reporting media not found' }
+  */
+  authMiddleware, authorize("project_reporting_media", "download", ["any"]),
+  validateParams(projectReportingMediaIdParamSchema), projectReportingMediaController.stream,
+);
+
+router.get(
   "/:mediaId/download",
   /*
     #swagger.tags = ['Project Reporting Media']
     #swagger.summary = 'Generate media download URL'
+    #swagger.description = 'Presigned URL unduhan (attachment, berlaku 1 jam). Browser selalu menyimpan file dengan nama media_name; untuk memutar/menampilkan gunakan /{mediaId}/stream.'
     #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['mediaId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Presigned download URL', schema: { $ref: '#/components/schemas/ProjectReportingMediaDownloadUrlResponse' } }
@@ -92,7 +123,7 @@ router.post(
   /*
     #swagger.tags = ['Project Reporting Media']
     #swagger.summary = 'Presign upload URL untuk media laporan project'
-    #swagger.description = 'Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit.'
+    #swagger.description = 'Langkah 1 alur upload direct ke Cloudflare R2. Kembalikan uploadUrl (presigned PUT, Content-Type di-sign) + objectKey. Maksimal 300MB, kedaluwarsa 30 menit. Video hanya mp4 (video/mp4), webm (video/webm), dan mkv (video/x-matroska atau video/matroska).'
     #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = { required: true, content: { "application/json": { schema: { $ref: '#/components/schemas/PresignProjectReportingMediaRequest' } } } }
     #swagger.responses[200] = { description: 'Presigned upload URL', schema: { $ref: '#/components/schemas/PresignUploadResponse' } }

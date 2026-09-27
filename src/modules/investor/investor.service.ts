@@ -7,6 +7,7 @@ import type {
 } from "../../types/investor.types.js";
 import { ApiError } from "../../utils/apiError.js";
 import prisma from "../../lib/prisma.js";
+import { deleteObjectsBestEffort } from "../../lib/r2Client.js";
 import type { AccessContext } from "../../middleware/auth.middleware.js";
 
 const investorAccessWhere = (access: AccessContext) =>
@@ -340,7 +341,7 @@ export const investorService = {
       include: {
         InvestorDocument: {
           select: {
-            document_id: true,
+            object_key: true,
           },
         },
       },
@@ -351,11 +352,25 @@ export const investorService = {
     }
 
     // Delete investor and related documents
-    await prisma.$transaction([
-      prisma.investorDocument.deleteMany({
-        where: { investor_id: investorId },
-      }),
-      prisma.investor.delete({ where: { investor_id: investorId } }),
-    ]);
+    try {
+      await prisma.$transaction([
+        prisma.investorDocument.deleteMany({
+          where: { investor_id: investorId },
+        }),
+        prisma.investor.delete({ where: { investor_id: investorId } }),
+      ]);
+    } catch (error: any) {
+      if (error?.code === "P2003")
+        throw new ApiError(
+          409,
+          "Investor masih memiliki data investasi atau settlement dan tidak dapat dihapus",
+        );
+      throw error;
+    }
+
+    // File dokumen investor (data pribadi) ikut dihapus dari storage.
+    await deleteObjectsBestEffort(
+      existingInvestor.InvestorDocument.map((document) => document.object_key),
+    );
   },
 };
