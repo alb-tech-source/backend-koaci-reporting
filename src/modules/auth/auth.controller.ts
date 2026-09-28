@@ -5,7 +5,6 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  verifyEmailSchema,
 } from "./auth.validation.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
@@ -363,22 +362,55 @@ export const authController = {
    * Send email verification
    * POST /api/auth/send-verify-email
    */
+  /**
+   * Ganti password user yang sedang login
+   * POST /api/auth/change-password
+   */
+  async changePassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      await authService.changePassword(req.authUser!.userId, req.body);
+
+      activityLogService
+        .logActivity({
+          userId: req.authUser!.userId,
+          action: "USER_UPDATE",
+          entityType: "User",
+          entityId: req.authUser!.userId,
+          description: `User ${req.authUser!.email} mengganti password`,
+          metadata: { changedFields: ["password"] },
+          ipAddress: req.ip || req.socket.remoteAddress,
+          userAgent: req.get("user-agent"),
+        })
+        .catch((err) => console.error("Failed to log password change:", err));
+
+      res.status(200).json({
+        success: true,
+        message: "Password berhasil diganti",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async sendVerifyEmailController(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
-      // Validate input
-      const validateInput = verifyEmailSchema.parse(req.body);
+      // Email tujuan selalu email user yang sedang login (body diabaikan).
+      const sent = await authService.sendVerifyEmail(req.authUser!.userId);
 
-      // Process send verify email
-      await authService.sendVerifyEmail(validateInput);
-
-      // Selalu return sukses
       res.status(200).json({
         success: true,
-        message: "Email verifikasi telah dikirim ke email anda",
+        message: sent
+          ? "Email verifikasi telah dikirim ke email anda"
+          : "Email anda sudah terverifikasi",
         data: null,
       });
     } catch (error) {

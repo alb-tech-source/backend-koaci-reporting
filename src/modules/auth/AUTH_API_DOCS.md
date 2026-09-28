@@ -277,6 +277,82 @@ Authorization: Bearer {access_token}
 
 ---
 
+### 8. Change Password
+**POST** `/api/auth/change-password`
+
+Mengganti password user yang sedang login (auth via cookie `access_token`). Password lama wajib diisi.
+
+**Request Body:**
+```json
+{
+  "currentPassword": "OldPassword123",
+  "newPassword": "NewPassword123"
+}
+```
+
+**Validation:**
+- `newPassword`: minimal 8 karakter, mengandung huruf besar dan angka, dan harus berbeda dari `currentPassword`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Password berhasil diganti",
+  "data": null
+}
+```
+
+**Errors:**
+- `400`: "Password saat ini salah" atau pesan validasi `newPassword: ...`. Sengaja memakai 400, bukan 401, agar frontend tidak menganggap sesinya habis.
+- `403`: user yang login lewat Google OAuth tidak dapat mengganti password
+- `429`: lebih dari 5 percobaan gagal per user dalam 15 menit
+
+**Note:** `PUT /api/users/:id` tidak lagi bisa dipakai untuk mengganti password **sendiri** (400). Admin tetap bisa mengatur password user lain lewat endpoint tersebut.
+
+---
+
+### 9. Send Verification Email
+**POST** `/api/auth/send-verify-email`
+
+Mengirim link verifikasi (berlaku 30 menit) ke **email user yang sedang login**. Tidak memerlukan body; jika ada body, body tersebut diabaikan.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Email verifikasi telah dikirim ke email anda",
+  "data": null
+}
+```
+
+Jika email sudah terverifikasi, message-nya menjadi `"Email anda sudah terverifikasi"` dan tidak ada email yang dikirim.
+
+**Errors:**
+- `401`: belum login
+- `429`: lebih dari 3 permintaan per user dalam 15 menit
+
+---
+
+### 10. Verify Email
+**GET** `/api/auth/verify-email?token={token}`
+
+Memverifikasi email dengan token dari link email.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Akun anda telah berhasil diverifikasi",
+  "data": null
+}
+```
+
+**Errors:**
+- `400`: "Token tidak valid atau sudah kadaluarsa"
+- `400`: "Link verifikasi tidak berlaku karena email akun sudah berubah...". Token hanya berlaku untuk email yang dituju saat link dikirim. Jika user sudah mengganti email, dia harus meminta link baru.
+
+---
+
 ## Using the Routes
 
 ### Import in Main App

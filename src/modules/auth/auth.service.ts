@@ -11,7 +11,7 @@ import type {
   ResetPasswordInput,
   JwtPayload,
   AuthTokens,
-  EmailVerify,
+  ChangePasswordInput,
 } from "../../types/auth.types.js";
 import type { SafeUser } from "../../types/user.types.js";
 import { ApiError } from "../../utils/apiError.js";
@@ -266,13 +266,63 @@ export const authService = {
     });
   },
 
-  async sendVerifyEmail(input: EmailVerify): Promise<void> {
+  /**
+   * Ganti password user yang sedang login. Wajib menyertakan password lama agar
+   * sesi yang tertinggal (mis. perangkat yang lupa logout) tidak bisa dipakai
+   * untuk mengambil alih akun.
+   */
+  async changePassword(userId: string, input: ChangePasswordInput): Promise<void> {
     const user = await prisma.user.findUnique({
-      where: { email: input.email },
+      where: { user_id: userId },
+      select: { user_id: true, password: true, googleId: true },
     });
 
     if (!user) {
-      throw new ApiError(404, "User untuk email ini tidak ditemukan");
+      throw new ApiError(404, "User tidak ditemukan");
+    }
+
+    if (user.googleId) {
+      throw new ApiError(
+        403,
+        "User yang login melalui Google tidak dapat mengganti password. Silakan kelola password melalui akun Google.",
+      );
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      input.currentPassword,
+      user.password,
+    );
+    if (!isCurrentPasswordValid) {
+      // 400 (bukan 401) agar frontend tidak mengira sesi habis lalu logout.
+      throw new ApiError(400, "Password saat ini salah");
+    }
+
+    await prisma.user.update({
+      where: { user_id: user.user_id },
+      data: {
+        password: await bcrypt.hash(input.newPassword, SALT_ROUNDS),
+        // Link reset password yang masih aktif tidak boleh dipakai lagi.
+        reset_token: null,
+        reset_token_expires: null,
+      },
+    });
+  },
+
+  /**
+   * Kirim link verifikasi ke email user yang sedang login.
+   * Mengembalikan false jika email sudah terverifikasi (tidak ada email dikirim).
+   */
+  async sendVerifyEmail(userId: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User tidak ditemukan");
+    }
+
+    if (user.email_verified) {
+      return false;
     }
 
     const verificationToken = generateEmailVerificationToken({
@@ -300,7 +350,7 @@ export const authService = {
     `,
     });
 
-    return;
+    return true;
   },
 
   async verifyEmail(token: string): Promise<void> {
@@ -321,6 +371,16 @@ export const authService = {
 
     if (!user) {
       throw new ApiError(404, "User tidak ditemukan");
+    }
+
+    // Token hanya berlaku untuk email yang dituju saat link dikirim. Tanpa cek ini,
+    // user bisa mengganti email ke alamat orang lain lalu memakai link lama
+    // sehingga alamat tersebut tercatat terverifikasi.
+    if (decoded.email !== user.email) {
+      throw new ApiError(
+        400,
+        "Link verifikasi tidak berlaku karena email akun sudah berubah. Silakan minta link verifikasi baru.",
+      );
     }
 
     if (user.email_verified) {

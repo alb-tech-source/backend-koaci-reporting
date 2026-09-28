@@ -204,6 +204,15 @@ export const userService = {
       );
     }
 
+    // Password sendiri hanya boleh diganti lewat /api/auth/change-password,
+    // yang memverifikasi password lama. Admin tetap bisa mengatur password user lain.
+    if (input.password !== undefined && userId === access.userId) {
+      throw new ApiError(
+        400,
+        "Gunakan endpoint POST /api/auth/change-password untuk mengganti password Anda sendiri",
+      );
+    }
+
     const existingUser = await prisma.user.findFirst({
       where: {
         user_id: userId,

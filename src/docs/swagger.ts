@@ -61,8 +61,9 @@ const doc = {
       ForgotPasswordRequest: {
         email: "user@example.com",
       },
-      SendEmailVerification: {
-        email: "user@example.com",
+      ChangePasswordRequest: {
+        currentPassword: "OldPassword123",
+        newPassword: "NewPassword123",
       },
       ResetPasswordRequest: {
         token: "reset_token_here",

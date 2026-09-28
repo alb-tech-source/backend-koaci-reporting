@@ -3,13 +3,17 @@ import passport from "passport";
 import { authController } from "../modules/auth/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
-import { loginRateLimiter } from "../middleware/rateLimit.middleware.js";
+import {
+  loginRateLimiter,
+  changePasswordRateLimiter,
+  sendVerifyEmailRateLimiter,
+} from "../middleware/rateLimit.middleware.js";
 import {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  verifyEmailSchema,
+  changePasswordSchema,
 } from "../modules/auth/auth.validation.js";
 import { env } from "../config/env.js";
 
@@ -156,19 +160,40 @@ router.post(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Send Email Verification'
+    #swagger.description = 'Mengirim link verifikasi (berlaku 30 menit) ke email user yang sedang login. Tidak memerlukan body. Jika email sudah terverifikasi, tidak ada email yang dikirim. Dibatasi 3 permintaan per user per 15 menit.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.responses[200] = { description: 'Email verifikasi dikirim, atau email sudah terverifikasi (lihat message)' }
+    #swagger.responses[429] = { description: 'Terlalu banyak permintaan email verifikasi' }
+  */
+  authMiddleware,
+  sendVerifyEmailRateLimiter,
+  authController.sendVerifyEmailController,
+);
+
+router.post(
+  "/change-password",
+  /*
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Change password (user yang sedang login)'
+    #swagger.description = 'Wajib menyertakan password saat ini. Password baru minimal 8 karakter, mengandung huruf besar dan angka, dan harus berbeda dari password saat ini. User Google OAuth tidak dapat mengganti password. Dibatasi 5 percobaan gagal per user per 15 menit.'
     #swagger.security = [{ "cookieAuth": [] }]
     #swagger.requestBody = {
       required: true,
       content: {
         "application/json": {
-          schema: { $ref: "#/components/schemas/SendEmailVerification" }
+          schema: { $ref: "#/components/schemas/ChangePasswordRequest" }
         }
       }
     }
+    #swagger.responses[200] = { description: 'Password berhasil diganti' }
+    #swagger.responses[400] = { description: 'Password saat ini salah / password baru tidak memenuhi aturan' }
+    #swagger.responses[403] = { description: 'User Google OAuth tidak dapat mengganti password' }
+    #swagger.responses[429] = { description: 'Terlalu banyak percobaan ganti password gagal' }
   */
-  validate(verifyEmailSchema),
   authMiddleware,
-  authController.sendVerifyEmailController,
+  changePasswordRateLimiter,
+  validate(changePasswordSchema),
+  authController.changePassword,
 );
 
 router.get(
@@ -176,6 +201,7 @@ router.get(
   /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Verify Email with Token'
+    #swagger.description = 'Token hanya berlaku untuk email yang dituju saat link dikirim. Jika email akun sudah berubah, token ditolak (400) dan user harus meminta link baru.'
     #swagger.parameters['token'] = {
       in: 'query',
       description: 'Email verification token from email',

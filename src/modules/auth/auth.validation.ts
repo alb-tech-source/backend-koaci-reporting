@@ -3,15 +3,19 @@ import { z } from "zod";
 // Trim spasi awal/akhir sebelum validasi format (khas hasil copy-paste di form)
 const emailSchema = z.string().trim().pipe(z.email("Format email tidak valid"));
 
+// Aturan password tunggal untuk register, reset, change password, dan update user.
+export const passwordSchema = z
+  .string()
+  .min(8, "Password minimal 8 karakter")
+  .max(50, "Password maksimal 50 karakter")
+  .regex(/[A-Z]/, "Password harus mengandung huruf besar")
+  .regex(/[0-9]/, "Password harus mengandung angka");
+
 export const registerSchema = z.object({
   firstname: z.string().min(1, "Firstname wajib diisi").max(50),
   lastname: z.string().min(1, "lastname wajib diisi").max(50),
   email: emailSchema,
-  password: z
-    .string()
-    .min(8, "Password minimal 8 karakter")
-    .regex(/[A-Z]/, "Password harus mengandung huruf Capital.")
-    .regex(/[0-9]/, "Password harus mengandung angka."),
+  password: passwordSchema,
 });
 
 export const loginSchema = z.object({
@@ -25,13 +29,15 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token wajib diisi"),
-  newPassword: z
-    .string()
-    .min(8, "Password minimal 8 karakter")
-    .regex(/[A-Z]/, "Password harus mengandung huruf besar")
-    .regex(/[0-9]/, "Password harus mengandung angka"),
+  newPassword: passwordSchema,
 });
 
-export const verifyEmailSchema = z.object({
-  email: emailSchema,
-});
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
+    newPassword: passwordSchema,
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    path: ["newPassword"],
+    message: "Password baru harus berbeda dari password saat ini",
+  });
