@@ -7167,42 +7167,6 @@
             "type": "number",
             "example": 75000000
           },
-          "applicant_profit_share_percentage": {
-            "type": "number",
-            "example": 40
-          },
-          "applicant_profit_share_amount": {
-            "type": "number",
-            "example": 30000000
-          },
-          "koaci_profit_share_percentage": {
-            "type": "number",
-            "example": 20
-          },
-          "koaci_profit_share_amount": {
-            "type": "number",
-            "example": 15000000
-          },
-          "koaci_profit_share_beneficiary_percentage": {
-            "type": "number",
-            "example": 5
-          },
-          "koaci_profit_share_beneficiary_amount": {
-            "type": "number",
-            "example": 3750000
-          },
-          "investor_profit_share_percentage": {
-            "type": "number",
-            "example": 40
-          },
-          "investor_profit_share_amount": {
-            "type": "number",
-            "example": 30000000
-          },
-          "aggregate_fund_amount": {
-            "type": "number",
-            "example": 500000000
-          },
           "disbursement_amount": {
             "type": "number",
             "example": 500000000
@@ -7290,42 +7254,6 @@
           "net_margin_amount": {
             "type": "string",
             "example": "75000000"
-          },
-          "applicant_profit_share_percentage": {
-            "type": "number",
-            "example": 40
-          },
-          "applicant_profit_share_amount": {
-            "type": "string",
-            "example": "30000000"
-          },
-          "koaci_profit_share_percentage": {
-            "type": "number",
-            "example": 20
-          },
-          "koaci_profit_share_amount": {
-            "type": "string",
-            "example": "15000000"
-          },
-          "koaci_profit_share_beneficiary_percentage": {
-            "type": "number",
-            "example": 5
-          },
-          "koaci_profit_share_beneficiary_amount": {
-            "type": "string",
-            "example": "3750000"
-          },
-          "investor_profit_share_percentage": {
-            "type": "number",
-            "example": 40
-          },
-          "investor_profit_share_amount": {
-            "type": "string",
-            "example": "30000000"
-          },
-          "aggregate_fund_amount": {
-            "type": "string",
-            "example": "500000000"
           },
           "disbursement_amount": {
             "type": "string",

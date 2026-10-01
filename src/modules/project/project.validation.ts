@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const amount = z.number().positive("Nominal harus lebih besar dari 0");
-const percentage = z.number().min(0).max(100);
 
 export const createProjectSchema = z.object({
   company_id: z.uuid("Format company_id tidak valid"),
@@ -17,15 +16,6 @@ export const createProjectSchema = z.object({
     ),
   funding_required: amount,
   net_margin_amount: amount.optional(),
-  applicant_profit_share_percentage: percentage.optional(),
-  applicant_profit_share_amount: amount.optional(),
-  koaci_profit_share_percentage: percentage.optional(),
-  koaci_profit_share_amount: amount.optional(),
-  koaci_profit_share_beneficiary_percentage: percentage.optional(),
-  koaci_profit_share_beneficiary_amount: amount.optional(),
-  investor_profit_share_percentage: percentage.optional(),
-  investor_profit_share_amount: amount.optional(),
-  aggregate_fund_amount: amount.optional(),
   disbursement_amount: amount.optional(),
   disbursement_date: z.coerce.date().optional(),
   source_account_number: optionalText(50),
