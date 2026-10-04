@@ -65,6 +65,14 @@ export const projectInvestmentController = {
     );
   }),
 
+  getOwnSummary: asyncHandler(async (req: Request, res: Response) => {
+    ApiResponse(
+      res,
+      200,
+      await projectInvestmentService.getOwnSummary(req.authUser!.userId),
+    );
+  }),
+
   update: asyncHandler(async (req: Request, res: Response) => {
     const projectInvestment = await projectInvestmentService.update(
       req.params.investmentId as string,

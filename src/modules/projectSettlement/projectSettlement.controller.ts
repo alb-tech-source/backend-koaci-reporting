@@ -10,7 +10,7 @@ type InvestorRow = { investor_settlement_id: string; investor_id: string };
 const logEntry = (
   req: Request,
   action: ActivityAction,
-  entityType: "ProjectSettlement" | "InvestorSettlement",
+  entityType: "ProjectSettlement" | "InvestorSettlement" | "Project",
   entityId: string,
   metadata: Record<string, unknown>,
 ) =>
@@ -137,7 +137,15 @@ export const projectSettlementController = {
       "approved",
       req.authUser!.userId,
     );
-    await log(req, "APPROVE", settlement, { updated: toRows(settlement) });
+    await Promise.all([
+      log(req, "APPROVE", settlement, { updated: toRows(settlement) }),
+      // Status project otomatis menjadi target_achieved saat settlement disetujui
+      logEntry(req, "PROJECT_UPDATE", "Project", settlement.project_id, {
+        projectSettlementId: settlement.project_settlement_id,
+        changes: { status: "target_achieved" },
+        reason: "Settlement disetujui",
+      }),
+    ]);
     return ApiResponse(res, 200, {
       projectSettlement: settlement,
       message: "Settlement berhasil disetujui",

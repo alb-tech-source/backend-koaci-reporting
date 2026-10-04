@@ -317,7 +317,7 @@ Beberapa hal yang dilakukan backend otomatis saat edit:
    - tabel `investorSettlement` (nama investor dari `investor.user.firstname/lastname`),
    - siapa pembuatnya (`createdBy`).
 3. **Tombol Approve/Reject** hanya muncul jika `status === "review"` dan user punya `project_settlements:approve:any`.
-   - `PATCH /:id/approve` → status `approved`. `approvedBy` terisi dan data terkunci.
+   - `PATCH /:id/approve` → status `approved`. `approvedBy` terisi dan data terkunci. Status **project** otomatis berubah menjadi `target_achieved` dalam transaksi yang sama, jadi muat ulang data project setelah approve.
    - `PATCH /:id/reject` → status `rejected`. Admin bisa memperbaiki lalu mengajukan ulang.
    - Kedua endpoint tidak memerlukan body. Response berisi detail settlement terbaru.
    - Tidak ada kolom alasan penolakan. Sampaikan alasannya di luar sistem, atau lihat riwayatnya di Activity Log.

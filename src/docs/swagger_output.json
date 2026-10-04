@@ -5587,7 +5587,7 @@
           "Project Settlement"
         ],
         "summary": "Approve project settlement",
-        "description": "Hanya bod/superadmin. Status review -> approved; seluruh investor settlement ikut approved. Settlement yang sudah approved terkunci.",
+        "description": "Hanya bod/superadmin. Status review -> approved; seluruh investor settlement ikut approved dan status project otomatis menjadi target_achieved. Settlement yang sudah approved terkunci.",
         "parameters": [
           {
             "name": "settlementId",

@@ -359,7 +359,8 @@ export const projectSettlementService = {
 
   /**
    * Approve / reject settlement berstatus review. Status seluruh
-   * InvestorSettlement ikut berubah dalam transaksi yang sama.
+   * InvestorSettlement ikut berubah dalam transaksi yang sama. Saat approve,
+   * status Project juga diubah menjadi target_achieved (proyek selesai).
    */
   review: async (
     settlementId: string,
@@ -390,6 +391,17 @@ export const projectSettlementService = {
         where: { project_settlement_id: settlementId },
         data: { status: decision, approved_by: approvedBy },
       });
+
+      if (decision === "approved") {
+        const { project_id } = await tx.projectSettlement.findUniqueOrThrow({
+          where: { project_settlement_id: settlementId },
+          select: { project_id: true },
+        });
+        await tx.project.update({
+          where: { project_id },
+          data: { status: "target_achieved" },
+        });
+      }
     });
 
     return projectSettlementService.getById(settlementId);

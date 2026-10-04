@@ -56,6 +56,7 @@ router.get(
   /*
     #swagger.tags = ['Project Investment']
     #swagger.summary = 'Get project investment by user id special for investor'
+    #swagger.description = 'Diurutkan dari yang terbaru. Tiap item menyertakan project.funding_collected (total setoran semua investor, string desimal), project.funding_progress_pct (bilangan bulat 0-100, dibulatkan ke bawah), dan project.latest_progress_pct (estimasi progres dari laporan terakhir, null jika belum ada laporan).'
     #swagger.security = [{"cookieAuth": []}]
     #swagger.responses[200] = { description: 'Project investment detail', schema: { $ref: '#/components/schemas/ProjectInvestmentResponse' } }
     #swagger.responses[404] = { description: 'Project investment not found' }
@@ -63,6 +64,20 @@ router.get(
   authMiddleware,
   authorize("project_investments", "read", ["own"]),
   projectInvestmentController.getByUser,
+);
+
+router.get(
+  "/own/summary",
+  /*
+    #swagger.tags = ['Project Investment']
+    #swagger.summary = 'Ringkasan investasi aktif milik investor yang sedang login'
+    #swagger.description = 'Dipakai beranda aplikasi investor. Investasi aktif = investasi pada project berstatus open. total_active_investment dikirim sebagai string desimal; active_projects menghitung project unik. Investor yang belum punya profil mendapat nilai nol.'
+    #swagger.security = [{"cookieAuth": []}]
+    #swagger.responses[200] = { description: 'Ringkasan investasi', schema: { success: true, data: { total_active_investment: '150000000', active_projects: 2 } } }
+   */
+  authMiddleware,
+  authorize("project_investments", "read", ["own"]),
+  projectInvestmentController.getOwnSummary,
 );
 
 router.post(

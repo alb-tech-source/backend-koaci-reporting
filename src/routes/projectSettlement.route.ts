@@ -113,7 +113,7 @@ router.patch(
   /*
     #swagger.tags = ['Project Settlement']
     #swagger.summary = 'Approve project settlement'
-    #swagger.description = 'Hanya bod/superadmin. Status review -> approved; seluruh investor settlement ikut approved. Settlement yang sudah approved terkunci.'
+    #swagger.description = 'Hanya bod/superadmin. Status review -> approved; seluruh investor settlement ikut approved dan status project otomatis menjadi target_achieved. Settlement yang sudah approved terkunci.'
     #swagger.security = [{ "cookieAuth": [] }]
     #swagger.parameters['settlementId'] = { in: 'path', required: true, type: 'string', format: 'uuid' }
     #swagger.responses[200] = { description: 'Settlement disetujui' }
