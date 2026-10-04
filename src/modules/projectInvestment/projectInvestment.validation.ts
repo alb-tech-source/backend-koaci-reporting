@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const amount = z.number().positive("Nominal harus lebih besar dari 0");
+const paymentMethod = z.enum(["transfer", "cash"]);
 
 export const createProjectInvestmentBodySchema = z.object({
   project_id: z.uuid("Format project_id tidak valid"),
@@ -13,12 +14,14 @@ export const createProjectInvestmentBodySchema = z.object({
   source_account_transaction: z.string().trim().optional(),
   account_reference: z.string().trim().optional(),
   receipt_number: z.string().trim().optional(),
-  payment_method: z.enum(["transfer", "cash"]).default("transfer"),
+  payment_method: paymentMethod.default("transfer"),
   destination_account_number: z.string().trim().optional(),
 });
 
+// Tanpa .default() agar field yang tidak dikirim tetap memakai nilai tersimpan.
 export const updateProjectInvestmentBodySchema =
   createProjectInvestmentBodySchema
+    .extend({ payment_method: paymentMethod })
     .partial()
     .refine((data) => Object.keys(data).length > 0, {
       message: "Minimal satu field harus diisi untuk update",

@@ -5,12 +5,23 @@ import type {
   CreateProjectInput,
   UpdateProjectInput,
   ListProjectQuery,
+  ListPublicProjectQuery,
   PaginatedResult,
 } from "../../types/project.types.js";
 
 const projectInclude = {
   company: true,
   projectDocument: { orderBy: { uploaded_at: "desc" as const } },
+};
+
+// Katalog dibaca akun yang belum diverifikasi: hanya field ini yang boleh keluar,
+// jangan pakai projectInclude (memuat rekening, data direktur, dan dokumen).
+const publicProjectSelect = {
+  project_id: true,
+  project_name: true,
+  funding_required: true,
+  status: true,
+  company: { select: { company_name: true, industry_sector: true } },
 };
 
 export const projectService = {
@@ -43,6 +54,22 @@ export const projectService = {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: projectInclude,
+      }),
+    ]);
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  },
+
+  listPublic: async (query: ListPublicProjectQuery): Promise<PaginatedResult<any>> => {
+    const { page, limit } = query;
+    const where = { is_public: true };
+    const [total, data] = await prisma.$transaction([
+      prisma.project.count({ where }),
+      prisma.project.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        select: publicProjectSelect,
       }),
     ]);
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };

@@ -2,10 +2,12 @@ import { z } from "zod";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const phone = z.string().trim().min(8).max(20).regex(/^[0-9+()\-\s]+$/, "Format nomor telepon tidak valid");
+const companyType = z.enum(["PT", "CV", "Firma", "Perorangan"]);
+const companyStatus = z.enum(["active", "inactive", "blacklist"]);
 
 export const createCompanySchema = z.object({
   company_name: z.string().trim().min(2).max(150),
-  company_type: z.enum(["PT", "CV", "Firma", "Perorangan"]).default("PT"),
+  company_type: companyType.default("PT"),
   industry_sector: optionalText(100),
   description: optionalText(1000),
   director_name: z.string().trim().min(2).max(150),
@@ -21,13 +23,17 @@ export const createCompanySchema = z.object({
   heirs_director_name: optionalText(150),
   heirs_director_phone: phone.optional(),
   heirs_director_address: optionalText(500),
-  status: z.enum(["active", "inactive", "blacklist"]).default("active"),
+  status: companyStatus.default("active"),
 });
 
-export const updateCompanySchema = createCompanySchema.partial().refine(
-  (data) => Object.keys(data).length > 0,
-  { message: "Minimal satu field harus diisi untuk update" },
-);
+// Tanpa .default() agar field yang tidak dikirim tetap memakai nilai tersimpan.
+export const updateCompanySchema = createCompanySchema
+  .extend({ company_type: companyType, status: companyStatus })
+  .partial()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    { message: "Minimal satu field harus diisi untuk update" },
+  );
 
 export const listCompanyQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),

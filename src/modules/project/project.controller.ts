@@ -26,6 +26,10 @@ export const projectController = {
     const result = await projectService.list((req as any).validatedQuery);
     return ApiResponse(res, 200, result.data, result.meta);
   }),
+  listPublic: asyncHandler(async (req: Request, res: Response) => {
+    const result = await projectService.listPublic((req as any).validatedQuery);
+    return ApiResponse(res, 200, result.data, result.meta);
+  }),
   getById: asyncHandler(async (req: Request, res: Response) =>
     ApiResponse(res, 200, await projectService.getById(req.params.id as string))),
   update: asyncHandler(async (req: Request, res: Response) => {

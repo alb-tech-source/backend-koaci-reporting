@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const amount = z.number().positive("Nominal harus lebih besar dari 0");
+const projectStatus = z.enum(["open", "closed", "target_achieved", "cancelled"]);
 
 export const createProjectSchema = z.object({
   company_id: z.uuid("Format company_id tidak valid"),
@@ -14,6 +15,10 @@ export const createProjectSchema = z.object({
       /^[a-z0-9][a-z0-9._-]*$/,
       "project_key hanya boleh huruf kecil, angka, titik, garis bawah, dan strip",
     ),
+  project_name: optionalText(150),
+  // Tanpa .default(): di zod 4 default tetap terisi pada schema .partial(),
+  // sehingga update tanpa is_public akan menyembunyikan proyek lagi
+  is_public: z.boolean().optional(),
   funding_required: amount,
   net_margin_amount: amount.optional(),
   disbursement_amount: amount.optional(),
@@ -26,20 +31,29 @@ export const createProjectSchema = z.object({
   beneficiary_repayment_destination_account: optionalText(50),
   url_transaction_folder: z.url("Format URL tidak valid").optional(),
   fund_disbursement_official_record: optionalText(255),
-  status: z.enum(["open", "closed", "target_achieved", "cancelled"]).default("open"),
+  status: projectStatus.default("open"),
 });
 
-export const updateProjectSchema = createProjectSchema.partial().refine(
-  (data) => Object.keys(data).length > 0,
-  { message: "Minimal satu field harus diisi untuk update" },
-);
+// Tanpa .default() agar field yang tidak dikirim tetap memakai nilai tersimpan.
+export const updateProjectSchema = createProjectSchema
+  .extend({ status: projectStatus })
+  .partial()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    { message: "Minimal satu field harus diisi untuk update" },
+  );
 
 export const listProjectQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(10),
   search: z.string().trim().optional(),
-  status: z.enum(["open", "closed", "target_achieved", "cancelled"]).optional(),
+  status: projectStatus.optional(),
   company_id: z.uuid("Format company_id tidak valid").optional(),
+});
+
+export const listPublicProjectQuerySchema = listProjectQuerySchema.pick({
+  page: true,
+  limit: true,
 });
 
 export const projectIdParamSchema = z.object({

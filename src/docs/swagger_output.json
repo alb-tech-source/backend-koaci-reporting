@@ -2394,6 +2394,55 @@
         }
       }
     },
+    "/api/projects/public": {
+      "get": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "List project publik (katalog Jelajahi)",
+        "description": "Hanya project dengan is_public = true, diurutkan dari yang terbaru. Bisa diakses semua akun yang login, termasuk yang belum diverifikasi, sehingga hanya mengembalikan informasi dasar. project_name bisa null.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "default": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public project list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPublicProjectsResponse"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPublicProjectsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/projects/{id}": {
       "get": {
         "tags": [
@@ -3137,7 +3186,7 @@
           "Project Investment"
         ],
         "summary": "Get project investment by user id special for investor",
-        "description": "",
+        "description": "Diurutkan dari yang terbaru. Tiap item menyertakan project.funding_collected (total setoran semua investor, string desimal), project.funding_progress_pct (bilangan bulat 0-100, dibulatkan ke bawah), dan project.latest_progress_pct (estimasi progres dari laporan terakhir, null jika belum ada laporan).",
         "responses": {
           "200": {
             "description": "Project investment detail",
@@ -3156,6 +3205,81 @@
           },
           "404": {
             "description": "Project investment not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/project-investments/own/summary": {
+      "get": {
+        "tags": [
+          "Project Investment"
+        ],
+        "summary": "Ringkasan investasi aktif milik investor yang sedang login",
+        "description": "Dipakai beranda aplikasi investor. Investasi aktif = investasi pada project berstatus open. total_active_investment dikirim sebagai string desimal; active_projects menghitung project unik. Investor yang belum punya profil mendapat nilai nol.",
+        "responses": {
+          "200": {
+            "description": "Ringkasan investasi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total_active_investment": {
+                          "type": "string",
+                          "example": "150000000"
+                        },
+                        "active_projects": {
+                          "type": "number",
+                          "example": 2
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total_active_investment": {
+                          "type": "string",
+                          "example": "150000000"
+                        },
+                        "active_projects": {
+                          "type": "number",
+                          "example": 2
+                        }
+                      }
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7159,6 +7283,14 @@
             "type": "string",
             "example": "proyek-koaci-2026-01"
           },
+          "project_name": {
+            "type": "string",
+            "example": "Pembiayaan Proyek Koaci 2026-01"
+          },
+          "is_public": {
+            "type": "boolean",
+            "example": false
+          },
           "funding_required": {
             "type": "number",
             "example": 500000000
@@ -7242,6 +7374,14 @@
           "project_key": {
             "type": "string",
             "example": "proyek-koaci-2026-01"
+          },
+          "project_name": {
+            "type": "string",
+            "example": "Pembiayaan Proyek Koaci 2026-01"
+          },
+          "is_public": {
+            "type": "boolean",
+            "example": false
           },
           "company_id": {
             "type": "string",
@@ -7363,6 +7503,85 @@
         },
         "xml": {
           "name": "ListProjectsResponse"
+        }
+      },
+      "PublicProjectResponse": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "example": "uuid-project-id"
+          },
+          "project_name": {
+            "type": "string",
+            "example": "Pembiayaan Proyek Koaci 2026-01"
+          },
+          "funding_required": {
+            "type": "string",
+            "example": "500000000"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          },
+          "company": {
+            "type": "object",
+            "properties": {
+              "company_name": {
+                "type": "string",
+                "example": "PT Maju Bersama"
+              },
+              "industry_sector": {
+                "type": "string",
+                "example": "Konstruksi"
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "PublicProjectResponse"
+        }
+      },
+      "ListPublicProjectsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "xml": {
+                "name": "publicprojectresponse"
+              },
+              "$ref": "#/components/schemas/PublicProjectResponse"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "number",
+                "example": 1
+              },
+              "page": {
+                "type": "number",
+                "example": 1
+              },
+              "limit": {
+                "type": "number",
+                "example": 10
+              },
+              "totalPages": {
+                "type": "number",
+                "example": 1
+              }
+            }
+          }
+        },
+        "xml": {
+          "name": "ListPublicProjectsResponse"
         }
       },
       "PresignProjectDocumentRequest": {

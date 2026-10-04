@@ -402,6 +402,8 @@ const doc = {
       CreateProjectRequest: {
         company_id: "uuid-company-id",
         project_key: "proyek-koaci-2026-01",
+        project_name: "Pembiayaan Proyek Koaci 2026-01",
+        is_public: false,
         funding_required: 500000000,
         net_margin_amount: 75000000,
         disbursement_amount: 500000000,
@@ -423,6 +425,8 @@ const doc = {
       ProjectResponse: {
         project_id: "uuid-project-id",
         project_key: "proyek-koaci-2026-01",
+        project_name: "Pembiayaan Proyek Koaci 2026-01",
+        is_public: false,
         company_id: "uuid-company-id",
         funding_required: "500000000",
         net_margin_amount: "75000000",
@@ -445,6 +449,18 @@ const doc = {
       ListProjectsResponse: {
         success: true,
         data: [{ $ref: "#/components/schemas/ProjectResponse" }],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      },
+      PublicProjectResponse: {
+        project_id: "uuid-project-id",
+        project_name: "Pembiayaan Proyek Koaci 2026-01",
+        funding_required: "500000000",
+        status: "open",
+        company: { company_name: "PT Maju Bersama", industry_sector: "Konstruksi" },
+      },
+      ListPublicProjectsResponse: {
+        success: true,
+        data: [{ $ref: "#/components/schemas/PublicProjectResponse" }],
         meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
       },
 

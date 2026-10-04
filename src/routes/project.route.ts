@@ -6,6 +6,7 @@ import {
   createProjectSchema,
   updateProjectSchema,
   listProjectQuerySchema,
+  listPublicProjectQuerySchema,
   projectIdParamSchema,
 } from "../modules/project/project.validation.js";
 
@@ -26,6 +27,23 @@ router.get(
   */
   authMiddleware, authorize("projects", "read", ["any"]),
   validateQuery(listProjectQuerySchema), projectController.list,
+);
+
+// Harus didaftarkan sebelum "/:id". Cukup login tanpa authorize(): akun yang baru
+// mendaftar belum punya permission apa pun, dan penyaringnya adalah flag is_public.
+router.get(
+  "/public",
+  /*
+    #swagger.tags = ['Project']
+    #swagger.summary = 'List project publik (katalog Jelajahi)'
+    #swagger.description = 'Hanya project dengan is_public = true, diurutkan dari yang terbaru. Bisa diakses semua akun yang login, termasuk yang belum diverifikasi, sehingga hanya mengembalikan informasi dasar. project_name bisa null.'
+    #swagger.security = [{ "cookieAuth": [] }]
+    #swagger.parameters['page'] = { in: 'query', type: 'integer', default: 1 }
+    #swagger.parameters['limit'] = { in: 'query', type: 'integer', default: 10 }
+    #swagger.responses[200] = { description: 'Public project list', schema: { $ref: '#/components/schemas/ListPublicProjectsResponse' } }
+  */
+  authMiddleware,
+  validateQuery(listPublicProjectQuerySchema), projectController.listPublic,
 );
 
 router.get(
